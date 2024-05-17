@@ -12,35 +12,15 @@ import {
 const execAsync = util.promisify(exec);
 
 async function createConfigurationFiles() {
-  const chainJson = {
-    default: "bellecour",
-    chains: {
-      mainnet: {},
-      bellecour: {},
-    },
-  };
-  const iexecJson = {
-    description:
-      "My iExec resource description, must be at least 150 chars long in order to pass the validation checks. Describe your application, dataset or workerpool to your users",
-    license: "MIT",
-    author: "?",
-    social: {
-      website: "?",
-      github: "?",
-    },
-    logo: "logo.png",
-  };
+  // Create a simple iDapp configuration file
+  const configContent = `const config = {
+  accounts: YOUR_PRIVATE_KEY,
+};
 
-  await writeFileAsync(
-    "chain.json",
-    JSON.stringify(chainJson, null, 2),
-    "utf8"
-  );
-  await writeFileAsync(
-    "iexec.json",
-    JSON.stringify(iexecJson, null, 2),
-    "utf8"
-  );
+export default config;
+  `;
+
+  await writeFileAsync("idapp.config.js", configContent, "utf8");
 }
 
 export async function initFrameworkForJavascript() {

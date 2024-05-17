@@ -4,11 +4,7 @@ import util from "util";
 import chalk from "chalk";
 import inquirer from "inquirer";
 import { exec } from "child_process";
-import {
-  createSconifyFile,
-  removeChainForProd,
-  updateChainForDebug,
-} from "./utils/utils.js";
+import { removeChainForProd, updateChainForDebug } from "./utils/utils.js";
 import { buildDockerImage, getDockerUsername } from "./utils/docker.js";
 
 const readFile = util.promisify(fs.readFile);
@@ -73,17 +69,6 @@ export async function handleDeployCommand(argv) {
     return;
   }
 
-  try {
-    stepSpinner = ora("Logging in to registry.scontain.com...").start();
-    await execAsync("docker login registry.scontain.com");
-    stepSpinner.succeed("Login to registry.scontain.com successful.");
-  } catch (e) {
-    stepSpinner.fail("Login to registry.scontain.com failed.");
-    console.log(chalk.red("You are not logged in to registry.scontain.com..."));
-    mainSpinner.fail("Failed to deploy your idapp.");
-    return;
-  }
-
   if (argv.debug || sconifyAnswer?.sconify === "Debug") {
     try {
       stepSpinner = ora("Updating chain for debug...").start();
@@ -108,10 +93,7 @@ export async function handleDeployCommand(argv) {
         `docker push ${dockerUsername}/${iDappName}:${idappVersion}-debug`
       );
       stepSpinner.succeed("Docker image pushed.");
-
-      stepSpinner = ora("Creating sconify file...").start();
-      await createSconifyFile({ iDappName, dockerUsername, tag: "debug" });
-      stepSpinner.succeed("Sconify file created.");
+      // TODO: Connect to the SCONIFY API
     } catch (e) {
       stepSpinner.fail(
         "An error occurred during the debug deployment process."
@@ -127,11 +109,7 @@ export async function handleDeployCommand(argv) {
       stepSpinner = ora("Removing chain for production...").start();
       await removeChainForProd();
       stepSpinner.succeed("Chain removed for production.");
-
-      stepSpinner = ora("Creating sconify file...").start();
-      await createSconifyFile({ iDappName, dockerUsername, tag: "prod" });
-      stepSpinner.succeed("Sconify file created.");
-      // TODO: Additional steps for production deployment
+      // TODO: Connect to the SCONIFY API
     } catch (e) {
       stepSpinner.fail(
         "An error occurred during the production deployment process."

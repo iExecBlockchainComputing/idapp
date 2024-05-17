@@ -61,46 +61,6 @@ export async function setUpTestFile() {
   await execAsync("mkdir -p ./tmp/iexec_out && mkdir -p ./tmp/iexec_in");
 }
 
-export async function createSconifyFile({ idappName, dockerUsername, tag }) {
-  const sconifyFilePath = `./sconify.sh`;
-  // Ensure all bash variables are correctly escaped for later evaluation by the shell
-  const sconifyFileContent = `#!/bin/bash
-
-  ENTRYPOINT="node /app/app.js"
-
-  IMG_NAME=${idappName}
-  IMG_FROM=${dockerUsername}/\${IMG_NAME}:1.0.0-${tag}
-  IMG_TO=${dockerUsername}/tee-\${IMG_NAME}:1.0.0-${tag}
-
-  docker pull registry.scontain.com/sconecuratedimages/node:14.4.0-alpine3.11
-
-  docker run -it --rm \\
-            --platform=linux/amd64 \\
-            -v /var/run/docker.sock:/var/run/docker.sock \\
-            registry.scontain.com/scone-debug/iexec-sconify-image-unlocked:5.8.9 \\
-            sconify_iexec \\
-            --name=\${IMG_NAME} \\
-            --from=\${IMG_FROM} \\
-            --to=\${IMG_TO} \\
-            --binary-fs \\
-            --fs-dir=/app \\
-            --host-path=/etc/hosts \\
-            --host-path=/etc/resolv.conf \\
-            --binary=/usr/local/bin/node \\
-            --heap=1G \\
-            --dlopen=1 \\
-            --no-color \\
-            --verbose \\
-            --command=\${ENTRYPOINT} \\
-            --docker-target-platform=linux/amd64 \\
-            && echo -e "\\n------------------\\n" \\
-            && echo "Successfully built TEE docker image => \${IMG_TO} \\
-            && echo "Application mrenclave fingerprint is $(docker run --rm -e SCONE_HASH=1 \${IMG_TO})
-  `;
-  await writeFile(sconifyFilePath, sconifyFileContent);
-  await execAsync("chmod +x ./sconify.sh");
-}
-
 export async function updateChainForDebug() {
   const filePath = "./chain.json";
   const data = await readFile(filePath, "utf8");

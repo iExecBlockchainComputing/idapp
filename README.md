@@ -1,6 +1,6 @@
 # TODO
 
-- [ ] use dockerode lib => npm i dockerode
-- [ ] test on linux & windows
-- [ ] validate on Mac
-- [ ] publish order
+- [ ] use dockerode lib => npm i dockerode (may be)
+- [ ] build iDapp sconification service & its API
+- [ ] publish App Contract
+- [ ] new command to publish order

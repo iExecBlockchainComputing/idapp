@@ -28,3 +28,13 @@ export async function initFrameworkForJavascript() {
     console.log("Error during project initialization:", error);
   }
 }
+
+export async function createDockerfileFile() {
+  const dockerfilePath = `./Dockerfile`;
+  const dockerfileContent = `FROM node:14-alpine3.11
+    ### install your dependencies if you have some
+    RUN mkdir /app && cd /app && npm install figlet@1.x
+    COPY ./src /app
+    ENTRYPOINT ["node", "/app/app.js"]`;
+  await writeFile(dockerfilePath, dockerfileContent);
+}

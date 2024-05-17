@@ -4,15 +4,16 @@ import util from "util";
 import chalk from "chalk";
 import inquirer from "inquirer";
 import { exec } from "child_process";
-import { removeChainForProd, updateChainForDebug } from "./utils/utils.js";
 import { buildDockerImage, getDockerUsername } from "./utils/docker.js";
+import { createDockerfileFile } from "./utils/initFramework.js";
 
 const readFile = util.promisify(fs.readFile);
 const execAsync = util.promisify(exec);
 
 export async function handleDeployCommand(argv) {
-  const idappVersion = "1.0.0";
   let sconifyAnswer;
+  let idappVersion;
+
   if (!argv.prod && !argv.debug) {
     sconifyAnswer = await inquirer.prompt([
       {
@@ -25,6 +26,16 @@ export async function handleDeployCommand(argv) {
     ]);
   }
 
+  const versionAnswer = await inquirer.prompt([
+    {
+      type: "input",
+      name: "version",
+      message: "Please enter the version of your iDapp:",
+      default: "0.1.0",
+    },
+  ]);
+  idappVersion = versionAnswer.version;
+
   const mainSpinner = ora("Start deploying your idapp ...").start();
 
   const data = await readFile("./package.json", "utf8");
@@ -32,7 +43,6 @@ export async function handleDeployCommand(argv) {
   const iDappName = packageJson.name.toLowerCase();
 
   let stepSpinner;
-
   try {
     stepSpinner = ora("Checking Docker daemon...").start();
     await execAsync("docker info");
@@ -57,6 +67,17 @@ export async function handleDeployCommand(argv) {
     return;
   }
 
+  try {
+    stepSpinner = ora("Creating dockerfile...").start();
+    await createDockerfileFile();
+    stepSpinner.succeed("Dockerfile created.");
+  } catch (e) {
+    stepSpinner.fail("Failed to create dockerfile.");
+    console.log(chalk.red("Permission denied..."));
+    mainSpinner.fail("Failed to deploy your idapp.");
+    return;
+  }
+
   let dockerUsername;
   try {
     stepSpinner = ora("Getting Docker username...").start();
@@ -71,10 +92,6 @@ export async function handleDeployCommand(argv) {
 
   if (argv.debug || sconifyAnswer?.sconify === "Debug") {
     try {
-      stepSpinner = ora("Updating chain for debug...").start();
-      await updateChainForDebug();
-      stepSpinner.succeed("Chain updated for debug.");
-
       stepSpinner = ora("Building Docker image...").start();
       await buildDockerImage({
         dockerHubUser: dockerUsername,
@@ -106,9 +123,6 @@ export async function handleDeployCommand(argv) {
 
   if (argv.prod || sconifyAnswer?.sconify === "Prod") {
     try {
-      stepSpinner = ora("Removing chain for production...").start();
-      await removeChainForProd();
-      stepSpinner.succeed("Chain removed for production.");
       // TODO: Connect to the SCONIFY API
     } catch (e) {
       stepSpinner.fail(

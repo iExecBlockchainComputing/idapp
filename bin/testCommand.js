@@ -3,7 +3,7 @@ import chalk from "chalk";
 import { exec } from "child_process";
 import ora from "ora";
 import { buildDockerImage, getDockerUsername } from "./utils/docker.js";
-import { createDockerfileFile } from "./utils/utils.js";
+import { createDockerfileFile } from "./utils/initFramework.js";
 
 const execAsync = util.promisify(exec);
 

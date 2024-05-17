@@ -49,9 +49,7 @@ export async function handleDeployCommand(argv) {
     stepSpinner.succeed("Docker daemon is running.");
   } catch (e) {
     stepSpinner.fail("Docker daemon is not running.");
-    console.log(
-      chalk.red("Your Docker daemon is not up... Start your Docker daemon")
-    );
+    console.log(chalk.red(e));
     mainSpinner.fail("Failed to deploy your idapp.");
     return;
   }
@@ -62,18 +60,7 @@ export async function handleDeployCommand(argv) {
     stepSpinner.succeed("Docker login successful.");
   } catch (e) {
     stepSpinner.fail("Docker login failed.");
-    console.log(chalk.red("You are not logged in to Docker..."));
-    mainSpinner.fail("Failed to deploy your idapp.");
-    return;
-  }
-
-  try {
-    stepSpinner = ora("Creating dockerfile...").start();
-    await createDockerfileFile();
-    stepSpinner.succeed("Dockerfile created.");
-  } catch (e) {
-    stepSpinner.fail("Failed to create dockerfile.");
-    console.log(chalk.red("Permission denied..."));
+    console.log(chalk.red(e));
     mainSpinner.fail("Failed to deploy your idapp.");
     return;
   }
@@ -85,7 +72,18 @@ export async function handleDeployCommand(argv) {
     stepSpinner.succeed("Docker username obtained.");
   } catch (e) {
     stepSpinner.fail("Failed to get Docker username.");
-    console.log(chalk.red("Failed to get Docker username."));
+    console.log(chalk.red(e));
+    mainSpinner.fail("Failed to deploy your idapp.");
+    return;
+  }
+
+  try {
+    stepSpinner = ora("Creating dockerfile...").start();
+    await createDockerfileFile();
+    stepSpinner.succeed("Dockerfile created.");
+  } catch (e) {
+    stepSpinner.fail("Failed to create dockerfile.");
+    console.log(chalk.red(e));
     mainSpinner.fail("Failed to deploy your idapp.");
     return;
   }
@@ -115,7 +113,7 @@ export async function handleDeployCommand(argv) {
       stepSpinner.fail(
         "An error occurred during the debug deployment process."
       );
-      console.log(chalk.red(`Error: ${e.message}`));
+      console.log(chalk.red(e));
       mainSpinner.fail("Failed to deploy your idapp.");
       return;
     }
@@ -128,7 +126,7 @@ export async function handleDeployCommand(argv) {
       stepSpinner.fail(
         "An error occurred during the production deployment process."
       );
-      console.log(chalk.red(`Error: ${e.message}`));
+      console.log(chalk.red(e));
       mainSpinner.fail("Failed to deploy your idapp.");
       return;
     }

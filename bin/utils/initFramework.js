@@ -4,6 +4,7 @@ import fs from "fs";
 import { createHelloWordFile } from "./utils.js";
 
 const writeFileAsync = util.promisify(fs.writeFile);
+const accessAsync = util.promisify(fs.access);
 const execAsync = util.promisify(exec);
 
 async function createConfigurationFiles() {
@@ -30,11 +31,25 @@ export async function initFrameworkForJavascript() {
 }
 
 export async function createDockerfileFile() {
-  const dockerfilePath = `./Dockerfile`;
+  const dockerfilePath = "./Dockerfile";
   const dockerfileContent = `FROM node:14-alpine3.11
-    ### install your dependencies if you have some
-    RUN mkdir /app && cd /app && npm install figlet@1.x
-    COPY ./src /app
-    ENTRYPOINT ["node", "/app/app.js"]`;
-  await writeFile(dockerfilePath, dockerfileContent);
+### install your dependencies if you have some
+RUN mkdir /app && cd /app && npm install figlet@1.x
+COPY ./src /app
+ENTRYPOINT ["node", "/app/app.js"]`;
+
+  try {
+    // Check if the file already exists
+    await accessAsync(dockerfilePath);
+    console.log("Dockerfile already exists. No changes made.");
+  } catch (e) {
+    // If the file does not exist, create it
+    if (e.code === "ENOENT") {
+      await writeFileAsync(dockerfilePath, dockerfileContent, "utf8");
+      console.log("Dockerfile created successfully.");
+    } else {
+      // Handle other errors
+      console.error("Error checking Dockerfile existence:", e);
+    }
+  }
 }

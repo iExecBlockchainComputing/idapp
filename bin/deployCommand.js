@@ -120,16 +120,5 @@ export async function handleDeployCommand(argv) {
     }
   }
 
-  try {
-    stepSpinner = ora("Executing sconify script...").start();
-    await execAsync("./sconify.sh");
-    stepSpinner.succeed("sconify.sh executed successfully.");
-  } catch (e) {
-    stepSpinner.fail("Execution of sconify.sh failed.");
-    console.log(chalk.red(`Execution completed with errors: ${e.message}`));
-    mainSpinner.fail("Failed to deploy your idapp.");
-    return;
-  }
-
   mainSpinner.succeed("Deployment of your idapp completed successfully.");
 }

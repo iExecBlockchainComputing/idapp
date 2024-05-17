@@ -25,19 +25,19 @@ export async function createHelloWordFile() {
   
   const main = async () => {
     try {
-      const iexecOut = process.env.IEXEC_OUT;
+      const output = process.env.IEXEC_OUT;
       const message = process.argv.length > 2 ? process.argv[2] : "World";
   
       const text = figlet.textSync(\`Hello, \${message}!\`);
       console.log(text);
       // Append some results in /iexec_out/
-      await fsPromises.writeFile(\`\${iexecOut}/result.txt\`, text);
+      await fsPromises.writeFile(\`\${output}/result.txt\`, text);
       // Declare everything is computed
       const computedJsonObj = {
-        "deterministic-output-path": \`\${iexecOut}/result.txt\`,
+        "deterministic-output-path": \`\${output}/result.txt\`,
       };
       await fsPromises.writeFile(
-        \`\${iexecOut}/computed.json\`,
+        \`\${output}/computed.json\`,
         JSON.stringify(computedJsonObj)
       );
     } catch (e) {
@@ -55,10 +55,6 @@ export async function createHelloWordFile() {
   }
 
   await writeFile(appFilePath, appFileContent);
-}
-
-export async function setUpTestFile() {
-  await execAsync("mkdir -p ./tmp/iexec_out && mkdir -p ./tmp/iexec_in");
 }
 
 export async function updateChainForDebug() {

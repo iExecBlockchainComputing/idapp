@@ -22,7 +22,13 @@ yargs(hideBin(process.argv))
   .command(
     "test",
     "Test your app",
-    () => {}, // Command-specific options placeholder
+    (yargs) => {
+      return yargs.option("docker", {
+        describe: "Test your idapp in real condition with docker",
+        type: "boolean",
+        default: false,
+      });
+    },
     handleTestCommand
   )
 

@@ -1,14 +1,9 @@
 import util from "util";
 import { exec } from "child_process";
 import fs from "fs";
+import { createHelloWordFile } from "./utils.js";
+
 const writeFileAsync = util.promisify(fs.writeFile);
-
-import {
-  createDockerfileFile,
-  createHelloWordFile,
-  setUpTestFile,
-} from "./utils.js";
-
 const execAsync = util.promisify(exec);
 
 async function createConfigurationFiles() {
@@ -27,9 +22,8 @@ export async function initFrameworkForJavascript() {
   try {
     await execAsync("npm init -y");
     await createConfigurationFiles();
-    await createDockerfileFile();
+    await execAsync("mkdir -p ./input && mkdir -p ./output");
     await createHelloWordFile();
-    await setUpTestFile();
   } catch (error) {
     console.log("Error during project initialization:", error);
   }

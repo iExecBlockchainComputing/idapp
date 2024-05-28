@@ -1,7 +1,8 @@
 import fs from "fs";
 import util from "util";
 
-const writeFile = util.promisify(fs.writeFile);
+const writeFileAsync = util.promisify(fs.writeFile);
+const accessAsync = util.promisify(fs.access);
 const mkdir = util.promisify(fs.mkdir);
 
 export async function createHelloWordFile() {
@@ -36,10 +37,10 @@ export async function createHelloWordFile() {
   main();`;
 
   try {
-    await access("./src");
+    await accessAsync("./src");
   } catch (error) {
     await mkdir("./src", { recursive: true }); // Create the src directory if it does not exist
   }
 
-  await writeFile(appFilePath, appFileContent);
+  await writeFileAsync(appFilePath, appFileContent);
 }

@@ -24,7 +24,7 @@ export async function handleInitCommand() {
     type: "input",
     name: "projectName",
     message: "What is the name of your project?",
-    default: "my-iDapp",
+    default: "my-idapp",
   });
 
   const languageAnswer = await inquirer.prompt([

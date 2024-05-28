@@ -8,7 +8,11 @@
     "idapp": "./bin/index.js"
   },
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "./bin/index.js --help",
+    "init": "mkdir -p build && cd build && ../bin/index.js init",
+    "test-idapp": "cd build && ../bin/index.js test",
+    "test-idapp:docker": "cd build && ../bin/index.js test --docker",
+    "deploy": "cd build && ../bin/index.js deploy"
   },
   "keywords": [],
   "author": "",

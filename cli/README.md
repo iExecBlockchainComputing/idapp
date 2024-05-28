@@ -97,3 +97,5 @@ npm run deploy
 - [ ] build iDapp sconification service & its API
 - [ ] publish App Contract
 - [ ] new command to publish order
+- [ ] Be sure to use Docker username and not docker email to tag Docker image
+- [ ] Have a global progress bar (sconification process when calling API may take 6-7min)

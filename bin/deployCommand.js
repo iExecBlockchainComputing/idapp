@@ -88,6 +88,7 @@ export async function handleDeployCommand(argv) {
     return;
   }
 
+  let dockerImagePath = ''
   if (argv.debug || sconifyAnswer?.sconify === "Debug") {
     try {
       stepSpinner = ora("Building Docker image...").start();
@@ -107,6 +108,7 @@ export async function handleDeployCommand(argv) {
       await execAsync(
         `docker push ${dockerUsername}/${iDappName}:${idappVersion}-debug`
       );
+      dockerImagePath = `${dockerUsername}/${iDappName}:${idappVersion}-debug`
       stepSpinner.succeed("Docker image pushed.");
       // TODO: Connect to the SCONIFY API
     } catch (e) {
@@ -132,5 +134,5 @@ export async function handleDeployCommand(argv) {
     }
   }
 
-  mainSpinner.succeed("Deployment of your idapp completed successfully.");
+  mainSpinner.succeed(`Deployment of your idapp completed successfully: ${dockerImagePath}`);
 }

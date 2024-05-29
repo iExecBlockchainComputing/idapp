@@ -7,14 +7,14 @@ const port = 3000;
 const server = createServer((req, res) => {
   if (req.url === "/sconify") {
     sconify({
-      dockerImageToSconify: "cedric25/...@1.0.0",
+      dockerImageToSconify: "robiniexec/hello-world:1.0.0",
     })
-      .then(() => {
+      .then((sconifiedImage) => {
         res.writeHead(200, { "Content-Type": "application/json" });
         res.end(
           JSON.stringify({
             success: true,
-            sconifiedDockerImage: "cedric25/...-debug@1.0.0",
+            sconifiedDockerImage: sconifiedImage,
           })
         );
       })

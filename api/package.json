@@ -8,6 +8,7 @@
     "dev": "node --watch index.js"
   },
   "dependencies": {
-    "dockerode": "^4.0.2"
+    "dockerode": "^4.0.2",
+    "dotenv": "^16.4.5"
   }
 }

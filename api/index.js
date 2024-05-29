@@ -4,11 +4,6 @@ import { sconify } from './sconify.js';
 const hostname = '0.0.0.0';
 const port = 3000;
 
-// Test
-sconify({
-  dockerImageToSconify: "cedric25/...@1.0.0",
-})
-
 const server = createServer((req, res) => {
   switch (req.url) {
     case "/sconify":

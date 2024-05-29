@@ -1,5 +1,4 @@
 import Docker from "dockerode";
-import "dotenv/config";
 
 const docker = new Docker();
 

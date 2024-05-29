@@ -13,7 +13,8 @@ export async function pushImage(image) {
   console.log(`Pushing image: ${image} to DockerHub...`);
 
   return new Promise((resolve, reject) => {
-    docker.push(image, { authconfig: registryAuth }, function (err, stream) {
+    const img = docker.getImage(image);
+    img.push({ authconfig: registryAuth }, function (err, stream) {
       if (err) {
         console.error("Error pushing the image:", err);
         return reject(err);

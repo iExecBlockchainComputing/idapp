@@ -2,7 +2,7 @@ import 'dotenv/config';
 import { sconify } from './sconify.js';
 
 /**
- * node --env-file=.env src/testSconify.js
+ * node src/testSconify.js
  */
 
 function run() {

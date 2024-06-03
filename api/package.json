@@ -4,11 +4,15 @@
   "main": "index.js",
   "type": "module",
   "scripts": {
-    "start": "node ./src/index.js",
-    "dev": "node --watch ./src/index.js"
+    "start": "node --env-file=.env ./src/index.js",
+    "dev": "node --env-file=.env --watch ./src/index.js",
+    "check-format": "prettier --check .",
+    "format": "prettier --write ."
   },
   "dependencies": {
-    "dockerode": "^4.0.2",
-    "dotenv": "^16.4.5"
+    "dockerode": "^4.0.2"
+  },
+  "devDependencies": {
+    "prettier": "^3.3.0"
   }
 }

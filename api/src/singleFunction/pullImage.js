@@ -1,4 +1,4 @@
-import Docker from "dockerode";
+import Docker from 'dockerode';
 
 const docker = new Docker();
 
@@ -8,13 +8,13 @@ const registryAuth = {
   serveraddress: process.env.SCONTAIN_REGISTRY_SERVERADDRESS,
 };
 
-export async function pullImage(image) {
+export function pullImage(image) {
   console.log(`Pulling image: ${image}...`);
 
   return new Promise((resolve, reject) => {
     docker.pull(image, { authconfig: registryAuth }, function (err, stream) {
       if (err) {
-        console.error("Error pulling the image:", err);
+        console.error('Error pulling the image:', err);
         return reject(err);
       }
 
@@ -22,7 +22,7 @@ export async function pullImage(image) {
 
       function onFinished(err, output) {
         if (err) {
-          console.error("Error in image pulling process:", err);
+          console.error('Error in image pulling process:', err);
           return reject(err);
         }
         console.log(`Image ${image} pulled successfully.`);

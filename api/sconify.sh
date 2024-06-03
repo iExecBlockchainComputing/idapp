@@ -1,5 +1,7 @@
 #!/bin/bash
 
+# File used at the beginning, not anymore.
+
 # Declare the app entrypoint
 ENTRYPOINT="node /app/app.js"
 

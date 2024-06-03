@@ -46,9 +46,9 @@ export async function sconifyImage({ fromImage, toImage }) {
       // Try to detect any 'docker build' error
       stream.on('data', function (data) {
         const readableData = data.toString('utf8');
-        // if (readableData.includes('Error')) {
-        //   throw new Error('Failed to sconify image:', readableData);
-        // }
+        if (readableData.includes('Error')) {
+          throw new Error('Failed to sconify image:', readableData);
+        }
         console.log(readableData);
       });
     }

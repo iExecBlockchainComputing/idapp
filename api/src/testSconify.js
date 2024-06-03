@@ -1,3 +1,4 @@
+import 'dotenv/config';
 import { sconify } from './sconify.js';
 
 /**

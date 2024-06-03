@@ -31,11 +31,11 @@ export async function sconify({ dockerImageToSconify }) {
     console.log('Pulled.');
 
     // Pull the SCONE image
-    console.log('--- 1 --- pulling...');
-    await pullImage(
-      'registry.scontain.com/scone-production/iexec-sconify-image:5.7.6-v15'
-    );
-    console.log('Pulled.');
+    // console.log('--- 1 --- pulling...');
+    // await pullImage(
+    //   'registry.scontain.com/scone-production/iexec-sconify-image:5.7.6-v15'
+    // );
+    // console.log('Pulled.');
 
     // Sconify Image
     console.log('\n--- 2 --- Start sconification...');

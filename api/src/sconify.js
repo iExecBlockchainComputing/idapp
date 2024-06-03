@@ -1,7 +1,10 @@
 import "dotenv/config";
+import Docker from "dockerode";
 import { pullImage } from "./singleFunction/pullImage.js";
 import { sconifyImage } from "./singleFunction/sconifyImage.js";
 import { pushImage } from "./singleFunction/pushImage.js";
+
+const docker = new Docker();
 
 export async function sconify({ dockerImageToSconify }) {
   const SCONE_IMAGE =

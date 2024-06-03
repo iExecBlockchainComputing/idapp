@@ -8,30 +8,28 @@ export async function sconify({ dockerImageToSconify }) {
     "registry.scontain.com/sconecuratedimages/node:14.4.0-alpine3.11";
   const targetImage = `teamproduct/hello-world:1.0.0-debug-tee-scone`;
   console.log(targetImage);
+
   try {
-    try {
-      // Pull the SCONE image only if necessary
-      await pullImage(SCONE_IMAGE);
-      
-      // Sconify Image
-      await sconifyImage({
-        fromImage: dockerImageToSconify,
-        toImage: targetImage,
+    // Pull the SCONE image only if necessary
+    await pullImage(SCONE_IMAGE);
+
+    // Sconify Image
+    await sconifyImage({
+      fromImage: dockerImageToSconify,
+      toImage: targetImage,
+    });
+
+    // Tag the image before pushing
+    await new Promise((resolve, reject) => {
+      docker.getImage(targetImage).tag({ repo: targetImage }, (err, data) => {
+        if (err) {
+          console.error("Error tagging the image:", err);
+          return reject(err);
+        }
+        console.log(`Image tagged as ${targetImage}`);
+        resolve(data);
       });
-  
-      // Tag the image before pushing
-      await new Promise((resolve, reject) => {
-        docker
-          .getImage(targetImage)
-          .tag({ repo: targetImage }, (err, data) => {
-            if (err) {
-              console.error("Error tagging the image:", err);
-              return reject(err);
-            }
-            console.log(`Image tagged as ${targetImage}`);
-            resolve(data);
-          });
-      });
+    });
     await pushImage(targetImage);
     console.log("All operations completed successfully.");
     return targetImage;

@@ -1,13 +1,10 @@
-import util from 'node:util';
-import Docker from 'dockerode';
 import { pullImage } from './singleFunction/pullImage.js';
 import { sconifyImage } from './singleFunction/sconifyImage.js';
 import { tagImage } from './singleFunction/tagImage.js';
 import { pushImage } from './singleFunction/pushImage.js';
 
-const docker = new Docker();
-
 export async function sconify({ dockerImageToSconify }) {
+  console.log('dockerImageToSconify', dockerImageToSconify);
   const SCONE_IMAGE =
     'registry.scontain.com/sconecuratedimages/node:14.4.0-alpine3.11';
   const targetImageRepo = 'teamproduct/hello-world';
@@ -39,6 +36,7 @@ export async function sconify({ dockerImageToSconify }) {
 
     // Sconify Image
     console.log('\n--- 2 --- Start sconification...');
+    console.log('dockerImageToSconify', dockerImageToSconify);
     await sconifyImage({
       fromImage: dockerImageToSconify,
       toImage: targetImage,

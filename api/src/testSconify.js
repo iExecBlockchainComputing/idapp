@@ -6,7 +6,10 @@ import { sconify } from './sconify.js';
  */
 
 function run() {
-  return sconify({});
+  return sconify({
+    dockerImageToSconify:
+      'https://hub.docker.com/repository/docker/robiniexec/hello-world/general',
+  });
 }
 
 run()

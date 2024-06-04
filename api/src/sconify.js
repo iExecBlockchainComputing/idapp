@@ -30,7 +30,7 @@ export async function sconify({
   }
 
   try {
-    console.log('--- 1 --- Pulling Docker image to sconify...');
+    console.log('\n--- 1 --- Pulling Docker image to sconify...');
     await pullPublicImage(dockerImageToSconify);
     console.log('Pulled.');
 
@@ -57,7 +57,7 @@ export async function sconify({
     const SCONE_IMAGE =
       'registry.scontain.com/sconecuratedimages/node:14.4.0-alpine3.11';
     const targetImageRepo = 'teamproduct';
-    const targetImageName = name;
+    const targetImageName = imageName;
     const targetImageTag = `${imageTag}-debug-tee-scone`;
     const targetImage = `${targetImageRepo}/${dockerUserName}-${targetImageName}:${targetImageTag}`;
     console.log('targetImage', targetImage);

@@ -59,8 +59,8 @@ export async function sconify({
     const targetImageRepo = 'teamproduct';
     const targetImageName = imageName;
     const targetImageTag = `${imageTag}-debug-tee-scone`;
-    const targetImage = `${targetImageRepo}/${dockerUserName}-${targetImageName}:${targetImageTag}`;
-    console.log('targetImage', targetImage);
+    const targetImagePath = `${targetImageRepo}/${dockerUserName}-${targetImageName}:${targetImageTag}`;
+    console.log('targetImagePath', targetImagePath);
 
     // Pull the SCONE image
     console.log('\n--- 3 --- Pulling Scone image');
@@ -71,13 +71,13 @@ export async function sconify({
     console.log('dockerImageToSconify', dockerImageToSconify);
     await sconifyImage({
       fromImage: dockerImageToSconify,
-      toImage: targetImage,
+      toImage: targetImagePath,
     });
     console.log('Sconified.');
 
     console.log('\n--- 5 --- Tagging...');
     await tagImage({
-      targetImage,
+      targetImagePath,
       repo: targetImageRepo,
       tag: targetImageTag,
     });
@@ -96,20 +96,23 @@ export async function sconify({
     // });
 
     console.log('\n--- 6 --- Pushing...');
-    await pushImage(targetImage);
+    const { Digest: pushedDockerImageDigest } = await pushImage({
+      targetImagePath,
+      targetImageTag,
+    });
     console.log('Pushed.');
-    return;
 
     console.log('\n--- 7 --- Deploying app contract...');
     await deployAppContractToBellecour({
-      userWalletPublicAddress: '',
+      userWalletPublicAddress,
       appName: `${dockerUserName}-${targetImageName}`,
-      dockerImagePath: targetImage,
+      dockerImagePath: targetImagePath,
+      dockerImageDigest: pushedDockerImageDigest,
     });
     console.log('Deployed.');
 
     console.log('All operations completed successfully.');
-    return targetImage;
+    return targetImagePath;
   } catch (error) {
     console.error('An error occurred during the process:', error);
     throw error;

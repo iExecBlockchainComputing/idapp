@@ -8,14 +8,19 @@ const registryAuth = {
   serveraddress: process.env.REGISTRY_SERVERADDRESS,
 };
 
-export async function pushImage(image) {
-  console.log(`Pushing image: ${image} to DockerHub...`);
+/**
+ * @returns {Promise<{ Tag: string, Digest: string, Size: number }>}
+ */
+export async function pushImage({ targetImagePath, targetImageTag }) {
+  console.log(`Pushing image: ${targetImagePath} to DockerHub...`);
 
   return new Promise((resolve, reject) => {
-    const img = docker.getImage(image);
+    const img = docker.getImage(targetImagePath);
     img.push(
-      { authconfig: registryAuth, tag: '1.0.0-debug-tee-scone' },
+      { authconfig: registryAuth, tag: targetImageTag },
       function (err, stream) {
+        let pushedImageResult;
+
         if (err) {
           console.error('Error pushing the image:', err);
           return reject(err);
@@ -29,8 +34,7 @@ export async function pushImage(image) {
             return reject(err);
           }
           console.log(`Successfully pushed the image to DockerHub => ${image}`);
-          console.log('output', output);
-          resolve(output);
+          resolve(pushedImageResult);
         }
 
         function onProgress(event) {
@@ -38,6 +42,9 @@ export async function pushImage(image) {
             console.error('[img.push] onProgress ERROR', event.error);
           } else {
             console.log('[img.push] onProgress', event);
+            if (event.aux) {
+              pushedImageResult = event.aux;
+            }
           }
         }
       }

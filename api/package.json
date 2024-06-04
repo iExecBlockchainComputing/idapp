@@ -10,7 +10,9 @@
     "format": "prettier --write ."
   },
   "dependencies": {
-    "dockerode": "^4.0.2"
+    "dockerode": "^4.0.2",
+    "ethers": "^6.13.0",
+    "iexec": "^8.8.0"
   },
   "devDependencies": {
     "dotenv": "^16.4.5",

@@ -29,6 +29,7 @@ export async function pushImage(image) {
             return reject(err);
           }
           console.log(`Successfully pushed the image to DockerHub => ${image}`);
+          console.log('output', output);
           resolve(output);
         }
 

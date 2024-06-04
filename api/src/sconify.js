@@ -1,3 +1,4 @@
+import { deployAppContractToBellecour } from './singleFunction/deployAppContractToBellecour.js';
 import { pullPublicImage } from './singleFunction/pullPublicImage.js';
 import { inspectImage } from './singleFunction/inspectImage.js';
 import { pullSconeImage } from './singleFunction/pullSconeImage.js';
@@ -13,11 +14,19 @@ import { parseImagePath } from './utils/parseImagePath.js';
  * This image needs to be publicly available on Docker Hub.
  * This image needs to be built for linux/amd64 platform. (Use buildx on MacOS)
  */
-export async function sconify({ dockerImageToSconify }) {
+export async function sconify({
+  dockerImageToSconify,
+  userWalletPublicAddress,
+}) {
   console.log('dockerImageToSconify', dockerImageToSconify);
+  console.log('userWalletPublicAddress', userWalletPublicAddress);
 
   if (!dockerImageToSconify) {
     throw new Error('dockerImageToSconify is required');
+  }
+
+  if (!userWalletPublicAddress) {
+    throw new Error('userWalletPublicAddress is required');
   }
 
   try {
@@ -89,6 +98,15 @@ export async function sconify({ dockerImageToSconify }) {
     console.log('\n--- 6 --- Pushing...');
     await pushImage(targetImage);
     console.log('Pushed.');
+    return;
+
+    console.log('\n--- 7 --- Deploying app contract...');
+    await deployAppContractToBellecour({
+      userWalletPublicAddress: '',
+      appName: `${dockerUserName}-${targetImageName}`,
+      dockerImagePath: targetImage,
+    });
+    console.log('Deployed.');
 
     console.log('All operations completed successfully.');
     return targetImage;

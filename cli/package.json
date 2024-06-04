@@ -12,7 +12,9 @@
     "init": "mkdir -p build && cd build && ../bin/index.js init",
     "test-idapp": "cd build && ../bin/index.js test",
     "test-idapp:docker": "cd build && ../bin/index.js test --docker",
-    "deploy": "cd build && ../bin/index.js deploy"
+    "deploy": "cd build && ../bin/index.js deploy",
+    "check-format": "prettier --check .",
+    "format": "prettier --write ."
   },
   "keywords": [],
   "author": "",
@@ -26,6 +28,7 @@
     "yargs": "^17.7.2"
   },
   "devDependencies": {
-    "@types/yargs": "^17.0.32"
+    "@types/yargs": "^17.0.32",
+    "prettier": "^3.3.0"
   }
 }

@@ -22,7 +22,8 @@ idapp init
 idapp test
 ```
 
-You can add `--docker` option if you want to test as close as possible to the workerpool environment
+You can add `--docker` option if you want to test as close as possible to the
+workerpool environment
 
 ```bash
 idapp test --docker
@@ -36,7 +37,8 @@ This command, will ask you to choose if you want to deploy in debug or prod.
 idapp deploy
 ```
 
-If you already know the target environment you can set `--prod` or `--debug` option to go faster
+If you already know the target environment you can set `--prod` or `--debug`
+option to go faster
 
 ```bash
 idapp deploy --debug
@@ -64,10 +66,8 @@ npm start
 npm run init
 ```
 
-This will create a new `build` folder,
-ask you a few questions,
-init an npm project,
-create some `./input` and `./output` folders, etc.
+This will create a new `build` folder, ask you a few questions, init an npm
+project, create some `./input` and `./output` folders, etc.
 
 ### test-idapp
 
@@ -98,4 +98,5 @@ npm run deploy
 - [ ] publish App Contract
 - [ ] new command to publish order
 - [ ] Be sure to use Docker username and not docker email to tag Docker image
-- [ ] Have a global progress bar (sconification process when calling API may take 6-7min)
+- [ ] Have a global progress bar (sconification process when calling API may
+      take 6-7min)

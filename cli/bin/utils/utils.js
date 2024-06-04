@@ -1,5 +1,5 @@
-import fs from "fs";
-import util from "util";
+import fs from 'fs';
+import util from 'util';
 
 const writeFileAsync = util.promisify(fs.writeFile);
 const accessAsync = util.promisify(fs.access);
@@ -37,9 +37,9 @@ main();
 `;
 
   try {
-    await accessAsync("./src");
+    await accessAsync('./src');
   } catch (error) {
-    await mkdir("./src", { recursive: true }); // Create the src directory if it does not exist
+    await mkdir('./src', { recursive: true }); // Create the src directory if it does not exist
   }
 
   await writeFileAsync(appFilePath, appFileContent);

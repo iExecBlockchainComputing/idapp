@@ -7,11 +7,8 @@ import { sconify } from './sconify.js';
 
 function run() {
   return sconify({
-    dockerImageToSconify:
-      // 'https://hub.docker.com/repository/docker/robiniexec/hello-world/general',
-      // 'hub.docker.com/robiniexec/hello-world',
-      // 'robiniexec/hello-world:1.0.0',
-      'cedric25/my-idapp2:0.1.0-debug',
+    // dockerImageToSconify: 'cedric25/my-idapp2:0.1.0-debug',
+    dockerImageToSconify: 'arthuryvars/web3telegram-app',
 
     // cedric Metamask account 1
     userWalletPublicAddress: '0xB151dDE0e776a64F66f46ca9E8bF20740b9b0baD',

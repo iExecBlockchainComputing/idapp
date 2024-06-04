@@ -33,7 +33,9 @@ export async function pushImage({ targetImagePath, targetImageTag }) {
             console.error('Error in image pushing process:', err);
             return reject(err);
           }
-          console.log(`Successfully pushed the image to DockerHub => ${image}`);
+          console.log(
+            `Successfully pushed the image to DockerHub => ${targetImagePath}`
+          );
           resolve(pushedImageResult);
         }
 

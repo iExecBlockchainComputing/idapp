@@ -8,7 +8,7 @@ const registryAuth = {
   serveraddress: process.env.SCONTAIN_REGISTRY_SERVERADDRESS,
 };
 
-export function pullImage(image) {
+export function pullSconeImage(image) {
   console.log(`Pulling image: ${image}...`);
 
   return new Promise((resolve, reject) => {

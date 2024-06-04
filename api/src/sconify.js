@@ -1,18 +1,46 @@
-import { pullImage } from './singleFunction/pullImage.js';
+import { pullPublicImage } from './singleFunction/pullPublicImage.js';
+import { inspectImage } from './singleFunction/inspectImage.js';
+import { pullSconeImage } from './singleFunction/pullSconeImage.js';
 import { sconifyImage } from './singleFunction/sconifyImage.js';
 import { tagImage } from './singleFunction/tagImage.js';
 import { pushImage } from './singleFunction/pushImage.js';
 
+/**
+ * Examples of valid dockerImageToSconify:
+ * "robiniexec/hello-world:1.0.0"
+ *
+ * This image needs to be publicly available on Docker Hub.
+ * This image needs to be built for linux/amd64 platform. (Use buildx on MacOS)
+ */
 export async function sconify({ dockerImageToSconify }) {
   console.log('dockerImageToSconify', dockerImageToSconify);
-  const SCONE_IMAGE =
-    'registry.scontain.com/sconecuratedimages/node:14.4.0-alpine3.11';
-  const targetImageRepo = 'teamproduct/hello-world';
-  const targetImageTag = '1.0.0-debug-tee-scone';
-  const targetImage = `${targetImageRepo}:${targetImageTag}`;
-  console.log('targetImage', targetImage);
+
+  if (!dockerImageToSconify) {
+    throw new Error('dockerImageToSconify is required');
+  }
 
   try {
+    await pullPublicImage(dockerImageToSconify);
+
+    // TODO Add some verification about image to sconify
+    const inspectResult = await inspectImage(dockerImageToSconify);
+    console.log('inspectResult', inspectResult);
+    if (
+      inspectResult.Os !== 'linux' ||
+      inspectResult.Architecture !== 'amd64'
+    ) {
+      throw new Error(
+        'dockerImageToSconify needs to target linux/amd64 platform.'
+      );
+    }
+
+    const SCONE_IMAGE =
+      'registry.scontain.com/sconecuratedimages/node:14.4.0-alpine3.11';
+    const targetImageRepo = 'teamproduct/hello-world';
+    const targetImageTag = '1.0.0-debug-tee-scone';
+    const targetImage = `${targetImageRepo}:${targetImageTag}`;
+    console.log('targetImage', targetImage);
+
     // await new Promise((resolve, reject) => {
     //   docker.listImages({}, function (err, res) {
     //     console.log('err', err);
@@ -24,7 +52,7 @@ export async function sconify({ dockerImageToSconify }) {
 
     // Pull the SCONE image
     console.log('--- 1 --- pulling...');
-    await pullImage(SCONE_IMAGE);
+    await pullSconeImage(SCONE_IMAGE);
     console.log('Pulled.');
 
     // Pull the SCONE image

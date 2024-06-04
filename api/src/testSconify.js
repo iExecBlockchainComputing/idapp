@@ -8,7 +8,9 @@ import { sconify } from './sconify.js';
 function run() {
   return sconify({
     dockerImageToSconify:
-      'https://hub.docker.com/repository/docker/robiniexec/hello-world/general',
+      // 'https://hub.docker.com/repository/docker/robiniexec/hello-world/general',
+      // 'hub.docker.com/robiniexec/hello-world',
+      'robiniexec/hello-world:1.0.0',
   });
 }
 

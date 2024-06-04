@@ -4,6 +4,7 @@ import { pullSconeImage } from './singleFunction/pullSconeImage.js';
 import { sconifyImage } from './singleFunction/sconifyImage.js';
 import { tagImage } from './singleFunction/tagImage.js';
 import { pushImage } from './singleFunction/pushImage.js';
+import { parseImagePath } from './utils/parseImagePath.js';
 
 /**
  * Examples of valid dockerImageToSconify:
@@ -20,11 +21,13 @@ export async function sconify({ dockerImageToSconify }) {
   }
 
   try {
+    console.log('--- 1 --- Pulling Docker image to sconify...');
     await pullPublicImage(dockerImageToSconify);
+    console.log('Pulled.');
 
-    // TODO Add some verification about image to sconify
+    console.log('\n--- 2 --- Inspecting Docker image to sconify...');
     const inspectResult = await inspectImage(dockerImageToSconify);
-    console.log('inspectResult', inspectResult);
+    // console.log('inspectResult', inspectResult);
     if (
       inspectResult.Os !== 'linux' ||
       inspectResult.Architecture !== 'amd64'
@@ -34,36 +37,28 @@ export async function sconify({ dockerImageToSconify }) {
       );
     }
 
+    const { dockerUserName, imageName, imageTag } =
+      parseImagePath(dockerImageToSconify);
+    if (!dockerUserName || !imageName || !imageTag) {
+      throw new Error(
+        'Invalid dockerImageToSconify. Please provide something that looks like robiniexec/hello-world:1.0.0'
+      );
+    }
+
     const SCONE_IMAGE =
       'registry.scontain.com/sconecuratedimages/node:14.4.0-alpine3.11';
-    const targetImageRepo = 'teamproduct/hello-world';
-    const targetImageTag = '1.0.0-debug-tee-scone';
-    const targetImage = `${targetImageRepo}:${targetImageTag}`;
+    const targetImageRepo = 'teamproduct';
+    const targetImageName = name;
+    const targetImageTag = `${imageTag}-debug-tee-scone`;
+    const targetImage = `${targetImageRepo}/${dockerUserName}-${targetImageName}:${targetImageTag}`;
     console.log('targetImage', targetImage);
 
-    // await new Promise((resolve, reject) => {
-    //   docker.listImages({}, function (err, res) {
-    //     console.log('err', err);
-    //     console.log('res', res);
-    //     resolve();
-    //   });
-    // });
-    // return;
-
     // Pull the SCONE image
-    console.log('--- 1 --- pulling...');
+    console.log('\n--- 3 --- Pulling Scone image');
     await pullSconeImage(SCONE_IMAGE);
     console.log('Pulled.');
 
-    // Pull the SCONE image
-    // console.log('--- 1 --- pulling...');
-    // await pullImage(
-    //   'registry.scontain.com/scone-production/iexec-sconify-image:5.7.6-v15'
-    // );
-    // console.log('Pulled.');
-
-    // Sconify Image
-    console.log('\n--- 2 --- Start sconification...');
+    console.log('\n--- 4 --- Start sconification...');
     console.log('dockerImageToSconify', dockerImageToSconify);
     await sconifyImage({
       fromImage: dockerImageToSconify,
@@ -71,7 +66,7 @@ export async function sconify({ dockerImageToSconify }) {
     });
     console.log('Sconified.');
 
-    console.log('\n--- 3 --- Tagging...');
+    console.log('\n--- 5 --- Tagging...');
     await tagImage({
       targetImage,
       repo: targetImageRepo,
@@ -91,7 +86,7 @@ export async function sconify({ dockerImageToSconify }) {
     //   });
     // });
 
-    console.log('\n--- 4 --- Pushing...');
+    console.log('\n--- 6 --- Pushing...');
     await pushImage(targetImage);
     console.log('Pushed.');
 

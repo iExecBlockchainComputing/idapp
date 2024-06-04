@@ -13,7 +13,6 @@ export async function pushImage(image) {
 
   return new Promise((resolve, reject) => {
     const img = docker.getImage(image);
-    console.log('img', img);
     img.push(
       { authconfig: registryAuth, tag: '1.0.0-debug-tee-scone' },
       function (err, stream) {

@@ -100,14 +100,17 @@ export async function sconify({
       targetImagePath,
       targetImageTag,
     });
+    console.log('pushedDockerImageDigest', pushedDockerImageDigest);
     console.log('Pushed.');
+    const imageOnlyChecksum = pushedDockerImageDigest.split(':')[1];
+    console.log('imageOnlyChecksum', imageOnlyChecksum);
 
     console.log('\n--- 7 --- Deploying app contract...');
     await deployAppContractToBellecour({
       userWalletPublicAddress,
       appName: `${dockerUserName}-${targetImageName}`,
       dockerImagePath: targetImagePath,
-      dockerImageDigest: pushedDockerImageDigest,
+      dockerImageDigest: imageOnlyChecksum,
     });
     console.log('Deployed.');
 

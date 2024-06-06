@@ -29,6 +29,7 @@ export async function deployAppContractToBellecour({
     type: 'DOCKER',
     multiaddr: dockerImagePath,
     checksum: `0x${dockerImageDigest}`,
+    // mrenclave, // TODO https://github.com/iExecBlockchainComputing/dataprotector-sdk/blob/v2/packages/protected-data-delivery-dapp/deployment/src/singleFunction/deployApp.ts
   });
   console.log('app contract deployed at', address);
 

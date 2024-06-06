@@ -23,7 +23,7 @@ export async function deployAppContractToBellecour({
     name: appName,
     type: 'DOCKER',
     multiaddr: `registry.hub.docker.com/${dockerImagePath}`,
-    checksum: dockerImageDigest,
+    checksum: `0x${dockerImageDigest}`,
   });
   console.log('app contract deployed at', address);
 

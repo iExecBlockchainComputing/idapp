@@ -126,7 +126,9 @@ export async function handleDeployCommand(argv) {
       );
       dockerImagePath = `${dockerUsername}/${iDappName}:${idappVersion}-debug`;
       stepSpinner.succeed('Docker image pushed.');
-      // TODO: Connect to the SCONIFY API
+
+      // TODO Call sconification API right here?
+      // Other CLI command for now
     } catch (e) {
       stepSpinner.fail(
         'An error occurred during the debug deployment process.'

@@ -4,6 +4,7 @@ import yargs from 'yargs';
 import { hideBin } from 'yargs/helpers';
 import { handleInitCommand } from './initCommand.js';
 import { handleDeployCommand } from './deployCommand.js';
+import { handleSconifyCommand } from './sconifyCommand.js';
 import { handleTestCommand } from './testCommand.js';
 
 yargs(hideBin(process.argv))
@@ -32,7 +33,7 @@ yargs(hideBin(process.argv))
     handleTestCommand
   )
 
-  // Sconify & deploy command
+  // Build and publish docker image
   .command(
     'deploy',
     'Deploy your app',
@@ -51,6 +52,10 @@ yargs(hideBin(process.argv))
     },
     handleDeployCommand
   )
+
+  // Sconify a dockerhub image
+  .command('sconify', 'Sconify your idapp', () => {}, handleSconifyCommand)
+
   .help()
   .alias('help', 'h')
   .alias('version', 'v')

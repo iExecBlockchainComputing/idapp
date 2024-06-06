@@ -6,4 +6,4 @@
 ├── cli
 ```
 
-Sconification takes approximately 6 minutes, maybe less.
+Sconification takes approximately 2 minutes.

@@ -12,17 +12,22 @@ export async function deployAppContractToBellecour({
   dockerImageDigest,
 }) {
   const privateKey = Wallet.createRandom().privateKey;
+  console.log('privateKey', privateKey);
   const config = new IExecConfig({
     ethProvider: getSignerFromPrivateKey('mainnet', privateKey),
   });
   const iexec = IExec.fromConfig(config);
   const { signer } = await iexec.config.resolveContractsClient();
   const randomWalletPublicAddress = await signer.getAddress();
+  console.log('randomWalletPublicAddress', randomWalletPublicAddress);
+  console.log('appName', appName);
+  console.log('multiaddr', dockerImagePath);
+  console.log('checksum', `0x${dockerImageDigest}`);
   const { address } = await iexec.app.deployApp({
     owner: randomWalletPublicAddress,
     name: appName,
     type: 'DOCKER',
-    multiaddr: `registry.hub.docker.com/${dockerImagePath}`,
+    multiaddr: dockerImagePath,
     checksum: `0x${dockerImageDigest}`,
   });
   console.log('app contract deployed at', address);

@@ -4,10 +4,20 @@ import { sconify } from './sconify.js';
 const hostname = '0.0.0.0';
 const port = 3000;
 
-const server = createServer((req, res) => {
+const server = createServer(async (req, res) => {
   if (req.url === '/sconify') {
+    const json = await new Promise((resolve, reject) => {
+      req.on('data', (data) => {
+        const dataStr = String(data, 'utf-8');
+        resolve(JSON.parse(dataStr));
+      });
+    });
+    console.log('json', json);
+    const dockerhubImageToSconify = json.dockerhubImageToSconify;
+
     sconify({
-      dockerImageToSconify: 'robiniexec/hello-world:1.0.0',
+      dockerImageToSconify: dockerhubImageToSconify,
+      userWalletPublicAddress: json.yourWalletPublicAddress,
     })
       .then((sconifiedImage) => {
         res.writeHead(200, { 'Content-Type': 'application/json' });

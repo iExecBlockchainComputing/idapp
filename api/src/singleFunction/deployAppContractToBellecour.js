@@ -14,7 +14,7 @@ export async function deployAppContractToBellecour({
   const privateKey = Wallet.createRandom().privateKey;
   console.log('privateKey', privateKey);
   const config = new IExecConfig({
-    ethProvider: getSignerFromPrivateKey('mainnet', privateKey),
+    ethProvider: getSignerFromPrivateKey('bellecour', privateKey),
   });
   const iexec = IExec.fromConfig(config);
   const { signer } = await iexec.config.resolveContractsClient();

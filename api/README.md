@@ -11,6 +11,18 @@ It is composed of one endpoint:
 
  - `/` or any other endpoint: will return a simple text (mostly to check if the server is running)
 
+## pm2
+
+pm2 is used to run the server in the background.
+
+`pm2 list` to get the list of running processes.
+
+`pm2 logs` to get the logs of the running processes.
+
+etc.
+
+See https://pm2.keymetrics.io/docs/usage/quick-start/
+
 ## TODO
 
 - [X] install docker on the VM

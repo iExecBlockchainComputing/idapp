@@ -1,4 +1,10 @@
-# idapp-sconifier-cli
+# idapp-sconifier > CLI
+
+This ClI provides an interface to guide you through different steps:
+ - Create a simple JavaScript app with the necessary structure to run on a decentralized worker,
+ - Test it locally, with or without Docker,
+ - Build a Docker image and push it to Docker Hub,
+ - Sconify it and get a TEE-compatible Docker image.
 
 # Use it as a CLI (Globally)
 
@@ -93,10 +99,9 @@ npm run deploy
 
 ## TODO
 
-- [ ] use dockerode lib => npm i dockerode (may be)
-- [ ] build iDapp sconification service & its API
-- [ ] publish App Contract
+- [X] use dockerode lib => npm i dockerode (may be) -> Done in API
+- [X] build iDapp sconification service & its API
+- [X] publish App Contract
 - [ ] new command to publish order
-- [ ] Be sure to use Docker username and not docker email to tag Docker image
-- [ ] Have a global progress bar (sconification process when calling API may
-      take 6-7min)
+- [X] Be sure to use Docker username and not docker email to tag Docker image (we now ask directly for the username, instead of trying to get it from user locally installed docker)
+- [ ] Have a global progress bar (sconification process when calling API may take 6-7min)

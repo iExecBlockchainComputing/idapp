@@ -31,6 +31,9 @@ export async function sconify(argv) {
   }
 
   const mainSpinner = ora('Sconifying your idapp ...').start();
+  setTimeout(() => {
+    mainSpinner.text('This may take a few minutes ...');
+  }, 1500);
 
   try {
     const { body } = await request(`${SCONIFY_API_URL}/sconify`, {
@@ -41,8 +44,8 @@ export async function sconify(argv) {
       }),
       throwOnError: true,
     });
-    const json = await body.text();
-    console.log('Result:', json);
+    const json = await body.json();
+    console.log('\nResult:', json);
   } catch (err) {
     if (err.body) {
       console.log('\nerr', err.body);
@@ -54,4 +57,10 @@ export async function sconify(argv) {
   }
 
   mainSpinner.succeed('Done!');
+
+  const dockerhubImagePath = json.sconifiedDockerImage.split(':')[0];
+
+  console.log(
+    `Have a look at your TEE-compatible Docker image on Docker Hub: https://hub.docker.com/r/${dockerhubImagePath}/tags`
+  );
 }

@@ -105,6 +105,13 @@ This will take a public Docker Hub image and wrap it into a TEE-compatible image
 npm run sconify
 ```
 
+### What's next?
+
+```
+iexec app run <appContractAddress> --tag tee,scone --workerpool debug-v8-bellecour.main.pools.iexec.eth --watch
+iexec app run 0x8871EE6068D1e078164F93D8677C231431d22E72 --tag tee,scone --workerpool debug-v8-bellecour.main.pools.iexec.eth --watch
+```
+
 ## TODO
 
 - [X] use dockerode lib => npm i dockerode (may be) -> Done in API
@@ -113,6 +120,7 @@ npm run sconify
 - [ ] new command to publish order
 - [X] Be sure to use Docker username and not docker email to tag Docker image (we now ask directly for the username, instead of trying to get it from user locally installed docker)
 - [ ] Have a global progress bar (sconification process when calling API may take 6-7min)
-- [ ] Test with some fancy dependencies in the idapp (node- gyp stuff?), see how sconification process behaves
+- [ ] Test with some fancy dependencies in the idapp (node-gyp stuff?), see how sconification process behaves
 - [ ] Once sconified, be able to test the app locally, maybe before deploying the app contract
 - [ ] Test with an access to a protected data inside the idapp?
+- [ ] Propose to run sconified app in real condition, which would internally call `iexec app run` (or the SDK version of it)

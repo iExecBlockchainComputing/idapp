@@ -19,6 +19,8 @@ pm2 is used to run the server in the background.
 
 `npx pm2 logs` to get the logs of the running processes.
 
+`npx pm2 restart all` to restart all the running processes.
+
 etc.
 
 See https://pm2.keymetrics.io/docs/usage/quick-start/

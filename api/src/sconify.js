@@ -105,12 +105,19 @@ export async function sconify({
     const imageOnlyChecksum = pushedDockerImageDigest.split(':')[1];
     console.log('imageOnlyChecksum', imageOnlyChecksum);
 
-    console.log('\n--- 7 --- Deploying app contract...');
+    console.log('\n--- 7 --- Getting TEE image fingerprint...');
+    const fingerprint = await getSconifiedImageFingerprint({
+      targetImagePath,
+    });
+    console.log('fingerprint', fingerprint);
+
+    console.log('\n--- 8 --- Deploying app contract...');
     await deployAppContractToBellecour({
       userWalletPublicAddress,
       appName: `${dockerUserName}-${targetImageName}`,
       dockerImagePath: targetImagePath,
       dockerImageDigest: imageOnlyChecksum,
+      fingerprint,
     });
     console.log('Deployed.');
 

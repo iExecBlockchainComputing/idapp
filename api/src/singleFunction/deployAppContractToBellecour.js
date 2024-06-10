@@ -10,26 +10,29 @@ export async function deployAppContractToBellecour({
   appName,
   dockerImagePath,
   dockerImageDigest,
+  fingerprint,
 }) {
   const privateKey = Wallet.createRandom().privateKey;
-  console.log('privateKey', privateKey);
   const config = new IExecConfig({
     ethProvider: getSignerFromPrivateKey('bellecour', privateKey),
   });
   const iexec = IExec.fromConfig(config);
   const { signer } = await iexec.config.resolveContractsClient();
   const randomWalletPublicAddress = await signer.getAddress();
-  console.log('randomWalletPublicAddress', randomWalletPublicAddress);
-  console.log('appName', appName);
-  console.log('multiaddr', dockerImagePath);
-  console.log('checksum', `0x${dockerImageDigest}`);
   const { address } = await iexec.app.deployApp({
     owner: randomWalletPublicAddress,
     name: appName,
     type: 'DOCKER',
     multiaddr: dockerImagePath,
     checksum: `0x${dockerImageDigest}`,
-    // mrenclave, // TODO https://github.com/iExecBlockchainComputing/dataprotector-sdk/blob/v2/packages/protected-data-delivery-dapp/deployment/src/singleFunction/deployApp.ts
+    // Some code sample here: https://github.com/iExecBlockchainComputing/dataprotector-sdk/blob/v2/packages/protected-data-delivery-dapp/deployment/src/singleFunction/deployApp.ts
+    mrenclave: {
+      framework: 'SCONE',
+      version: 'v5',
+      entrypoint: 'node /app/app.js',
+      heapSize: 1073741824,
+      fingerprint,
+    },
   });
   console.log('app contract deployed at', address);
 

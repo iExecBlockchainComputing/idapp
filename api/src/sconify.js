@@ -31,11 +31,15 @@ export async function sconify({
   }
 
   try {
-    console.log('\n--- 1 --- Pulling Docker image to sconify...');
+    console.log(
+      '\n\n---------- 1 ---------- Pulling Docker image to sconify...'
+    );
     await pullPublicImage(dockerImageToSconify);
     console.log('Pulled.');
 
-    console.log('\n--- 2 --- Inspecting Docker image to sconify...');
+    console.log(
+      '\n\n---------- 2 ---------- Inspecting Docker image to sconify...'
+    );
     const inspectResult = await inspectImage(dockerImageToSconify);
     // console.log('inspectResult', inspectResult);
     if (
@@ -64,11 +68,11 @@ export async function sconify({
     console.log('targetImagePath', targetImagePath);
 
     // Pull the SCONE image
-    console.log('\n--- 3 --- Pulling Scone image');
+    console.log('\n\n---------- 3 ---------- Pulling Scone image');
     await pullSconeImage(SCONE_IMAGE);
     console.log('Pulled.');
 
-    console.log('\n--- 4 --- Start sconification...');
+    console.log('\n\n---------- 4 ---------- Start sconification...');
     console.log('dockerImageToSconify', dockerImageToSconify);
     await sconifyImage({
       fromImage: dockerImageToSconify,
@@ -76,7 +80,7 @@ export async function sconify({
     });
     console.log('Sconified.');
 
-    console.log('\n--- 5 --- Tagging...');
+    console.log('\n\n---------- 5 ---------- Tagging...');
     await tagImage({
       targetImagePath,
       repo: targetImageRepo,
@@ -96,7 +100,7 @@ export async function sconify({
     //   });
     // });
 
-    console.log('\n--- 6 --- Pushing...');
+    console.log('\n\n---------- 6 ---------- Pushing...');
     const { Digest: pushedDockerImageDigest } = await pushImage({
       targetImagePath,
       targetImageTag,
@@ -106,24 +110,29 @@ export async function sconify({
     const imageOnlyChecksum = pushedDockerImageDigest.split(':')[1];
     console.log('imageOnlyChecksum', imageOnlyChecksum);
 
-    console.log('\n--- 7 --- Getting TEE image fingerprint...');
+    console.log('\n\n---------- 7 ---------- Getting TEE image fingerprint...');
     const fingerprint = await getSconifiedImageFingerprint({
       targetImagePath,
     });
     console.log('fingerprint', fingerprint);
 
-    console.log('\n--- 8 --- Deploying app contract...');
-    await deployAppContractToBellecour({
-      userWalletPublicAddress,
-      appName: `${dockerUserName}-${targetImageName}-${Date.now().toString()}`,
-      dockerImagePath: targetImagePath,
-      dockerImageDigest: imageOnlyChecksum,
-      fingerprint,
-    });
+    console.log('\n\n---------- 8 ---------- Deploying app contract...');
+    const { appContractAddress, transferAppTxHash } =
+      await deployAppContractToBellecour({
+        userWalletPublicAddress,
+        appName: `${dockerUserName}-${targetImageName}-${Date.now().toString()}`,
+        dockerImagePath: targetImagePath,
+        dockerImageDigest: imageOnlyChecksum,
+        fingerprint,
+      });
     console.log('Deployed.');
 
     console.log('All operations completed successfully.');
-    return targetImagePath;
+    return {
+      sconifiedImage: targetImagePath,
+      appContractAddress,
+      transferAppTxHash,
+    };
   } catch (error) {
     console.error('An error occurred during the process:', error);
     throw error;

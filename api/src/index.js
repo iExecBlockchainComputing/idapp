@@ -20,12 +20,14 @@ const server = createServer(async (req, res) => {
       dockerImageToSconify: dockerhubImageToSconify,
       userWalletPublicAddress: json.yourWalletPublicAddress,
     })
-      .then((sconifiedImage) => {
+      .then(({ sconifiedImage, appContractAddress, transferAppTxHash }) => {
         res.writeHead(200, { 'Content-Type': 'application/json' });
         res.end(
           JSON.stringify({
             success: true,
-            sconifiedDockerImage: sconifiedImage,
+            sconifiedImage,
+            appContractAddress,
+            transferAppTxHash,
           })
         );
       })

@@ -8,7 +8,7 @@ import { deployAppContractToBellecour } from '../singleFunction/deployAppContrac
 function run() {
   return deployAppContractToBellecour({
     userWalletPublicAddress: '0xB151dDE0e776a64F66f46ca9E8bF20740b9b0baD',
-    appName: 'toto',
+    appName: `arthuryvars-web3telegram-app-${Date.now().toString()}`,
     dockerImagePath:
       'teamproduct/arthuryvars-web3telegram-app:latest-debug-tee-scone',
     dockerImageDigest:

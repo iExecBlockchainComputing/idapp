@@ -114,7 +114,7 @@ export async function sconify({
     console.log('\n--- 8 --- Deploying app contract...');
     await deployAppContractToBellecour({
       userWalletPublicAddress,
-      appName: `${dockerUserName}-${targetImageName}`,
+      appName: `${dockerUserName}-${targetImageName}-${Date.now().toString()}`,
       dockerImagePath: targetImagePath,
       dockerImageDigest: imageOnlyChecksum,
       fingerprint,

@@ -15,9 +15,9 @@ It is composed of one endpoint:
 
 pm2 is used to run the server in the background.
 
-`pm2 list` to get the list of running processes.
+`npx pm2 list` to get the list of running processes.
 
-`pm2 logs` to get the logs of the running processes.
+`npx pm2 logs` to get the logs of the running processes.
 
 etc.
 
@@ -31,4 +31,4 @@ See https://pm2.keymetrics.io/docs/usage/quick-start/
 - [X] publish a app contract FOR a Wallet (builder wallet)
 - [X] have a look at `mrenclave` missing parameter
 - [X] run it from our local machine
-- [ ] Start Node.js server at VM startup + use something like `pm2` or `forever` to keep it running
+- [ ] Start Node.js server at VM startup + use something like `pm2` to keep it running

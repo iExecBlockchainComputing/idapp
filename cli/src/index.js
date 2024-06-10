@@ -5,19 +5,14 @@ import { hideBin } from 'yargs/helpers';
 import { init } from './init.js';
 import { deploy } from './deploy.js';
 import { sconify } from './sconify.js';
-import { handleTestCommand } from './testCommand.js';
+import { test } from './test.js';
 
 yargs(hideBin(process.argv))
   .scriptName('idapp')
   .usage('$0 <cmd> [args]')
 
   // Initialize command
-  .command(
-    'init',
-    'Initialize framework to build app',
-    () => {}, // Command-specific options placeholder
-    init
-  )
+  .command('init', 'Initialize your app structure', () => {}, init)
 
   // Test command
   .command(
@@ -30,7 +25,7 @@ yargs(hideBin(process.argv))
         default: false,
       });
     },
-    handleTestCommand
+    test
   )
 
   // Build and publish docker image
@@ -54,7 +49,7 @@ yargs(hideBin(process.argv))
   )
 
   // Sconify a dockerhub image
-  .command('sconify', 'Sconify your idapp', () => {}, sconify)
+  .command('sconify', 'Sconify your app', () => {}, sconify)
 
   .help()
   .alias('help', 'h')

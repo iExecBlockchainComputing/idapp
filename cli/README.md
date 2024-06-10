@@ -1,6 +1,6 @@
 # idapp-sconifier > CLI
 
-This ClI provides an interface to guide you through different steps:
+This CLI provides an interface to guide you through different steps:
  - Create a simple JavaScript app with the necessary structure to run on a decentralized worker,
  - Test it locally, with or without Docker,
  - Build a Docker image and push it to Docker Hub,
@@ -73,20 +73,20 @@ npm run init
 ```
 
 This will create a new `build` folder, ask you a few questions, init an npm
-project, create some `./input` and `./output` folders, etc.
+project, create some `./input` and `./output` folders.
 
 ### test-idapp
 
 ```bash
 npm run test-idapp
+npm run test-idapp universe
 ```
 
 ### test-idapp --docker
 
-You need to log in to docker before.
-
 ```bash
 npm run test-idapp:docker
+npm run test-idapp:docker universe
 ```
 
 ### deploy
@@ -95,6 +95,14 @@ You need to log in to docker before.
 
 ```bash
 npm run deploy
+```
+
+### sconify
+
+This will take a public Docker Hub image and wrap it into a TEE-compatible image via Scone.
+
+```bash
+npm run sconify
 ```
 
 ## TODO

@@ -3,20 +3,23 @@ import util from 'util';
 import chalk from 'chalk';
 import { exec } from 'child_process';
 import ora from 'ora';
+import { execDockerBuild } from './execDocker/build.js';
 import { execDockerInfo } from './execDocker/info.js';
 import { createDockerfileFile } from './utils/initFramework.js';
 
 const execAsync = util.promisify(exec);
 
-export async function handleTestCommand(argv) {
+export async function test(argv) {
+  const args = argv._.slice(1);
+  const arg = args?.[0];
   if (argv.docker) {
-    await testWithDocker();
+    await testWithDocker(arg);
   } else {
-    await testWithoutDocker();
+    await testWithoutDocker(arg);
   }
 }
 
-async function testWithoutDocker() {
+async function testWithoutDocker(arg) {
   const spinner = ora('Running your idapp ... \n').start();
   try {
     spinner.text = 'Installing dependencies...';
@@ -31,7 +34,7 @@ async function testWithoutDocker() {
   try {
     spinner.text = 'Running iDapp...';
     const { stdout, stderr } = await execAsync(
-      'IEXEC_OUT=./output IEXEC_IN=./input node ./src/app.js'
+      `IEXEC_OUT=./output IEXEC_IN=./input node ./src/app.js ${arg}`
     );
     spinner.succeed('Run completed.');
     console.log(stderr ? chalk.red(stderr) : chalk.blue(stdout));
@@ -42,7 +45,7 @@ async function testWithoutDocker() {
   }
 }
 
-async function testWithDocker() {
+async function testWithDocker(arg) {
   const dockerHubUserNameAnswer = await inquirer.prompt({
     type: 'input',
     name: 'dockerHubUserName',
@@ -66,30 +69,6 @@ async function testWithDocker() {
   spinner.text = 'Checking Docker daemon...';
   await execDockerInfo(spinner);
 
-  // TODO Really necessary here?
-  // try {
-  //   spinner.text = 'Logging in to Docker...';
-  //   const { stdout } = await execAsync('docker login');
-  //   console.log('stdout', stdout);
-  //   spinner.succeed('Docker login successful.');
-  // } catch (e) {
-  //   spinner.fail('Docker login failed.');
-  //   console.log(chalk.red('You are not logged in to Docker...'));
-  //   return;
-  // }
-
-  // let dockerUsername;
-  // try {
-  //   spinner.text = 'Getting Docker username...';
-  //   dockerUsername = await getDockerUsername2();
-  //   console.log('dockerUsername', dockerUsername);
-  //   spinner.succeed('Docker username obtained.');
-  // } catch (e) {
-  //   spinner.fail('Failed to get Docker username.');
-  //   console.log(chalk.red('Failed to get Docker username.'));
-  //   return;
-  // }
-
   const dockerImageName = 'hello-world';
   try {
     spinner.text = 'Building Docker image...';
@@ -108,7 +87,7 @@ async function testWithDocker() {
   try {
     spinner.text = 'Running Docker container...';
     const { stdout, stderr } = await execAsync(
-      `docker run --rm -v ./tmp/iexec_in:/iexec_in -v ./tmp/iexec_out:/iexec_out -e IEXEC_IN=/iexec_in -e IEXEC_OUT=/iexec_out ${dockerUsername}/${dockerImageName}`
+      `docker run --rm -v ./tmp/iexec_in:/iexec_in -v ./tmp/iexec_out:/iexec_out -e IEXEC_IN=/iexec_in -e IEXEC_OUT=/iexec_out ${dockerUsername}/${dockerImageName} ${arg}`
     );
     spinner.succeed('Docker container run successfully.');
     console.log(stderr ? chalk.red(stderr) : chalk.blue(stdout));

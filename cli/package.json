@@ -13,6 +13,7 @@
     "test-idapp": "cd build && ../src/index.js test",
     "test-idapp:docker": "cd build && ../src/index.js test --docker",
     "deploy": "cd build && ../src/index.js deploy",
+    "sconify": "cd build && ../src/index.js sconify",
     "check-format": "prettier --check .",
     "format": "prettier --write ."
   },

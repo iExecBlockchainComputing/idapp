@@ -12,7 +12,7 @@ export async function sconify(argv) {
         name: 'dockerhubImageToSconify',
         message:
           'Which dockerhub image would you like to sconify? Ex: robiniexec/hello-world:1.0.0',
-        default: 'robiniexec/hello-world:1.0.0',
+        default: 'cedric25/my-idapp:0.1.0-debug',
       },
       {
         type: 'input',
@@ -33,7 +33,7 @@ export async function sconify(argv) {
   const mainSpinner = ora('Sconifying your idapp ...').start();
 
   try {
-    const { statusCode, body } = await request(`${SCONIFY_API_URL}/sconify`, {
+    const { body } = await request(`${SCONIFY_API_URL}/sconify`, {
       method: 'POST',
       body: JSON.stringify({
         dockerhubImageToSconify,
@@ -44,7 +44,11 @@ export async function sconify(argv) {
     const json = await body.text();
     console.log('Result:', json);
   } catch (err) {
-    console.log('\nerr', err.body);
+    if (err.body) {
+      console.log('\nerr', err.body);
+    } else {
+      console.log('\nerr', err);
+    }
     mainSpinner.fail('Failed to sconify your idapp');
     return;
   }

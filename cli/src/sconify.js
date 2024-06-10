@@ -4,7 +4,7 @@ import ora from 'ora';
 
 const SCONIFY_API_URL = 'http://idapp-poc.westeurope.cloudapp.azure.com:3000';
 
-export async function handleSconifyCommand(argv) {
+export async function sconify(argv) {
   const { dockerhubImageToSconify, yourWalletPublicAddress } =
     await inquirer.prompt([
       {

@@ -9,7 +9,7 @@ import { initFrameworkForJavascript } from './utils/initFramework.js';
 const readFile = util.promisify(fs.readFile);
 const writeFile = util.promisify(fs.writeFile);
 
-export async function handleInitCommand() {
+export async function init() {
   console.log(
     chalk.magenta(
       figlet.textSync('IDAPP', {

@@ -3,7 +3,7 @@ import util from 'util';
 import chalk from 'chalk';
 import { exec } from 'child_process';
 import ora from 'ora';
-import { buildDockerImage } from './utils/docker.js';
+import { execDockerInfo } from './execDocker/info.js';
 import { createDockerfileFile } from './utils/initFramework.js';
 
 const execAsync = util.promisify(exec);
@@ -46,7 +46,8 @@ async function testWithDocker() {
   const dockerHubUserNameAnswer = await inquirer.prompt({
     type: 'input',
     name: 'dockerHubUserName',
-    message: 'What is your username on Docker Hub?',
+    message:
+      'What is your username on Docker Hub? (It will be used to properly tag the Docker image)',
   });
 
   const dockerUsername = dockerHubUserNameAnswer.dockerHubUserName;
@@ -62,28 +63,20 @@ async function testWithDocker() {
   const spinner = ora('Running your idapp ... \n').start();
   await createDockerfileFile();
 
-  try {
-    spinner.text = 'Checking Docker daemon...';
-    await execAsync('docker info');
-    spinner.succeed('Docker daemon is running.');
-  } catch (e) {
-    spinner.fail('Docker daemon is not running.');
-    console.log(
-      chalk.red('Your Docker daemon is not up... Start your Docker daemon')
-    );
-    return;
-  }
+  spinner.text = 'Checking Docker daemon...';
+  await execDockerInfo(spinner);
 
-  try {
-    spinner.text = 'Logging in to Docker...';
-    const { stdout } = await execAsync('docker login');
-    console.log('stdout', stdout);
-    spinner.succeed('Docker login successful.');
-  } catch (e) {
-    spinner.fail('Docker login failed.');
-    console.log(chalk.red('You are not logged in to Docker...'));
-    return;
-  }
+  // TODO Really necessary here?
+  // try {
+  //   spinner.text = 'Logging in to Docker...';
+  //   const { stdout } = await execAsync('docker login');
+  //   console.log('stdout', stdout);
+  //   spinner.succeed('Docker login successful.');
+  // } catch (e) {
+  //   spinner.fail('Docker login failed.');
+  //   console.log(chalk.red('You are not logged in to Docker...'));
+  //   return;
+  // }
 
   // let dockerUsername;
   // try {
@@ -100,7 +93,7 @@ async function testWithDocker() {
   const dockerImageName = 'hello-world';
   try {
     spinner.text = 'Building Docker image...';
-    await buildDockerImage({
+    await execDockerBuild({
       dockerHubUser: dockerUsername,
       dockerImageName,
       isForTest: true,

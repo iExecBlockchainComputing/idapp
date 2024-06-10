@@ -4,13 +4,14 @@ import util from 'util';
 import chalk from 'chalk';
 import inquirer from 'inquirer';
 import { exec } from 'child_process';
-import { buildDockerImage } from './utils/docker.js';
+import { execDockerBuild } from './execDocker/build.js';
+import { execDockerInfo } from './execDocker/info.js';
 import { createDockerfileFile } from './utils/initFramework.js';
 
 const readFile = util.promisify(fs.readFile);
 const execAsync = util.promisify(exec);
 
-export async function handleDeployCommand(argv) {
+export async function deploy(argv) {
   let sconifyAnswer;
   let idappVersion;
 
@@ -58,17 +59,8 @@ export async function handleDeployCommand(argv) {
   const packageJson = JSON.parse(data);
   const iDappName = packageJson.name.toLowerCase();
 
-  let stepSpinner;
-  try {
-    stepSpinner = ora('Checking Docker daemon...').start();
-    await execAsync('docker info');
-    stepSpinner.succeed('Docker daemon is running.');
-  } catch (e) {
-    stepSpinner.fail('Docker daemon is not running.');
-    console.log(chalk.red(e));
-    mainSpinner.fail('Failed to deploy your idapp.');
-    return;
-  }
+  let stepSpinner = ora('Checking Docker daemon...').start();
+  await execDockerInfo(stepSpinner);
 
   try {
     stepSpinner = ora('Logging in to Docker...').start();
@@ -108,7 +100,7 @@ export async function handleDeployCommand(argv) {
   if (argv.debug || sconifyAnswer?.sconify === 'Debug') {
     try {
       stepSpinner = ora('Building Docker image...').start();
-      await buildDockerImage({
+      await execDockerBuild({
         dockerHubUser: dockerUsername,
         dockerImageName: iDappName,
       });

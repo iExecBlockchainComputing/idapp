@@ -2,9 +2,9 @@
 
 import yargs from 'yargs';
 import { hideBin } from 'yargs/helpers';
-import { handleInitCommand } from './initCommand.js';
-import { handleDeployCommand } from './deployCommand.js';
-import { handleSconifyCommand } from './sconifyCommand.js';
+import { init } from './init.js';
+import { deploy } from './deploy.js';
+import { sconify } from './sconify.js';
 import { handleTestCommand } from './testCommand.js';
 
 yargs(hideBin(process.argv))
@@ -16,7 +16,7 @@ yargs(hideBin(process.argv))
     'init',
     'Initialize framework to build app',
     () => {}, // Command-specific options placeholder
-    handleInitCommand
+    init
   )
 
   // Test command
@@ -50,11 +50,11 @@ yargs(hideBin(process.argv))
           default: false,
         });
     },
-    handleDeployCommand
+    deploy
   )
 
   // Sconify a dockerhub image
-  .command('sconify', 'Sconify your idapp', () => {}, handleSconifyCommand)
+  .command('sconify', 'Sconify your idapp', () => {}, sconify)
 
   .help()
   .alias('help', 'h')

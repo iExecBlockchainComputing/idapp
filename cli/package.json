@@ -5,14 +5,14 @@
   "main": "index.js",
   "type": "module",
   "bin": {
-    "idapp": "./bin/index.js"
+    "idapp": "./src/index.js"
   },
   "scripts": {
-    "start": "./bin/index.js --help",
-    "init": "mkdir -p build && cd build && ../bin/index.js init",
-    "test-idapp": "cd build && ../bin/index.js test",
-    "test-idapp:docker": "cd build && ../bin/index.js test --docker",
-    "deploy": "cd build && ../bin/index.js deploy",
+    "start": "./src/index.js --help",
+    "init": "mkdir -p build && cd build && ../src/index.js init",
+    "test-idapp": "cd build && ../src/index.js test",
+    "test-idapp:docker": "cd build && ../src/index.js test --docker",
+    "deploy": "cd build && ../src/index.js deploy",
     "check-format": "prettier --check .",
     "format": "prettier --write ."
   },

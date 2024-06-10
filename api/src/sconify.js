@@ -1,4 +1,5 @@
 import { deployAppContractToBellecour } from './singleFunction/deployAppContractToBellecour.js';
+import { getSconifiedImageFingerprint } from './singleFunction/getSconifiedImageFingerprint.js';
 import { pullPublicImage } from './singleFunction/pullPublicImage.js';
 import { inspectImage } from './singleFunction/inspectImage.js';
 import { pullSconeImage } from './singleFunction/pullSconeImage.js';

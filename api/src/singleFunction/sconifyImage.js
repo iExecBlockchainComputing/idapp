@@ -9,17 +9,9 @@ export async function sconifyImage({ fromImage, toImage, imageName }) {
   console.log('toImage', toImage);
   console.log('imageName', imageName);
 
-  // const sconeImage = 'scone-production/iexec-sconify-image:5.7.6-v15';
-  const sconeImage = 'scone-production/iexec-sconify-image:5.7.7-v15';
+  const sconeImage = 'scone-production/iexec-sconify-image:5.7.6-v15';
   console.log('\nPulling scone image...', sconeImage);
   await pullSconeImage(`registry.scontain.com/${sconeImage}`);
-  console.log('Pulled\n');
-
-  // Do as I'm told
-  console.log('\nPulling other scone image...', sconeImage);
-  await pullSconeImage(
-    'registry.scontain.com/scone-production/iexec-node:14-alpine-v15'
-  );
   console.log('Pulled\n');
 
   const sconifyContainer = await docker.createContainer({

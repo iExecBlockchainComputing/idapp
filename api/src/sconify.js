@@ -70,7 +70,6 @@ export async function sconify({
     console.log('\n\n---------- 3 ---------- Pulling Scone image');
     const SCONE_IMAGE =
       'registry.scontain.com/sconecuratedimages/node:14.4.0-alpine3.11';
-    // 'registry.scontain.com/sconecuratedimages/node:14.4.0-alpine-scone5.7.0';
     await pullSconeImage(SCONE_IMAGE);
     console.log('Pulled.');
 

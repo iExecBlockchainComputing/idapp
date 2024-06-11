@@ -71,9 +71,9 @@ export async function sconify({
     console.log('targetImagePath', targetImagePath);
 
     // Pull the SCONE image
-    console.log('\n\n---------- 3 ---------- Pulling Scone image');
-    await pullSconeImage(SCONE_IMAGE);
-    console.log('Pulled.');
+    // console.log('\n\n---------- 3 ---------- Pulling Scone image');
+    // await pullSconeImage(SCONE_IMAGE);
+    // console.log('Pulled.');
 
     console.log('\n\n---------- 4 ---------- Start sconification...');
     console.log('dockerImageToSconify', dockerImageToSconify);

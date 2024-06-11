@@ -50,7 +50,14 @@ export async function sconify(argv) {
     if (err.body) {
       console.log('\nerr', err.body);
     } else {
-      console.log('\nerr', err);
+      if (
+        err?.code === 'ECONNREFUSED' ||
+        err?.code === 'UND_ERR_CONNECT_TIMEOUT'
+      ) {
+        console.error('\n⚠️ Sconification server seems to be down!');
+      } else {
+        console.log('\nerr', err);
+      }
     }
     mainSpinner.fail('Failed to sconify your idapp');
     return;

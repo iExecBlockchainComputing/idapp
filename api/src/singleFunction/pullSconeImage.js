@@ -9,8 +9,6 @@ const registryAuth = {
 };
 
 export function pullSconeImage(image) {
-  console.log(`Pulling image: ${image}...`);
-
   if (
     !process.env.SCONTAIN_REGISTRY_USERNAME ||
     !process.env.SCONTAIN_REGISTRY_PASSWORD ||
@@ -20,6 +18,8 @@ export function pullSconeImage(image) {
       'Missing env vars: SCONTAIN_REGISTRY_USERNAME, SCONTAIN_REGISTRY_PASSWORD, SCONTAIN_REGISTRY_SERVERADDRESS are required'
     );
   }
+
+  console.log(`Pulling image: ${image}...`);
 
   return new Promise((resolve, reject) => {
     docker.pull(image, { authconfig: registryAuth }, function (err, stream) {

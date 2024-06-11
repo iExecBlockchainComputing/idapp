@@ -32,7 +32,7 @@ export async function sconify(argv) {
 
   const mainSpinner = ora('Sconifying your idapp ...').start();
   setTimeout(() => {
-    mainSpinner.text('This may take a few minutes ...');
+    mainSpinner.text = 'This may take a few minutes ...';
   }, 1500);
 
   try {

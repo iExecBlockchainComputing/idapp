@@ -15,7 +15,7 @@ export async function getSconifiedImageFingerprint({ targetImagePath }) {
   if (!data.stdout) {
     throw new Error('No fingerprint found');
   }
-  return data.stdout;
+  return data.stdout.trim();
 }
 
 // FOR TESTS

@@ -107,10 +107,41 @@ npm run sconify
 
 ### What's next?
 
+The final test is to actually run you idapp on iExec stack:
+
+ℹ️ You need to have iExec CLI installed. (More info [here](https://protocol.docs.iex.ec/for-developers/quick-start-for-developers#install-the-iexec-sdk))
+
+ℹ️ You need to be logged in with the same wallet as the one you gave at the "sconify" step, when you were asked for your wallet public address.
+
 ```
 iexec app run <appContractAddress> --tag tee,scone --workerpool debug-v8-bellecour.main.pools.iexec.eth --watch
-iexec app run 0x8871EE6068D1e078164F93D8677C231431d22E72 --tag tee,scone --workerpool debug-v8-bellecour.main.pools.iexec.eth --watch
+
+Example:
+iexec app run 0xc60a1e9941872de3d8c8a6afb368b1f8929a1ec1 --tag tee,scone --workerpool debug-v8-bellecour.main.pools.iexec.eth --watch
+
+With one arg:
+iexec app run 0xc60a1e9941872de3d8c8a6afb368b1f8929a1ec1 --tag tee,scone --workerpool debug-v8-bellecour.main.pools.iexec.eth --args Cédric --watch
 ```
+
+To get logs about your running task:
+
+```
+iexec task debug <taskId> --logs --chain bellecour
+
+Example:
+iexec task debug 0x62ed16ebc52c9437af45f57dc30819254ce391633c090e125253726eb76e07b1 --logs --chain bellecour
+```
+
+To get the output of your task:
+
+```
+iexec task show <taskId> --download task-result.zip
+
+Example:
+iexec task show 0x62ed16ebc52c9437af45f57dc30819254ce391633c090e125253726eb76e07b1 --download task-result.zip
+```
+
+Unzip the downloaded file and you will find the output of your task in a `result.txt` file.
 
 ## TODO
 

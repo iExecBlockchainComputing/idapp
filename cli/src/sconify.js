@@ -35,6 +35,7 @@ export async function sconify(argv) {
     mainSpinner.text = 'This may take a few minutes ...';
   }, 1500);
 
+  let teeDockerhubImagePath = '';
   try {
     const { body } = await request(`${SCONIFY_API_URL}/sconify`, {
       method: 'POST',
@@ -46,6 +47,7 @@ export async function sconify(argv) {
     });
     const json = await body.json();
     console.log('\nResult:', json);
+    teeDockerhubImagePath = json.sconifiedDockerImage.split(':')[0];
   } catch (err) {
     if (err.body) {
       console.log('\nerr', err.body);
@@ -65,9 +67,7 @@ export async function sconify(argv) {
 
   mainSpinner.succeed('Done!');
 
-  const dockerhubImagePath = json.sconifiedDockerImage.split(':')[0];
-
   console.log(
-    `Have a look at your TEE-compatible Docker image on Docker Hub: https://hub.docker.com/r/${dockerhubImagePath}/tags`
+    `Have a look at your TEE-compatible Docker image on Docker Hub: https://hub.docker.com/r/${teeDockerhubImagePath}/tags`
   );
 }

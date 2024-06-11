@@ -59,11 +59,6 @@ export async function sconify({
       );
     }
 
-    // https://gitlab.scontain.com/sconecuratedimages/node/container_registry/20
-    const SCONE_IMAGE =
-      // 'registry.scontain.com/sconecuratedimages/node:14.4.0-alpine3.11';
-      'registry.scontain.com/sconecuratedimages/node:16.13.1-alpine3.15-scone5.7.0';
-
     const targetImageRepo = 'teamproduct';
     const targetImageName = imageName;
     const targetImageTag = `${imageTag}-debug-tee-scone`;
@@ -71,9 +66,13 @@ export async function sconify({
     console.log('targetImagePath', targetImagePath);
 
     // Pull the SCONE image
-    // console.log('\n\n---------- 3 ---------- Pulling Scone image');
-    // await pullSconeImage(SCONE_IMAGE);
-    // console.log('Pulled.');
+    // https://gitlab.scontain.com/sconecuratedimages/node/container_registry/20
+    console.log('\n\n---------- 3 ---------- Pulling Scone image');
+    const SCONE_IMAGE =
+      'registry.scontain.com/sconecuratedimages/node:14.4.0-alpine3.11';
+    // 'registry.scontain.com/sconecuratedimages/node:14.4.0-alpine-scone5.7.0';
+    await pullSconeImage(SCONE_IMAGE);
+    console.log('Pulled.');
 
     console.log('\n\n---------- 4 ---------- Start sconification...');
     console.log('dockerImageToSconify', dockerImageToSconify);

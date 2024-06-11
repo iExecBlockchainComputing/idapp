@@ -2,15 +2,20 @@ import Docker from 'dockerode';
 
 const docker = new Docker();
 
-export async function sconifyImage({ fromImage, toImage }) {
+export async function sconifyImage({ fromImage, toImage, imageName }) {
   console.log('Running sconify command...');
+  console.log('fromImage', fromImage);
+  console.log('toImage', toImage);
+  console.log('imageName', imageName);
 
   const sconifyContainer = await docker.createContainer({
+    // https://gitlab.scontain.com/scone-production/iexec-sconify-image/container_registry/99?after=NTA
     Image:
-      'registry.scontain.com/scone-production/iexec-sconify-image:5.7.6-v15',
+      // 'registry.scontain.com/scone-production/iexec-sconify-image:5.7.6-v15',
+      'registry.scontain.com/scone-production/iexec-sconify-image:5.8.8-v15',
     Cmd: [
       'sconify_iexec',
-      '--name=my-idapp-tee-scone',
+      `--name=${imageName}`,
       `--from=${fromImage}`,
       `--to=${toImage}`,
       '--binary-fs',
@@ -40,10 +45,10 @@ export async function sconifyImage({ fromImage, toImage }) {
         return;
       }
 
-      // Stream everything to stdout
+      // 1- Stream everything to stdout
       // stream.pipe(process.stdout);
 
-      // Try to detect any 'docker build' error
+      // Or 2- Try to detect any 'docker build' error, otherwise log to stdout
       stream.on('data', function (data) {
         const readableData = data.toString('utf8');
         if (readableData.includes('Error')) {

@@ -59,8 +59,11 @@ export async function sconify({
       );
     }
 
+    // https://gitlab.scontain.com/sconecuratedimages/node/container_registry/20
     const SCONE_IMAGE =
-      'registry.scontain.com/sconecuratedimages/node:14.4.0-alpine3.11';
+      // 'registry.scontain.com/sconecuratedimages/node:14.4.0-alpine3.11';
+      'registry.scontain.com/sconecuratedimages/node:16.13.1-alpine3.15-scone5.8.0';
+
     const targetImageRepo = 'teamproduct';
     const targetImageName = imageName;
     const targetImageTag = `${imageTag}-debug-tee-scone`;
@@ -77,6 +80,7 @@ export async function sconify({
     await sconifyImage({
       fromImage: dockerImageToSconify,
       toImage: targetImagePath,
+      imageName: `tee-scone-${dockerUserName}-${targetImageName}`,
     });
     console.log('Sconified.');
 

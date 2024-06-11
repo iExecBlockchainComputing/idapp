@@ -12,6 +12,16 @@ const registryAuth = {
  * @returns {Promise<{ Tag: string, Digest: string, Size: number }>}
  */
 export async function pushImage({ targetImagePath, targetImageTag }) {
+  if (
+    !process.env.REGISTRY_USERNAME ||
+    !process.env.REGISTRY_PASSWORD ||
+    !process.env.REGISTRY_SERVERADDRESS
+  ) {
+    throw new Error(
+      'Missing env vars: REGISTRY_USERNAME, REGISTRY_PASSWORD, REGISTRY_SERVERADDRESS are required'
+    );
+  }
+
   console.log(`Pushing image: ${targetImagePath} to DockerHub...`);
 
   return new Promise((resolve, reject) => {

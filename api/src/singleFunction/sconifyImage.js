@@ -10,7 +10,7 @@ export async function sconifyImage({ fromImage, toImage, imageName }) {
   console.log('imageName', imageName);
 
   // const sconeImage = 'scone-production/iexec-sconify-image:5.7.6-v15';
-  const sconeImage = 'scone-production/iexec-sconify-image:5.8.8-v15';
+  const sconeImage = 'scone-production/iexec-sconify-image:5.7.7-v15';
   console.log('Pulling scone image...', sconeImage);
   await pullSconeImage(`registry.scontain.com/${sconeImage}`);
   console.log('Pulled');

@@ -11,7 +11,7 @@ This CLI provides an interface to guide you through different steps:
 ### Install
 
 ```bash
-cd cli && npm i -g idapp
+npm i -g .
 ```
 
 ## Commands
@@ -153,5 +153,9 @@ Unzip the downloaded file and you will find the output of your task in a `result
 - [ ] Have a global progress bar (sconification process when calling API may take 6-7min)
 - [ ] Test with some fancy dependencies in the idapp (node-gyp stuff?), see how sconification process behaves
 - [ ] Once sconified, be able to test the app locally, maybe before deploying the app contract
-- [ ] Test with an access to a protected data inside the idapp?
+- [ ] Test with an access to a protected data inside the idapp
 - [ ] Propose to run sconified app in real condition, which would internally call `iexec app run` (or the SDK version of it)
+- [X] Be able to properly copy JavaScript template files to init project
+- [ ] Fix commend "$> idapp" to display help
+- [X] Fix npm ci that does not work with npm v14 (Was a wrong lock file)
+- [ ] Try with node v20 in app...

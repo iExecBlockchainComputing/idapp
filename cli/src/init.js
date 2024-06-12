@@ -4,10 +4,8 @@ import chalk from 'chalk';
 import figlet from 'figlet';
 import inquirer from 'inquirer';
 import ora from 'ora';
-import { initFrameworkForJavascript } from './utils/initFramework.js';
-
-const readFile = util.promisify(fs.readFile);
-const writeFile = util.promisify(fs.writeFile);
+import { initHelloWorldApp } from './utils/initHelloWorldApp.js';
+import { isValidPackageName } from './utils/isValidPackageName.js';
 
 export async function init() {
   console.log(
@@ -20,14 +18,30 @@ export async function init() {
     )
   );
 
-  const projectNameAnswer = await inquirer.prompt({
+  const continueAnswer = await inquirer.prompt({
+    type: 'confirm',
+    name: 'continue',
+    message:
+      'A new project will be created in the current directory. Do you want to continue?',
+  });
+  if (!continueAnswer.continue) {
+    process.exit(0);
+  }
+
+  const currentFolderName = process.cwd().split('/').pop();
+  const { projectName } = await inquirer.prompt({
     type: 'input',
     name: 'projectName',
     message: 'What is the name of your project?',
-    default: 'my-idapp',
+    default: currentFolderName,
   });
 
-  const languageAnswer = await inquirer.prompt([
+  if (!isValidPackageName(projectName)) {
+    console.error('⚠️ Invalid package.json name');
+    process.exit(1);
+  }
+
+  const { language } = await inquirer.prompt([
     {
       type: 'list',
       name: 'language',
@@ -37,34 +51,40 @@ export async function init() {
     },
   ]);
 
+  if (language !== 'JavaScript') {
+    console.log(chalk.red(`Oops, ${language} language is not supported yet.`));
+    process.exit(0);
+  }
+
+  console.log('-----');
+  console.log(
+    'ℹ️ LIMITATION: Your JavaScript code will be run in a Node.js v14.4 environment.'
+  );
+  console.log('-----');
+
   const spinner = ora('Initializing iexec framework ...').start();
 
+  // Copying JavaScript simple project files from templates/javascript/
+  let initSpinner;
   try {
-    // Initialize a new Node.js project
-    if (languageAnswer.language === 'JavaScript') {
-      const initSpinner = ora('Setting up JavaScript framework...').start();
-      await initFrameworkForJavascript();
-      initSpinner.succeed('JavaScript framework setup complete.');
-
-      const packagePath = './package.json';
-      const readSpinner = ora('Reading package.json...').start();
-      const data = await readFile(packagePath, 'utf8');
-      readSpinner.succeed('Read package.json.');
-
-      const packageJson = JSON.parse(data);
-      packageJson.name = projectNameAnswer.projectName;
-
-      const writeSpinner = ora('Updating package.json...').start();
-      await writeFile(packagePath, JSON.stringify(packageJson, null, 2));
-      writeSpinner.succeed('Updated package.json.');
-    } else {
-      console.log(
-        chalk.red(`${languageAnswer.language} language is not supported yet`)
-      );
-    }
-  } catch (error) {
-    console.log(chalk.red(`An error occurred: ${error.message}`));
-  } finally {
+    initSpinner = ora('Creating "Hello World" JavaScript app...').start();
+    await initHelloWorldApp({
+      projectName,
+      template: language.toLowerCase(),
+    });
+    initSpinner.succeed('JavaScript app setup complete.');
+  } catch (err) {
+    initSpinner.fail(`An error occurred: ${err.message}`);
     spinner.stop();
+    process.exit(1);
   }
+
+  spinner.stop();
+
+  console.log('You can now make your changes in the `src/app.js file`,');
+  console.log('and then test you idapp locally:');
+  console.log('$> idapp test');
+  console.log('$> idapp test universe');
+  console.log('$> idapp test --docker');
+  console.log('$> idapp test --docker universe');
 }

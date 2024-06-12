@@ -1,3 +1,4 @@
+import fs from 'fs';
 import inquirer from 'inquirer';
 import util from 'util';
 import chalk from 'chalk';
@@ -5,7 +6,6 @@ import { exec } from 'child_process';
 import ora from 'ora';
 import { execDockerBuild } from './execDocker/build.js';
 import { execDockerInfo } from './execDocker/info.js';
-import { createDockerfileFile } from './utils/initFramework.js';
 
 const execAsync = util.promisify(exec);
 
@@ -38,33 +38,64 @@ async function testWithoutDocker(arg) {
     );
     spinner.succeed('Run completed.');
     console.log(stderr ? chalk.red(stderr) : chalk.blue(stdout));
+
+    const continueAnswer = await inquirer.prompt({
+      type: 'confirm',
+      name: 'continue',
+      message: 'Would you like to see the result? (`cat output/result.txt`)',
+    });
+    if (continueAnswer.continue) {
+      const { stdout } = await execAsync('cat output/result.txt');
+      console.log(stdout);
+    }
   } catch (e) {
     spinner.fail('Failed to run iDapp.');
     console.log(chalk.red('Failed to execute app.js file.'));
-    return;
   }
 }
 
 async function testWithDocker(arg) {
-  const dockerHubUserNameAnswer = await inquirer.prompt({
-    type: 'input',
-    name: 'dockerHubUserName',
-    message:
-      'What is your username on Docker Hub? (It will be used to properly tag the Docker image)',
-  });
+  let dockerhubUsername = '';
 
-  const dockerUsername = dockerHubUserNameAnswer.dockerHubUserName;
-  if (!/[a-zA-Z0-9-]+/.test(dockerUsername)) {
-    console.log(
-      chalk.red(
-        'Invalid Docker Hub username. Login to https://hub.docker.com/repositories, your username is what gets added to this URL.'
-      )
+  try {
+    const idappConfigContent = fs.readFileSync('./idapp.config.json', 'utf8');
+    const idappConfig = JSON.parse(idappConfigContent);
+    dockerhubUsername = idappConfig.dockerhubUsername;
+  } catch (err) {
+    console.error(
+      'Failed to read idapp.config.json file. Not critical, continue.'
     );
-    return;
+  }
+
+  if (!dockerhubUsername) {
+    const dockerHubUserNameAnswer = await inquirer.prompt({
+      type: 'input',
+      name: 'dockerHubUserName',
+      message:
+        'What is your username on Docker Hub? (It will be used to properly tag the Docker image)',
+    });
+
+    const dockerUsername = dockerHubUserNameAnswer.dockerHubUserName;
+    if (!/[a-zA-Z0-9-]+/.test(dockerUsername)) {
+      console.log(
+        chalk.red(
+          'Invalid Docker Hub username. Login to https://hub.docker.com/repositories, your username is what gets added to this URL.'
+        )
+      );
+      return;
+    }
+
+    dockerhubUsername = dockerUsername;
+    const idappConfig = {
+      dockerhubUsername,
+    };
+    fs.writeFileSync(
+      './idapp.config.json',
+      JSON.stringify(idappConfig, null, 2)
+    );
   }
 
   const spinner = ora('Running your idapp ... \n').start();
-  await createDockerfileFile();
 
   spinner.text = 'Checking Docker daemon...';
   await execDockerInfo(spinner);
@@ -73,7 +104,7 @@ async function testWithDocker(arg) {
   try {
     spinner.text = 'Building Docker image...';
     await execDockerBuild({
-      dockerHubUser: dockerUsername,
+      dockerHubUser: dockerhubUsername,
       dockerImageName,
       isForTest: true,
     });
@@ -87,10 +118,21 @@ async function testWithDocker(arg) {
   try {
     spinner.text = 'Running Docker container...';
     const { stdout, stderr } = await execAsync(
-      `docker run --rm -v ./tmp/iexec_in:/iexec_in -v ./tmp/iexec_out:/iexec_out -e IEXEC_IN=/iexec_in -e IEXEC_OUT=/iexec_out ${dockerUsername}/${dockerImageName} ${arg}`
+      `docker run --rm -v ./tmp/iexec_in:/iexec_in -v ./tmp/iexec_out:/iexec_out -e IEXEC_IN=/iexec_in -e IEXEC_OUT=/iexec_out ${dockerhubUsername}/${dockerImageName} ${arg}`
     );
     spinner.succeed('Docker container run successfully.');
     console.log(stderr ? chalk.red(stderr) : chalk.blue(stdout));
+
+    const continueAnswer = await inquirer.prompt({
+      type: 'confirm',
+      name: 'continue',
+      message:
+        'Would you like to see the result? (`cat tmp/iexec_out/result.txt`)',
+    });
+    if (continueAnswer.continue) {
+      const { stdout } = await execAsync('cat tmp/iexec_out/result.txt');
+      console.log(stdout);
+    }
   } catch (e) {
     spinner.fail('Failed to run Docker container.');
     console.log(chalk.red(`Failed to run Docker container: ${e.message}`));

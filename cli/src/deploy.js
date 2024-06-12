@@ -6,7 +6,6 @@ import inquirer from 'inquirer';
 import { exec } from 'child_process';
 import { execDockerBuild } from './execDocker/build.js';
 import { execDockerInfo } from './execDocker/info.js';
-import { createDockerfileFile } from './utils/initFramework.js';
 
 const readFile = util.promisify(fs.readFile);
 const execAsync = util.promisify(exec);
@@ -68,29 +67,6 @@ export async function deploy(argv) {
     stepSpinner.succeed('Docker login successful.');
   } catch (e) {
     stepSpinner.fail('Docker login failed.');
-    console.log(chalk.red(e));
-    mainSpinner.fail('Failed to deploy your idapp.');
-    return;
-  }
-
-  // let dockerUsername;
-  // try {
-  //   stepSpinner = ora('Getting Docker username...').start();
-  //   dockerUsername = await getDockerUsername();
-  //   stepSpinner.succeed('Docker username obtained.');
-  // } catch (e) {
-  //   stepSpinner.fail('Failed to get Docker username.');
-  //   console.log(chalk.red(e));
-  //   mainSpinner.fail('Failed to deploy your idapp.');
-  //   return;
-  // }
-
-  try {
-    stepSpinner = ora('Creating dockerfile...').start();
-    await createDockerfileFile();
-    stepSpinner.succeed('Dockerfile created.');
-  } catch (e) {
-    stepSpinner.fail('Failed to create dockerfile.');
     console.log(chalk.red(e));
     mainSpinner.fail('Failed to deploy your idapp.');
     return;

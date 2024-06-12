@@ -1,11 +1,11 @@
 {
-  "name": "idapp-cli",
+  "name": "idapp-sconifier-cli",
   "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
+  "description": "A CLI to guide you through the process of sconifying an iExec idapp",
+  "main": "src/index.js",
   "type": "module",
   "bin": {
-    "idapp": "./src/index.js"
+    "idapp": "src/index.js"
   },
   "scripts": {
     "start": "./src/index.js --help",
@@ -17,9 +17,6 @@
     "check-format": "prettier --check .",
     "format": "prettier --write ."
   },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
   "dependencies": {
     "chalk": "^5.3.0",
     "figlet": "^1.7.0",

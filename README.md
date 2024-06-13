@@ -6,9 +6,13 @@
 ├── cli
 ```
 
-![Architecture diagram](quick-archi-diagram.png)
+### Simple diagram
 
-Sconification takes approximately 2 minutes.
+![Simple architecture diagram](quick-archi-diagram.png)
+
+### More detailed diagram
+
+![Detailed architecture diagram](archi-diagram.png)
 
 ## Done on Azure VM
 

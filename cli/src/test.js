@@ -48,7 +48,8 @@ async function testWithoutDocker(arg) {
       const { stdout } = await execAsync('cat output/result.txt');
       console.log(stdout);
     }
-  } catch (e) {
+  } catch (err) {
+    console.log('err', err)
     spinner.fail('Failed to run iDapp.');
     console.log(chalk.red('Failed to execute app.js file.'));
   }
@@ -62,6 +63,7 @@ async function testWithDocker(arg) {
     const idappConfig = JSON.parse(idappConfigContent);
     dockerhubUsername = idappConfig.dockerhubUsername;
   } catch (err) {
+    console.log('err', err)
     console.error(
       'Failed to read idapp.config.json file. Not critical, continue.'
     );

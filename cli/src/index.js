@@ -19,11 +19,17 @@ yargs(hideBin(process.argv))
     'test',
     'Test your app',
     (yargs) => {
-      return yargs.option('docker', {
-        describe: 'Test your idapp in real condition with docker',
-        type: 'boolean',
-        default: false,
-      });
+      return yargs
+        .option('docker', {
+          describe: 'Test your idapp in real condition with docker',
+          type: 'boolean',
+          default: false,
+        })
+        .option('params', {
+          describe: 'Parameters that will be accessible into the idapp',
+          type: 'string',
+          demandOption: false,
+        });
     },
     test
   )

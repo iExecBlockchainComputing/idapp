@@ -58,7 +58,7 @@ export async function init() {
 
   console.log('-----');
   console.log(
-    'ℹ️ LIMITATION: Your JavaScript code will be run in a Node.js v14.4 environment.'
+    'ℹ️  LIMITATION: Your JavaScript code will be run in a Node.js v14.4 environment.'
   );
   console.log('-----');
 
@@ -84,7 +84,7 @@ export async function init() {
   console.log('You can now make your changes in the `src/app.js file`,');
   console.log('and then test you idapp locally:');
   console.log('$> idapp test');
-  console.log('$> idapp test universe');
+  console.log('$> idapp test --params your-name');
   console.log('$> idapp test --docker');
-  console.log('$> idapp test --docker universe');
+  console.log('$> idapp test --docker --params your-name');
 }

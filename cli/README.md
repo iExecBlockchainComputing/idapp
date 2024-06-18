@@ -1,10 +1,12 @@
 # idapp-sconifier > CLI
 
 This CLI provides an interface to guide you through different steps:
- - Create a simple JavaScript app with the necessary structure to run on a decentralized worker,
- - Test it locally, with or without Docker,
- - Build a Docker image and push it to Docker Hub,
- - Sconify it and get a TEE-compatible Docker image.
+
+- Create a simple JavaScript app with the necessary structure to run on a
+  decentralized worker,
+- Test it locally, with or without Docker,
+- Build a Docker image and push it to Docker Hub,
+- Sconify it and get a TEE-compatible Docker image.
 
 # Use it as a CLI (Globally)
 
@@ -79,14 +81,14 @@ project, create some `./input` and `./output` folders.
 
 ```bash
 npm run test-idapp
-npm run test-idapp universe
+npm run test-idapp --params your-name
 ```
 
 ### test-idapp --docker
 
 ```bash
 npm run test-idapp:docker
-npm run test-idapp:docker universe
+npm run test-idapp:docker --params your-name
 ```
 
 ### deploy
@@ -99,7 +101,8 @@ npm run deploy
 
 ### sconify
 
-This will take a public Docker Hub image and wrap it into a TEE-compatible image via Scone.
+This will take a public Docker Hub image and wrap it into a TEE-compatible image
+via Scone.
 
 ```bash
 npm run sconify
@@ -109,9 +112,11 @@ npm run sconify
 
 The final test is to actually run you idapp on iExec stack:
 
-ℹ️ You need to have iExec CLI installed. (More info [here](https://protocol.docs.iex.ec/for-developers/quick-start-for-developers#install-the-iexec-sdk))
+ℹ️ You need to have iExec CLI installed. (More info
+[here](https://protocol.docs.iex.ec/for-developers/quick-start-for-developers#install-the-iexec-sdk))
 
-ℹ️ You need to be logged in with the same wallet as the one you gave at the "sconify" step, when you were asked for your wallet public address.
+ℹ️ You need to be logged in with the same wallet as the one you gave at the
+"sconify" step, when you were asked for your wallet public address.
 
 ```
 iexec app run <appContractAddress> --tag tee,scone --workerpool debug-v8-bellecour.main.pools.iexec.eth --watch
@@ -141,4 +146,5 @@ Example:
 iexec task show 0x62ed16ebc52c9437af45f57dc30819254ce391633c090e125253726eb76e07b1 --download task-result.zip
 ```
 
-Unzip the downloaded file and you will find the output of your task in a `result.txt` file.
+Unzip the downloaded file and you will find the output of your task in a
+`result.txt` file.

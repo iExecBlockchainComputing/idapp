@@ -1,11 +1,9 @@
 import fs from 'fs';
-import path from 'path';
 
 // Utility function to create cache/deployments.json if it doesn't exist
 function ensureCacheFileExists() {
-  const cacheDir = path.join(__dirname, 'cache');
-  const cacheFile = path.join(cacheDir, 'deployments.json');
-
+  const cacheDir = 'cache';
+  const cacheFile = `${cacheDir}/deployments.json`;
   // Create cache directory if it doesn't exist
   if (!fs.existsSync(cacheDir)) {
     fs.mkdirSync(cacheDir);

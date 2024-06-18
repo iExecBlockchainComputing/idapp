@@ -1,4 +1,3 @@
-import fs from 'fs';
 import ora from 'ora';
 import util from 'util';
 import chalk from 'chalk';
@@ -6,8 +5,8 @@ import inquirer from 'inquirer';
 import { exec } from 'child_process';
 import { execDockerBuild } from './execDocker/build.js';
 import { execDockerInfo } from './execDocker/info.js';
+import { readIDappConfig, readPackageJonConfig } from './utils/readConfig.js';
 
-const readFile = util.promisify(fs.readFile);
 const execAsync = util.promisify(exec);
 
 export async function deploy(argv) {
@@ -26,20 +25,23 @@ export async function deploy(argv) {
     ]);
   }
 
-  const dockerHubUserNameAnswer = await inquirer.prompt({
-    type: 'input',
-    name: 'dockerHubUserName',
-    message: 'What is your username on Docker Hub?',
-  });
+  let dockerhubUsername = readIDappConfig().dockerhubUsername || '';
+  if (!dockerhubUsername) {
+    const { dockerHubUserNameAnswer } = await inquirer.prompt({
+      type: 'input',
+      name: 'dockerHubUserNameAnswer',
+      message: 'What is your username on Docker Hub?',
+    });
 
-  const dockerUsername = dockerHubUserNameAnswer.dockerHubUserName;
-  if (!/[a-zA-Z0-9-]+/.test(dockerUsername)) {
-    console.log(
-      chalk.red(
-        'Invalid Docker Hub username. Login to https://hub.docker.com/repositories, your username is what gets added to this URL.'
-      )
-    );
-    return;
+    if (!/[a-zA-Z0-9-]+/.test(dockerHubUserNameAnswer)) {
+      console.log(
+        chalk.red(
+          'Invalid Docker Hub username. Login to https://hub.docker.com/repositories, your username is what gets added to this URL.'
+        )
+      );
+      return;
+    }
+    dockerhubUsername = dockerHubUserNameAnswer;
   }
 
   const versionAnswer = await inquirer.prompt([
@@ -54,9 +56,7 @@ export async function deploy(argv) {
 
   const mainSpinner = ora('Start deploying your idapp ...').start();
 
-  const data = await readFile('./package.json', 'utf8');
-  const packageJson = JSON.parse(data);
-  const iDappName = packageJson.name.toLowerCase();
+  const iDappName = readPackageJonConfig().name.toLowerCase();
 
   let stepSpinner = ora('Checking Docker daemon...').start();
   await execDockerInfo(stepSpinner);
@@ -77,22 +77,22 @@ export async function deploy(argv) {
     try {
       stepSpinner = ora('Building Docker image...').start();
       await execDockerBuild({
-        dockerHubUser: dockerUsername,
+        dockerHubUser: dockerhubUsername,
         dockerImageName: iDappName,
       });
       stepSpinner.succeed('Docker image built.');
 
       stepSpinner = ora('Tagging Docker image...').start();
       await execAsync(
-        `docker tag ${dockerUsername}/${iDappName} ${dockerUsername}/${iDappName}:${idappVersion}-debug`
+        `docker tag ${dockerhubUsername}/${iDappName} ${dockerhubUsername}/${iDappName}:${idappVersion}-debug`
       );
       stepSpinner.succeed('Docker image tagged.');
 
       stepSpinner = ora('Pushing Docker image...').start();
       await execAsync(
-        `docker push ${dockerUsername}/${iDappName}:${idappVersion}-debug`
+        `docker push ${dockerhubUsername}/${iDappName}:${idappVersion}-debug`
       );
-      dockerImagePath = `${dockerUsername}/${iDappName}:${idappVersion}-debug`;
+      dockerImagePath = `${dockerhubUsername}/${iDappName}:${idappVersion}-debug`;
       stepSpinner.succeed('Docker image pushed.');
 
       // TODO Call sconification API right here?
@@ -120,7 +120,7 @@ export async function deploy(argv) {
     }
   }
 
-  const dockerHubUrl = `https://hub.docker.com/repository/docker/${dockerUsername}/${iDappName}`;
+  const dockerHubUrl = `https://hub.docker.com/repository/docker/${dockerhubUsername}/${iDappName}`;
   mainSpinner.succeed(
     `Deployment of your idapp completed successfully: ${dockerHubUrl}`
   );

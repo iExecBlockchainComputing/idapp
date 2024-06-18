@@ -4,6 +4,7 @@ import yargs from 'yargs';
 import { hideBin } from 'yargs/helpers';
 import { init } from './init.js';
 import { deploy } from './deploy.js';
+import { run } from './run.js';
 import { sconify } from './sconify.js';
 import { test } from './test.js';
 
@@ -46,12 +47,32 @@ yargs(hideBin(process.argv))
           default: false,
         })
         .option('debug', {
-          describe: 'Deploy tests in debug mode',
+          describe: 'Deploy idapp in debug mode',
           type: 'boolean',
           default: false,
         });
     },
     deploy
+)
+  
+  // Run a published docker image
+  .command(
+    'run',
+    'Run your app',
+    (yargs) => {
+      return yargs
+        .option('prod', {
+          describe: 'Run idapp for production mode',
+          type: 'boolean',
+          default: false,
+        })
+        .option('debug', {
+          describe: 'Run idapp in debug mode',
+          type: 'boolean',
+          default: false,
+        });
+    },
+    run
   )
 
   // Sconify a dockerhub image

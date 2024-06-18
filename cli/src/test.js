@@ -4,7 +4,7 @@ import util from 'util';
 import chalk from 'chalk';
 import { exec } from 'child_process';
 import ora from 'ora';
-import { readConfig } from './utils/readConfig.js';
+import { readIDappConfig } from './utils/readConfig.js';
 import { execDockerBuild } from './execDocker/build.js';
 import { execDockerInfo } from './execDocker/info.js';
 
@@ -23,7 +23,7 @@ async function testWithoutDocker(arg) {
 
   let withProtectedData;
   try {
-    withProtectedData = readConfig().withProtectedData;
+    withProtectedData = readIDappConfig().withProtectedData;
   } catch (err) {
     console.log('err', err);
     spinner.fail('Failed to read idapp.config.json file.');
@@ -66,7 +66,7 @@ async function testWithoutDocker(arg) {
 }
 
 async function testWithDocker(arg) {
-  let idappConfig = await readConfig();
+  let idappConfig = await readIDappConfig();
   let dockerhubUsername = idappConfig.dockerhubUsername || '';
 
   if (!dockerhubUsername) {
@@ -97,7 +97,7 @@ async function testWithDocker(arg) {
   const spinner = ora('Running your idapp ... \n').start();
   let withProtectedData;
   try {
-    withProtectedData = readConfig().withProtectedData;
+    withProtectedData = readIDappConfig().withProtectedData;
   } catch (err) {
     console.log('err', err);
     spinner.fail('Failed to read idapp.config.json file.');

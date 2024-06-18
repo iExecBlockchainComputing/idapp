@@ -16,13 +16,15 @@
 
 ## Done on Azure VM
 
-👉 https://iexecproject.atlassian.net/wiki/spaces/IP/pages/3302129724/VM+Azure
+👉 <https://iexecproject.atlassian.net/wiki/spaces/IP/pages/3302129724/VM+Azure>
 
 ## TODO
 
 ### CLI
 
+- [ ] convert to typescript project
 - [ ] Have a global progress bar (sconification process when calling API may take 6-7min)
+- [ ] Have type for the idapp.config.json to enable builder to know available configs
 - [ ] Test with some fancy dependencies in the idapp (node-gyp stuff?), see how sconification process behaves
 - [ ] Test with an access to **a protected data** inside the idapp
 - [ ] Once sconified, be able to test the app locally, maybe before deploying the app contract

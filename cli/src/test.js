@@ -4,6 +4,7 @@ import util from 'util';
 import chalk from 'chalk';
 import { exec } from 'child_process';
 import ora from 'ora';
+import { readConfig } from './utils/readConfig.js';
 import { execDockerBuild } from './execDocker/build.js';
 import { execDockerInfo } from './execDocker/info.js';
 
@@ -19,6 +20,14 @@ export async function test(argv) {
 
 async function testWithoutDocker(arg) {
   const spinner = ora('Running your idapp ... \n').start();
+
+  let withProtectedData;
+  try {
+    withProtectedData = readConfig().withProtectedData;
+  } catch (err) {
+    console.log('err', err);
+    spinner.fail('Failed to read idapp.config.json file.');
+  }
   try {
     spinner.text = 'Installing dependencies...';
     await execAsync('npm install');
@@ -31,9 +40,12 @@ async function testWithoutDocker(arg) {
 
   try {
     spinner.text = 'Running iDapp...';
-    const { stdout, stderr } = await execAsync(
-      `IEXEC_OUT=./output IEXEC_IN=./input node ./src/app.js ${arg}`
-    );
+    let command = `IEXEC_OUT=./output IEXEC_IN=./input node ./src/app.js ${arg}`;
+    if (withProtectedData) {
+      command = `IEXEC_OUT=./output IEXEC_IN=./input IEXEC_DATASET_FILENAME="protectedData.zip" node ./src/app.js ${arg}`;
+    }
+
+    const { stdout, stderr } = await execAsync(command);
     spinner.succeed('Run completed.');
     console.log(stderr ? chalk.red(stderr) : chalk.blue(stdout));
 
@@ -55,11 +67,8 @@ async function testWithoutDocker(arg) {
 
 async function testWithDocker(arg) {
   let dockerhubUsername = '';
-
   try {
-    const idappConfigContent = fs.readFileSync('./idapp.config.json', 'utf8');
-    const idappConfig = JSON.parse(idappConfigContent);
-    dockerhubUsername = idappConfig.dockerhubUsername;
+    dockerhubUsername = readConfig().dockerhubUsername;
   } catch (err) {
     console.log('err', err);
     console.error(
@@ -118,7 +127,7 @@ async function testWithDocker(arg) {
   try {
     spinner.text = 'Running Docker container...';
     const { stdout, stderr } = await execAsync(
-      `docker run --rm -v ./tmp/iexec_in:/iexec_in -v ./tmp/iexec_out:/iexec_out -e IEXEC_IN=/iexec_in -e IEXEC_OUT=/iexec_out ${dockerhubUsername}/${dockerImageName} ${arg}`
+      `docker run --rm -v ./input:/iexec_in -v ./output:/iexec_out -e IEXEC_IN=/iexec_in -e IEXEC_OUT=/iexec_out ${dockerhubUsername}/${dockerImageName} ${arg}`
     );
     spinner.succeed('Docker container run successfully.');
     console.log(stderr ? chalk.red(stderr) : chalk.blue(stdout));
@@ -130,7 +139,7 @@ async function testWithDocker(arg) {
         'Would you like to see the result? (`cat tmp/iexec_out/result.txt`)',
     });
     if (continueAnswer.continue) {
-      const { stdout } = await execAsync('cat tmp/iexec_out/result.txt');
+      const { stdout } = await execAsync('cat output/result.txt');
       console.log(stdout);
     }
   } catch (e) {

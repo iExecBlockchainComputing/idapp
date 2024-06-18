@@ -7,26 +7,42 @@ import { copy } from './copy.js';
 const writeFileAsync = util.promisify(fs.writeFile);
 const accessAsync = util.promisify(fs.access);
 
-async function createConfigurationFiles() {
-  // Create a simple iDapp configuration file
-  const configContent = `{
-  "dockerhubUsername": ""
-}
-`;
-
-  await writeFileAsync('./idapp.config.json', configContent, 'utf8');
-}
-
-export async function initHelloWorldApp({ projectName, template }) {
+export async function initHelloWorldApp({
+  projectName,
+  hasProtectedData,
+  template,
+}) {
   try {
-    await copyChosenTemplateFiles({ projectName, template });
+    if (hasProtectedData) {
+      copyChosenTemplateFiles({
+        projectName,
+        template: `withProtectedData/${template}`,
+      });
+    } else {
+      copyChosenTemplateFiles({
+        projectName,
+        template: `withoutProtectedData/${template}`,
+      });
+    }
 
     // Create idapp.config.json
-    await createConfigurationFiles();
+    await createConfigurationFiles({ hasProtectedData });
   } catch (err) {
     console.log('Error during project initialization:', err);
     throw err;
   }
+}
+
+async function createConfigurationFiles({ hasProtectedData }) {
+  console.log('hasProtectedData', hasProtectedData);
+  // Create a simple iDapp configuration file
+  const configContent = `{
+  "dockerhubUsername": "",
+  "withProtectedData": ${hasProtectedData}
+}
+`;
+
+  await writeFileAsync('./idapp.config.json', configContent, 'utf8');
 }
 
 function copyChosenTemplateFiles({ projectName, template }) {

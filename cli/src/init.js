@@ -1,5 +1,3 @@
-import fs from 'fs';
-import util from 'util';
 import chalk from 'chalk';
 import figlet from 'figlet';
 import inquirer from 'inquirer';
@@ -56,6 +54,12 @@ export async function init() {
     process.exit(0);
   }
 
+  const { hasProtectedData } = await inquirer.prompt({
+    type: 'confirm',
+    name: 'hasProtectedData',
+    message: 'Would you like to handle protectedData inside your iDapp?',
+  });
+
   console.log('-----');
   console.log(
     'ℹ️  LIMITATION: Your JavaScript code will be run in a Node.js v14.4 environment.'
@@ -70,6 +74,7 @@ export async function init() {
     initSpinner = ora('Creating "Hello World" JavaScript app...').start();
     await initHelloWorldApp({
       projectName,
+      hasProtectedData,
       template: language.toLowerCase(),
     });
     initSpinner.succeed('JavaScript app setup complete.');

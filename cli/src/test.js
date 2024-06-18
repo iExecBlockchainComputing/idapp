@@ -4,6 +4,7 @@ import util from 'util';
 import chalk from 'chalk';
 import { exec } from 'child_process';
 import ora from 'ora';
+import { readIDappConfig } from './utils/readConfig.js';
 import { execDockerBuild } from './execDocker/build.js';
 import { execDockerInfo } from './execDocker/info.js';
 
@@ -19,6 +20,14 @@ export async function test(argv) {
 
 async function testWithoutDocker(arg) {
   const spinner = ora('Running your idapp ... \n').start();
+
+  let withProtectedData;
+  try {
+    withProtectedData = readIDappConfig().withProtectedData;
+  } catch (err) {
+    console.log('err', err);
+    spinner.fail('Failed to read idapp.config.json file.');
+  }
   try {
     spinner.text = 'Installing dependencies...';
     await execAsync('npm install');
@@ -31,9 +40,12 @@ async function testWithoutDocker(arg) {
 
   try {
     spinner.text = 'Running iDapp...';
-    const { stdout, stderr } = await execAsync(
-      `IEXEC_OUT=./output IEXEC_IN=./input node ./src/app.js ${arg}`
-    );
+    let command = `IEXEC_OUT=./output IEXEC_IN=./input node ./src/app.js ${arg}`;
+    if (withProtectedData) {
+      command = `IEXEC_OUT=./output IEXEC_IN=./input IEXEC_DATASET_FILENAME="protectedData.zip" node ./src/app.js ${arg}`;
+    }
+
+    const { stdout, stderr } = await execAsync(command);
     spinner.succeed('Run completed.');
     console.log(stderr ? chalk.red(stderr) : chalk.blue(stdout));
 
@@ -54,29 +66,18 @@ async function testWithoutDocker(arg) {
 }
 
 async function testWithDocker(arg) {
-  let dockerhubUsername = '';
-
-  try {
-    const idappConfigContent = fs.readFileSync('./idapp.config.json', 'utf8');
-    const idappConfig = JSON.parse(idappConfigContent);
-    dockerhubUsername = idappConfig.dockerhubUsername;
-  } catch (err) {
-    console.log('err', err);
-    console.error(
-      'Failed to read idapp.config.json file. Not critical, continue.'
-    );
-  }
+  let idappConfig = await readIDappConfig();
+  let dockerhubUsername = idappConfig.dockerhubUsername || '';
 
   if (!dockerhubUsername) {
-    const dockerHubUserNameAnswer = await inquirer.prompt({
+    const { dockerHubUserNameAnswer } = await inquirer.prompt({
       type: 'input',
-      name: 'dockerHubUserName',
+      name: 'dockerHubUserNameAnswer',
       message:
         'What is your username on Docker Hub? (It will be used to properly tag the Docker image)',
     });
 
-    const dockerUsername = dockerHubUserNameAnswer.dockerHubUserName;
-    if (!/[a-zA-Z0-9-]+/.test(dockerUsername)) {
+    if (!/^[a-zA-Z0-9-]+$/.test(dockerHubUserNameAnswer)) {
       console.log(
         chalk.red(
           'Invalid Docker Hub username. Login to https://hub.docker.com/repositories, your username is what gets added to this URL.'
@@ -85,10 +86,8 @@ async function testWithDocker(arg) {
       return;
     }
 
-    dockerhubUsername = dockerUsername;
-    const idappConfig = {
-      dockerhubUsername,
-    };
+    dockerhubUsername = dockerHubUserNameAnswer;
+    idappConfig.dockerhubUsername = dockerHubUserNameAnswer;
     fs.writeFileSync(
       './idapp.config.json',
       JSON.stringify(idappConfig, null, 2)
@@ -96,6 +95,22 @@ async function testWithDocker(arg) {
   }
 
   const spinner = ora('Running your idapp ... \n').start();
+  let withProtectedData;
+  try {
+    withProtectedData = readIDappConfig().withProtectedData;
+  } catch (err) {
+    console.log('err', err);
+    spinner.fail('Failed to read idapp.config.json file.');
+  }
+  try {
+    spinner.text = 'Installing dependencies...';
+    await execAsync('npm ci'); // be careful dependency should be installed for node14
+    spinner.succeed('Dependencies installed.');
+  } catch (e) {
+    spinner.fail('Failed to install dependencies.');
+    console.log(chalk.red('You need to install dotenv and figlet.'));
+    return;
+  }
 
   spinner.text = 'Checking Docker daemon...';
   await execDockerInfo(spinner);
@@ -117,9 +132,12 @@ async function testWithDocker(arg) {
 
   try {
     spinner.text = 'Running Docker container...';
-    const { stdout, stderr } = await execAsync(
-      `docker run --rm -v ./tmp/iexec_in:/iexec_in -v ./tmp/iexec_out:/iexec_out -e IEXEC_IN=/iexec_in -e IEXEC_OUT=/iexec_out ${dockerhubUsername}/${dockerImageName} ${arg}`
-    );
+    let command = `docker run --rm -v ./input:/iexec_in -v ./output:/iexec_out -e IEXEC_IN=/iexec_in -e IEXEC_OUT=/iexec_out ${dockerhubUsername}/${dockerImageName} ${arg}`;
+    if (withProtectedData) {
+      command = `docker run --rm -v ./input:/iexec_in -v ./output:/iexec_out -e IEXEC_IN=/iexec_in -e IEXEC_OUT=/iexec_out -e IEXEC_DATASET_FILENAME="protectedData.zip" ${dockerhubUsername}/${dockerImageName} ${arg}`;
+    }
+
+    const { stdout, stderr } = await execAsync(command);
     spinner.succeed('Docker container run successfully.');
     console.log(stderr ? chalk.red(stderr) : chalk.blue(stdout));
 
@@ -130,7 +148,7 @@ async function testWithDocker(arg) {
         'Would you like to see the result? (`cat tmp/iexec_out/result.txt`)',
     });
     if (continueAnswer.continue) {
-      const { stdout } = await execAsync('cat tmp/iexec_out/result.txt');
+      const { stdout } = await execAsync('cat output/result.txt');
       console.log(stdout);
     }
   } catch (e) {

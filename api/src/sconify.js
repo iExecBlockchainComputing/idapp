@@ -90,18 +90,6 @@ export async function sconify({
     });
     console.log('Tagged.');
 
-    // Check if the image is tagged
-    // await new Promise((resolve, reject) => {
-    //   docker.getImage(targetImage).inspect((err, data) => {
-    //     if (err) {
-    //       console.error('Error inspecting the image:', err);
-    //       return reject(err);
-    //     }
-    //     console.log('Image inspected:', util.inspect(data, false, null, true));
-    //     resolve(data);
-    //   });
-    // });
-
     console.log('\n\n---------- 6 ---------- Pushing...');
     const { Digest: pushedDockerImageDigest } = await pushImage({
       targetImagePath,

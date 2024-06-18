@@ -14,10 +14,9 @@ const server = createServer(async (req, res) => {
       });
     });
     console.log('json', json);
-    const dockerhubImageToSconify = json.dockerhubImageToSconify;
 
     sconify({
-      dockerImageToSconify: dockerhubImageToSconify,
+      dockerImageToSconify: json.dockerhubImageToSconify,
       userWalletPublicAddress: json.yourWalletPublicAddress,
     })
       .then(({ sconifiedImage, appContractAddress, transferAppTxHash }) => {

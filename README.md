@@ -22,6 +22,7 @@
 
 ### CLI
 
+- [ ] CLI work only with node18 but iDapp dependency should be installed with node14. Not very friendly for builder
 - [ ] convert to typescript project
 - [ ] Have a global progress bar (sconification process when calling API may take 6-7min)
 - [ ] Have type for the idapp.config.json to enable builder to know available configs

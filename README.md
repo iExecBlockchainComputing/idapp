@@ -40,6 +40,7 @@
 
 ### API
 
+- [ ] Remove docker images & volume after publication, no space left on the VM instead => issues
 - [ ] Start Node.js server when the VM starts?
 - [X] build iDapp sconification service & its API
 - [X] install docker on the VM

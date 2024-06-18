@@ -48,7 +48,7 @@ export async function sconify(argv) {
           'What is your wallet public address? It will be used to transfer ownership of the app contract to you.',
         default: '0xB151dDE0e776a64F66f46ca9E8bF20740b9b0baD',
         validate: (input) => {
-          if (ethers.utils.isAddress(input)) {
+          if (ethers.isAddress(input)) {
             return true;
           }
           return 'Please enter a valid Ethereum address.';

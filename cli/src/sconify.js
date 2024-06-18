@@ -4,6 +4,7 @@ import { request } from 'undici';
 import { ethers } from 'ethers';
 import inquirer from 'inquirer';
 import ora from 'ora';
+import { addDeploymentData } from './utils/cacheDeployments.js';
 import { readIDappConfig, readPackageJonConfig } from './utils/readConfig.js';
 
 const SCONIFY_API_URL = 'http://idapp-poc.westeurope.cloudapp.azure.com:3000';
@@ -98,8 +99,25 @@ export async function sconify(argv) {
       throwOnError: true,
     });
     const json = await body.json();
-    console.log('\nResult:', json);
+    // Extract necessary information
+    const sconifiedImage = json.sconifiedImage;
+    const appContractAddress = json.appContractAddress;
+    const transferAppTxHash = json.transferAppTxHash;
+
+    // Display the result in a beautiful format
+    mainSpinner.succeed('iDapp Sconified successfully');
+    console.log(` Sconified Image: ${sconifiedImage}`);
+
+    mainSpinner.succeed('iDapp deployed');
+    console.log(` iDapp Address: ${appContractAddress}`);
+    console.log(` Transfer App Transaction Hash: ${transferAppTxHash}`);
+
+    mainSpinner.succeed('iDapp Transfer to you');
+    mainSpinner.succeed('Done!');
+
+    // Add deployment data to deployments.json
     teeDockerhubImagePath = json.sconifiedImage.split(':')[0];
+    addDeploymentData(sconifiedImage, appContractAddress, transferAppTxHash);
   } catch (err) {
     if (err.body) {
       console.log('\nerr', err.body);

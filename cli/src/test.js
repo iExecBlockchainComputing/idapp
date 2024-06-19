@@ -30,7 +30,7 @@ async function testWithoutDocker(arg) {
   }
   try {
     spinner.text = 'Installing dependencies...';
-    await execAsync('npm install');
+    await execAsync('npm ci');
     spinner.succeed('Dependencies installed.');
   } catch (e) {
     spinner.fail('Failed to install dependencies.');

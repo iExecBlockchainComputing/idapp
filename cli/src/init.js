@@ -50,7 +50,7 @@ export async function init() {
   ]);
 
   if (language !== 'JavaScript') {
-    console.log(chalk.red(`Oops, ${language} language is not supported yet.`));
+    console.log(chalk.red(`Oops, ${language} is not supported yet. Coming soon...`));
     process.exit(0);
   }
 
@@ -88,8 +88,12 @@ export async function init() {
 
   console.log('You can now make your changes in the `src/app.js file`,');
   console.log('and then test you idapp locally:');
+  console.log('')
   console.log('$> idapp test');
+  console.log('')
   console.log('$> idapp test --params your-name');
+  console.log('')
   console.log('$> idapp test --docker');
+  console.log('')
   console.log('$> idapp test --docker --params your-name');
 }

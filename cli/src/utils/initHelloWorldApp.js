@@ -34,7 +34,6 @@ export async function initHelloWorldApp({
 }
 
 async function createConfigurationFiles({ hasProtectedData }) {
-  console.log('hasProtectedData', hasProtectedData);
   // Create a simple iDapp configuration file
   const configContent = `{
   "dockerhubUsername": "",

@@ -53,14 +53,21 @@ yargs(hideBin(process.argv))
         });
     },
     deploy
-)
-  
+  )
+
+  // Sconify a dockerhub image
+  .command('sconify', 'Sconify your app', () => {}, sconify)
+
   // Run a published docker image
   .command(
-    'run',
-    'Run your app',
+    'run <iDappAddress>',  // Define <iDappAddress> as a positional argument
+    'Run your iDapp',
     (yargs) => {
       return yargs
+        .positional('iDappAddress', {
+          describe: 'The iDapp address to run',
+          type: 'string',
+        })
         .option('prod', {
           describe: 'Run idapp for production mode',
           type: 'boolean',
@@ -74,9 +81,6 @@ yargs(hideBin(process.argv))
     },
     run
   )
-
-  // Sconify a dockerhub image
-  .command('sconify', 'Sconify your app', () => {}, sconify)
 
   .help()
   .alias('help', 'h')

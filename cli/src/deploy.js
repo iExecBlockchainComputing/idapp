@@ -109,7 +109,9 @@ export async function deploy(argv) {
 
   if (argv.prod || sconifyAnswer?.sconify === 'Prod') {
     try {
-      // TODO: Connect to the SCONIFY API
+      console.log(
+        chalk.red('This feature is not yet implemented. Coming soon')
+      );
     } catch (e) {
       stepSpinner.fail(
         'An error occurred during the production deployment process.'

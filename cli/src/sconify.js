@@ -1,10 +1,10 @@
 import fs from 'fs';
 import chalk from 'chalk';
+import ora from 'ora';
 import { request } from 'undici';
 import { ethers } from 'ethers';
 import inquirer from 'inquirer';
-import ora from 'ora';
-import { addDeploymentData } from './utils/cacheDeployments.js';
+import { addDeploymentData } from './utils/cacheExecutions.js';
 import { readIDappConfig, readPackageJonConfig } from './utils/readConfig.js';
 
 const SCONIFY_API_URL = 'http://idapp-poc.westeurope.cloudapp.azure.com:3000';
@@ -117,7 +117,11 @@ export async function sconify(argv) {
 
     // Add deployment data to deployments.json
     teeDockerhubImagePath = json.sconifiedImage.split(':')[0];
-    addDeploymentData(sconifiedImage, appContractAddress, transferAppTxHash);
+    addDeploymentData({
+      sconifiedImage,
+      appContractAddress,
+      transferAppTxHash,
+    });
   } catch (err) {
     if (err.body) {
       console.log('\nerr', err.body);

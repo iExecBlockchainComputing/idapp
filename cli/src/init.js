@@ -57,7 +57,7 @@ export async function init() {
   const { hasProtectedData } = await inquirer.prompt({
     type: 'confirm',
     name: 'hasProtectedData',
-    message: 'Would you like to handle protectedData inside your iDapp?',
+    message: 'Would you like to access a protected data inside your iDapp?',
   });
 
   console.log('-----');

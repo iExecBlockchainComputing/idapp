@@ -31,7 +31,7 @@ export async function sconifyImage({ fromImage, toImage, imageName }) {
       '--dlopen=1',
       '--no-color',
       '--verbose',
-      '--command=node /app/app.js',
+      '--command=node /app/src/app.js',
     ],
     HostConfig: {
       Binds: ['/var/run/docker.sock:/var/run/docker.sock'],

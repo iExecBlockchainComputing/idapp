@@ -3,4 +3,4 @@ WORKDIR /app
 COPY package*.json ./
 RUN npm ci
 COPY . .
-ENTRYPOINT ["node", "src/app.js"]
+ENTRYPOINT ["node", "/app/src/app.js"]

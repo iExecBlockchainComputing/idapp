@@ -5,7 +5,11 @@ import inquirer from 'inquirer';
 import { exec } from 'child_process';
 import { execDockerBuild } from './execDocker/build.js';
 import { execDockerInfo } from './execDocker/info.js';
-import { readIDappConfig, readPackageJonConfig } from './utils/readConfig.js';
+import {
+  readIDappConfig,
+  readPackageJonConfig,
+  writeIDappConfig,
+} from './utils/fs.js';
 
 const execAsync = util.promisify(exec);
 
@@ -42,6 +46,9 @@ export async function deploy(argv) {
       return;
     }
     dockerhubUsername = dockerHubUserNameAnswer;
+    const config = readIDappConfig();
+    config.dockerhubUsername = dockerhubUsername;
+    writeIDappConfig(config);
   }
 
   const versionAnswer = await inquirer.prompt([

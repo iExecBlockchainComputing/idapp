@@ -5,7 +5,7 @@ import { request } from 'undici';
 import { ethers } from 'ethers';
 import inquirer from 'inquirer';
 import { addDeploymentData } from './utils/cacheExecutions.js';
-import { readIDappConfig, readPackageJonConfig } from './utils/readConfig.js';
+import { readIDappConfig, readPackageJonConfig } from './utils/fs.js';
 
 const SCONIFY_API_URL = 'http://idapp-poc.westeurope.cloudapp.azure.com:3000';
 

@@ -4,7 +4,7 @@ import util from 'util';
 import chalk from 'chalk';
 import { exec } from 'child_process';
 import ora from 'ora';
-import { readIDappConfig } from './utils/readConfig.js';
+import { readIDappConfig } from './utils/fs.js';
 import { execDockerBuild } from './execDocker/build.js';
 import { execDockerInfo } from './execDocker/info.js';
 

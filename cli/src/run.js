@@ -1,6 +1,6 @@
 import ora from 'ora';
 import chalk from 'chalk';
-import { readIDappConfig } from './utils/readConfig.js';
+import { readIDappConfig } from './utils/fs.js';
 import { IExec, utils } from 'iexec';
 import { ethers } from 'ethers';
 import { SCONE_TAG, WORKERPOOL_DEBUG } from './config/config.js';

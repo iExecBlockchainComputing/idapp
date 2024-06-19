@@ -21,3 +21,9 @@ export function readPackageJonConfig() {
     console.error('Failed to read idapp.config.json file.', err);
   }
 }
+
+// Utility function to write the iDapp configuration
+export function writeIDappConfig(config) {
+  const configPath = 'idapp.config.json';
+  fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
+}

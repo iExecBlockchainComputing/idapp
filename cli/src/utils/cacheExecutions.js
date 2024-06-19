@@ -22,7 +22,7 @@ function ensureCacheFileExists(fileName) {
 function addDataToCache(fileName, data) {
   const cacheFile = ensureCacheFileExists(fileName);
   const existingData = JSON.parse(fs.readFileSync(cacheFile, 'utf8'));
-  existingData.push(data);
+  existingData.unshift(data); // Add the new data to the beginning of the array
   fs.writeFileSync(cacheFile, JSON.stringify(existingData, null, 2));
 }
 

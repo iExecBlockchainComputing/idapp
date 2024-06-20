@@ -50,3 +50,21 @@
 - [X] publish an app contract FOR a Wallet (builder wallet)
 - [X] have a look at `mrenclave` missing parameter
 - [X] Use something like `pm2` to keep the server running
+
+Pour la prod, il faut qu'on signe l'image avec une clé de signature Intel.
+Pour l'instant on ne fait que du debug. À terme il faudra mettre cette clé quelque part sur la VM Azure.
+
+Pouvoir créer l'app directement associée au owner ? À priori oui.
+
+idapp deploy : ne pas tagguer avec "-debug". C'est juste "-non-tee"
+
+"idapp deploy" -> À renommer en "idapp publish" ?
+
+ethers v6 pas supporté par scone ?
+
+Push sur le dockerhub de teamproduct, revenir sur la CLI et refaire le push sur le dockerhub de l'utilisateur
+= Utiliser le "docker login" qui a été fait sur la machine du builder.
+
+Résultat du "idapp sconify" = mettre un lien vers l'explorer avec la idapp address.
+
+Creuser le scaling, savoir combien de sconifications on peut faire en parallèle, comment on pourrait en faire plus ? Etc.

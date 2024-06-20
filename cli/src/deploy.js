@@ -130,6 +130,7 @@ export async function deploy(argv) {
   }
 
   const dockerHubUrl = `https://hub.docker.com/repository/docker/${dockerhubUsername}/${iDappName}`;
+  console.log('Docker image for "sconify" step:', `${iDappName}:${idappVersion}-debug`)
   mainSpinner.succeed(
     `Deployment of your idapp completed successfully: ${dockerHubUrl}`
   );

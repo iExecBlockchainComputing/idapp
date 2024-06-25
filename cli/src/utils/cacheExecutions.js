@@ -44,9 +44,32 @@ export function addDeploymentData({
   appContractAddress,
   transferAppTxHash,
 }) {
-  const currentDate = new Date().toISOString();
+  const options = {
+    timeZone: 'Europe/Paris',
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit',
+    second: '2-digit',
+  };
+  const formatter = new Intl.DateTimeFormat('en-GB', options);
+  const [
+    { value: day },
+    ,
+    { value: month },
+    ,
+    { value: year },
+    ,
+    { value: hour },
+    ,
+    { value: minute },
+    ,
+    { value: second },
+  ] = formatter.formatToParts(new Date());
+  const formattedDate = `${year}-${month}-${day}T${hour}:${minute}:${second}`;
   const deploymentData = {
-    date: currentDate,
+    date: formattedDate,
     sconifiedImage,
     appContractAddress,
     transferAppTxHash,

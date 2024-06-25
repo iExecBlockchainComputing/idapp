@@ -36,9 +36,12 @@ yargs(hideBin(process.argv))
   )
 
   // Build and publish docker image
+  .command('deploy', 'Deploy your non-tee docker image', () => {}, deploy)
+
+  // Sconify a dockerhub image
   .command(
-    'deploy',
-    'Deploy your app',
+    'sconify',
+    'Sconify your app',
     (yargs) => {
       return yargs
         .option('prod', {
@@ -52,15 +55,12 @@ yargs(hideBin(process.argv))
           default: false,
         });
     },
-    deploy
+    sconify
   )
-
-  // Sconify a dockerhub image
-  .command('sconify', 'Sconify your app', () => {}, sconify)
 
   // Run a published docker image
   .command(
-    'run <iDappAddress>',  // Define <iDappAddress> as a positional argument
+    'run <iDappAddress>', // Define <iDappAddress> as a require positional argument
     'Run your iDapp',
     (yargs) => {
       return yargs

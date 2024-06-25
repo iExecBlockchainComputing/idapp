@@ -13,21 +13,8 @@ import {
 
 const execAsync = util.promisify(exec);
 
-export async function deploy(argv) {
-  let sconifyAnswer;
+export async function deploy() {
   let idappVersion;
-
-  if (!argv.prod && !argv.debug) {
-    sconifyAnswer = await inquirer.prompt([
-      {
-        type: 'list',
-        name: 'sconify',
-        message: 'Would you like to deploy your idapp for prod or debug?',
-        choices: ['Debug', 'Prod'],
-        default: 0, // Default to 'Debug'
-      },
-    ]);
-  }
 
   let dockerhubUsername = readIDappConfig().dockerhubUsername || '';
   if (!dockerhubUsername) {
@@ -79,58 +66,40 @@ export async function deploy(argv) {
     return;
   }
 
-  let dockerImagePath = '';
-  if (argv.debug || sconifyAnswer?.sconify === 'Debug') {
-    try {
-      stepSpinner = ora('Building Docker image...').start();
-      await execDockerBuild({
-        dockerHubUser: dockerhubUsername,
-        dockerImageName: iDappName,
-      });
-      stepSpinner.succeed('Docker image built.');
+  try {
+    stepSpinner = ora('Building Docker image...').start();
+    await execDockerBuild({
+      dockerHubUser: dockerhubUsername,
+      dockerImageName: iDappName,
+    });
+    stepSpinner.succeed('Docker image built.');
 
-      stepSpinner = ora('Tagging Docker image...').start();
-      await execAsync(
-        `docker tag ${dockerhubUsername}/${iDappName} ${dockerhubUsername}/${iDappName}:${idappVersion}-debug`
-      );
-      stepSpinner.succeed('Docker image tagged.');
+    stepSpinner = ora('Tagging Docker image...').start();
+    await execAsync(
+      `docker tag ${dockerhubUsername}/${iDappName} ${dockerhubUsername}/${iDappName}:${idappVersion}-debug`
+    );
+    stepSpinner.succeed('Docker image tagged.');
 
-      stepSpinner = ora('Pushing Docker image...').start();
-      await execAsync(
-        `docker push ${dockerhubUsername}/${iDappName}:${idappVersion}-debug`
-      );
-      dockerImagePath = `${dockerhubUsername}/${iDappName}:${idappVersion}-debug`;
-      stepSpinner.succeed('Docker image pushed.');
+    stepSpinner = ora('Pushing Docker image...').start();
+    await execAsync(
+      `docker push ${dockerhubUsername}/${iDappName}:${idappVersion}-debug`
+    );
+    stepSpinner.succeed('Docker image pushed.');
 
-      // TODO Call sconification API right here?
-      // Other CLI command for now
-    } catch (e) {
-      stepSpinner.fail(
-        'An error occurred during the debug deployment process.'
-      );
-      console.log(chalk.red(e));
-      mainSpinner.fail('Failed to deploy your idapp.');
-      return;
-    }
-  }
-
-  if (argv.prod || sconifyAnswer?.sconify === 'Prod') {
-    try {
-      console.log(
-        chalk.red('This feature is not yet implemented. Coming soon')
-      );
-    } catch (e) {
-      stepSpinner.fail(
-        'An error occurred during the production deployment process.'
-      );
-      console.log(chalk.red(e));
-      mainSpinner.fail('Failed to deploy your idapp.');
-      return;
-    }
+    // TODO Call sconification API right here?
+    // Other CLI command for now
+  } catch (e) {
+    stepSpinner.fail('An error occurred during the debug deployment process.');
+    console.log(chalk.red(e));
+    mainSpinner.fail('Failed to deploy your idapp.');
+    return;
   }
 
   const dockerHubUrl = `https://hub.docker.com/repository/docker/${dockerhubUsername}/${iDappName}`;
-  console.log('Docker image for "sconify" step:', `${iDappName}:${idappVersion}-debug`)
+  console.log(
+    'Docker image for "sconify" step:',
+    `${iDappName}:${idappVersion}-debug`
+  );
   mainSpinner.succeed(
     `Deployment of your idapp completed successfully: ${dockerHubUrl}`
   );

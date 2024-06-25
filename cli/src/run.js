@@ -1,8 +1,9 @@
 import ora from 'ora';
 import chalk from 'chalk';
-import { readIDappConfig } from './utils/fs.js';
-import { IExec, utils } from 'iexec';
+import inquirer from 'inquirer';
 import { ethers } from 'ethers';
+import { IExec, utils } from 'iexec';
+import { readIDappConfig, writeIDappConfig } from './utils/fs.js';
 import { SCONE_TAG, WORKERPOOL_DEBUG } from './config/config.js';
 import { addRunData } from './utils/cacheExecutions.js';
 
@@ -28,28 +29,69 @@ export async function run(argv) {
 }
 
 export async function runInDebug(argv) {
-  const spinner = ora(
-    'Running your idapp on iexec protocol Debug ... \n'
-  ).start();
   const iDappAddress = argv.iDappAddress;
 
   if (!ethers.isAddress(iDappAddress)) {
-    console.log(chalk.red('The iDapp address is invalid.'));
+    console.log(
+      chalk.red(
+        'The iDapp address is invalid. Be careful ENS name is not implemented yet ...'
+      )
+    );
+    return;
   }
 
   let withProtectedData;
   let userWalletPrivateKey;
   try {
-    withProtectedData = readIDappConfig().withProtectedData;
-    userWalletPrivateKey = readIDappConfig().account;
+    const config = readIDappConfig();
+    withProtectedData = config.withProtectedData;
+    userWalletPrivateKey = config.account;
   } catch (err) {
     console.log('err', err);
-    spinner.fail('Failed to read idapp.config.json file.');
+    return;
+  }
+
+  if (!userWalletPrivateKey) {
+    const { privateKey } = await inquirer.prompt([
+      {
+        type: 'password',
+        name: 'privateKey',
+        message: 'Please enter your private key:',
+        mask: '*',
+      },
+    ]);
+
+    userWalletPrivateKey = privateKey;
+
+    const { saveKey } = await inquirer.prompt([
+      {
+        type: 'confirm',
+        name: 'saveKey',
+        message: 'Do you want to save this private key to your config?',
+        default: false,
+      },
+    ]);
+
+    if (saveKey) {
+      const config = readIDappConfig();
+      config.account = userWalletPrivateKey;
+      try {
+        writeIDappConfig(config);
+        console.log(chalk.green('Private key saved to config.'));
+      } catch (err) {
+        console.log(chalk.red('Failed to save private key to config.'));
+        console.log('err', err);
+      }
+    }
   }
 
   // Get wallet Address from privateKey
   const wallet = new ethers.Wallet(userWalletPrivateKey);
   let userWalletAddress = wallet.address;
+
+  const spinner = ora(
+    'Running your idapp on iexec protocol Debug ... \n'
+  ).start();
 
   // iexecOptions for staging
   const iexecOptions = {
@@ -115,7 +157,7 @@ export async function runInDebug(argv) {
     requestorder,
   });
   addRunData({ iDappAddress, dealid, txHash });
-  spinner.succeed('Deal success');
+  spinner.succeed(`Deal created successfully, this is your deal ID: ${dealid}`);
 
   const taskId = await iexec.deal.computeTaskId(dealid, 0);
   const taskObservable = await iexec.task.obsTask(taskId, { dealid: dealid });
@@ -128,15 +170,13 @@ export async function runInDebug(argv) {
       complete: () => resolve(undefined),
     });
   });
-  spinner.succeed('Task Finalized');
 
+  spinner.succeed('Task Finalized');
   spinner.stop();
 }
 
 export async function runInProd(argv) {
-  const spinner = ora(
-    'Running your idapp on iexec protocol Prod ... \n'
-  ).start();
-  console.log(chalk.red('This feature is not yet implemented. Coming soon'));
-  spinner.stop();
+  console.log(
+    chalk.red('This feature is not yet implemented. Coming soon ...')
+  );
 }

@@ -26,24 +26,8 @@ function addDataToCache(fileName, data) {
   fs.writeFileSync(cacheFile, JSON.stringify(existingData, null, 2));
 }
 
-// Function to add run data to runs.json
-export function addRunData({ iDappAddress, dealid, txHash }) {
-  const currentDate = new Date().toISOString();
-  const runData = {
-    date: currentDate,
-    iDappAddress,
-    dealid,
-    txHash,
-  };
-  addDataToCache('runs.json', runData);
-}
-
-// Function to add deployment data to deployments.json
-export function addDeploymentData({
-  sconifiedImage,
-  appContractAddress,
-  transferAppTxHash,
-}) {
+// Utility function to format date in Europe/Paris timezone
+function getFormattedDateInParis() {
   const options = {
     timeZone: 'Europe/Paris',
     year: 'numeric',
@@ -67,7 +51,28 @@ export function addDeploymentData({
     ,
     { value: second },
   ] = formatter.formatToParts(new Date());
-  const formattedDate = `${year}-${month}-${day}T${hour}:${minute}:${second}`;
+  return `${year}-${month}-${day}T${hour}:${minute}:${second}`;
+}
+
+// Function to add run data to runs.json
+export function addRunData({ iDappAddress, dealid, txHash }) {
+  const formattedDate = getFormattedDateInParis();
+  const runData = {
+    date: formattedDate,
+    iDappAddress,
+    dealid,
+    txHash,
+  };
+  addDataToCache('runs.json', runData);
+}
+
+// Function to add deployment data to deployments.json
+export function addDeploymentData({
+  sconifiedImage,
+  appContractAddress,
+  transferAppTxHash,
+}) {
+  const formattedDate = getFormattedDateInParis();
   const deploymentData = {
     date: formattedDate,
     sconifiedImage,

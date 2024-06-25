@@ -1,6 +1,7 @@
 import ora from 'ora';
 import chalk from 'chalk';
 import inquirer from 'inquirer';
+import { ethers } from 'ethers';
 import { IExec, utils } from 'iexec';
 import { readIDappConfig } from './utils/fs.js';
 import { privateKeyManagement } from './utils/privateKeyManagement.js';
@@ -50,17 +51,12 @@ export async function runInDebug(argv) {
   }
 
   // Get wallet from privateKey
-  const wallet = privateKeyManagement();
+  const wallet = await privateKeyManagement();
 
-  const spinner = ora(
-    'Running your idapp on iexec protocol Debug ... \n'
-  ).start();
-
-  // iexecOptions for staging
   const iexecOptions = {
     smsURL: 'https://sms.scone-debug.v8-bellecour.iex.ec',
   };
-  // Init IExec
+
   const iexec = new IExec(
     {
       ethProvider: utils.getSignerFromPrivateKey(
@@ -73,7 +69,7 @@ export async function runInDebug(argv) {
     }
   );
 
-  //fetch WorkerpoolOrder
+  let spinner = ora('Fetching workerpool order...').start();
   const workerpoolOrderbook = await iexec.orderbook.fetchWorkerpoolOrderbook({
     workerpool: WORKERPOOL_DEBUG,
     app: iDappAddress,
@@ -89,6 +85,7 @@ export async function runInDebug(argv) {
   }
   spinner.succeed('Workerpool order fetched');
 
+  spinner = ora('Creating and publishing app order...').start();
   const apporderTemplate = await iexec.order.createApporder({
     app: iDappAddress,
     requesterrestrict: wallet.address,
@@ -98,6 +95,7 @@ export async function runInDebug(argv) {
   await iexec.order.publishApporder(apporder);
   spinner.succeed('AppOrder created and published');
 
+  spinner = ora('Creating and publishing request order...').start();
   const requestorderToSign = await iexec.order.createRequestorder({
     app: iDappAddress,
     category: workerpoolorder.category,
@@ -114,6 +112,7 @@ export async function runInDebug(argv) {
   const requestorder = await iexec.order.signRequestorder(requestorderToSign);
   spinner.succeed('RequestOrder created and published');
 
+  spinner = ora('Matching orders...').start();
   const { dealid, txHash } = await iexec.order.matchOrders({
     apporder,
     workerpoolorder,
@@ -122,6 +121,7 @@ export async function runInDebug(argv) {
   addRunData({ iDappAddress, dealid, txHash });
   spinner.succeed(`Deal created successfully, this is your deal ID: ${dealid}`);
 
+  spinner = ora('Observing task...').start();
   const taskId = await iexec.deal.computeTaskId(dealid, 0);
   const taskObservable = await iexec.task.obsTask(taskId, { dealid: dealid });
   await new Promise((resolve, reject) => {
@@ -134,7 +134,7 @@ export async function runInDebug(argv) {
     });
   });
 
-  spinner.succeed('Task Finalized');
+  spinner.succeed('Task finalized');
   spinner.stop();
 }
 

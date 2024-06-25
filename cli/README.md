@@ -100,25 +100,6 @@ npm run deploy
 ```
 
 ### What's next?
-
-The final test is to actually run you idapp on iExec stack:
-
-ℹ️ You need to have iExec CLI installed. (More info
-[here](https://protocol.docs.iex.ec/for-developers/quick-start-for-developers#install-the-iexec-sdk))
-
-ℹ️ You need to be logged in with the same wallet as the one you gave at the
-"sconify" step, when you were asked for your wallet public address.
-
-```
-iexec app run <appContractAddress> --tag tee,scone --workerpool debug-v8-bellecour.main.pools.iexec.eth --watch
-
-Example:
-iexec app run 0xc60a1e9941872de3d8c8a6afb368b1f8929a1ec1 --tag tee,scone --workerpool debug-v8-bellecour.main.pools.iexec.eth --watch
-
-With one arg:
-iexec app run 0xc60a1e9941872de3d8c8a6afb368b1f8929a1ec1 --tag tee,scone --workerpool debug-v8-bellecour.main.pools.iexec.eth --args Cédric --watch
-```
-
 To get logs about your running task:
 
 ```

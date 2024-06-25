@@ -62,54 +62,51 @@ export async function deploy(argv) {
 
   // Get wallet from privateKey
   const wallet = await privateKeyManagement();
-  const mainSpinner = ora('Start deploying your idapp ...').start();
+  // const mainSpinner = ora('Start deploying your idapp ...').start();
 
   const iDappName = readPackageJonConfig().name.toLowerCase();
 
-  await execDockerInfo(mainSpinner);
+  await execDockerInfo();
   try {
+    const dockerLoginSpinner = ora('Docker login ...').start();
     await execAsync('docker login');
-    mainSpinner.succeed('Docker login successful.');
+    dockerLoginSpinner.succeed('Docker login successful.');
 
+    const dockerBuildSpinner = ora('Docker build ...').start();
     await execDockerBuild({
       dockerHubUser: dockerhubUsername,
       dockerImageName: iDappName,
     });
-    mainSpinner.succeed('Docker image built.');
+    dockerBuildSpinner.succeed('Docker image built.');
 
+    const dockerTagSpinner = ora('Docker tag ...').start();
     await execAsync(
       `docker tag ${dockerhubUsername}/${iDappName} ${dockerhubUsername}/${iDappName}:${idappVersion}-debug`
     );
-    mainSpinner.succeed('Docker image tagged.');
+    dockerTagSpinner.succeed('Docker image tagged.');
 
+    const dockerPushSpinner = ora('Docker push ...').start();
     await execAsync(
       `docker push ${dockerhubUsername}/${iDappName}:${idappVersion}-debug`
     );
-    mainSpinner.succeed('Docker image pushed.');
+    dockerPushSpinner.succeed('Docker image pushed.');
   } catch (e) {
-    mainSpinner.fail('An error occurred during the deployment of the non-tee image.');
-    console.log(chalk.red(e));
+    console.log(chalk.red(`An error occurred during the deployment of the non-tee image: ${e}`));
     return;
   }
 
-  // const dockerHubUrl = `https://hub.docker.com/repository/docker/${dockerhubUsername}/${iDappName}`;
-  // console.log(
-  //   'Docker image for used "sconify" step:',
-  //   `${iDappName}:${idappVersion}-debug`
-  // );
-
   // Sconifying iDapp
-  setTimeout(() => {
-    mainSpinner.text = 'Sconifying your idapp, this may take a few minutes ...';
-  }, 1500);
+  const sconifySpinner = ora(
+    'Sconifying your idapp, this may take a few minutes ...'
+  ).start();
   const { dockerHubUrl } = await sconify({
-    mainSpinner,
+    mainSpinner: sconifySpinner,
     sconifyForProd: argv.prod || sconifyAnswer?.sconify === 'Prod',
     iDappNameToSconify: `${dockerhubUsername}/${iDappName}:${idappVersion}-debug`,
     wallet,
   });
 
-  mainSpinner.succeed(
+  sconifySpinner.succeed(
     `Deployment of your idapp completed successfully: ${dockerHubUrl}`
   );
 }

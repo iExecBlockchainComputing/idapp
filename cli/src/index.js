@@ -37,7 +37,7 @@ yargs(hideBin(process.argv))
   // Build and publish docker image
   .command(
     'deploy',
-    'Deploy your non-tee docker image',
+    'Deploy your non-tee or tee idapp',
     (yargs) => {
       return yargs
         .option('tee', {

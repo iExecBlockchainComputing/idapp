@@ -99,15 +99,6 @@ You need to log in to docker before.
 npm run deploy
 ```
 
-### sconify
-
-This will take a public Docker Hub image and wrap it into a TEE-compatible image
-via Scone.
-
-```bash
-npm run sconify
-```
-
 ### What's next?
 
 The final test is to actually run you idapp on iExec stack:

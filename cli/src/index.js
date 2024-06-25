@@ -5,7 +5,6 @@ import { hideBin } from 'yargs/helpers';
 import { init } from './init.js';
 import { deploy } from './deploy.js';
 import { run } from './run.js';
-import { sconify } from './sconify.js';
 import { test } from './test.js';
 
 yargs(hideBin(process.argv))
@@ -36,14 +35,21 @@ yargs(hideBin(process.argv))
   )
 
   // Build and publish docker image
-  .command('deploy', 'Deploy your non-tee docker image', () => {}, deploy)
-
-  // Sconify a dockerhub image
   .command(
-    'sconify',
-    'Sconify your app',
+    'deploy',
+    'Deploy your non-tee docker image',
     (yargs) => {
       return yargs
+        .option('tee', {
+          describe: 'Deploy a tee idapp',
+          type: 'boolean',
+          default: false,
+        })
+        .option('non-tee', {
+          describe: 'Deploy a non-tee iDapp',
+          type: 'boolean',
+          default: false,
+        })
         .option('prod', {
           describe: 'Deploy idapp for production mode',
           type: 'boolean',
@@ -55,7 +61,7 @@ yargs(hideBin(process.argv))
           default: false,
         });
     },
-    sconify
+    deploy
   )
 
   // Run a published docker image

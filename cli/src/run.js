@@ -1,9 +1,9 @@
 import ora from 'ora';
 import chalk from 'chalk';
 import inquirer from 'inquirer';
-import { ethers } from 'ethers';
 import { IExec, utils } from 'iexec';
-import { readIDappConfig, writeIDappConfig } from './utils/fs.js';
+import { readIDappConfig } from './utils/fs.js';
+import { privateKeyManagement } from './utils/privateKeyManagement.js';
 import { SCONE_TAG, WORKERPOOL_DEBUG } from './config/config.js';
 import { addRunData } from './utils/cacheExecutions.js';
 
@@ -41,53 +41,16 @@ export async function runInDebug(argv) {
   }
 
   let withProtectedData;
-  let userWalletPrivateKey;
   try {
     const config = readIDappConfig();
     withProtectedData = config.withProtectedData;
-    userWalletPrivateKey = config.account;
   } catch (err) {
     console.log('err', err);
     return;
   }
 
-  if (!userWalletPrivateKey) {
-    const { privateKey } = await inquirer.prompt([
-      {
-        type: 'password',
-        name: 'privateKey',
-        message: 'Please enter your private key:',
-        mask: '*',
-      },
-    ]);
-
-    userWalletPrivateKey = privateKey;
-
-    const { saveKey } = await inquirer.prompt([
-      {
-        type: 'confirm',
-        name: 'saveKey',
-        message: 'Do you want to save this private key to your config?',
-        default: false,
-      },
-    ]);
-
-    if (saveKey) {
-      const config = readIDappConfig();
-      config.account = userWalletPrivateKey;
-      try {
-        writeIDappConfig(config);
-        console.log(chalk.green('Private key saved to config.'));
-      } catch (err) {
-        console.log(chalk.red('Failed to save private key to config.'));
-        console.log('err', err);
-      }
-    }
-  }
-
-  // Get wallet Address from privateKey
-  const wallet = new ethers.Wallet(userWalletPrivateKey);
-  let userWalletAddress = wallet.address;
+  // Get wallet from privateKey
+  const wallet = privateKeyManagement();
 
   const spinner = ora(
     'Running your idapp on iexec protocol Debug ... \n'
@@ -102,7 +65,7 @@ export async function runInDebug(argv) {
     {
       ethProvider: utils.getSignerFromPrivateKey(
         'bellecour',
-        userWalletPrivateKey
+        wallet.privateKey
       ),
     },
     {
@@ -128,7 +91,7 @@ export async function runInDebug(argv) {
 
   const apporderTemplate = await iexec.order.createApporder({
     app: iDappAddress,
-    requesterrestrict: userWalletAddress,
+    requesterrestrict: wallet.address,
     tag: SCONE_TAG,
   });
   const apporder = await iexec.order.signApporder(apporderTemplate);
@@ -175,6 +138,7 @@ export async function runInDebug(argv) {
   spinner.stop();
 }
 
+// TODO: Implement
 export async function runInProd(argv) {
   console.log(
     chalk.red('This feature is not yet implemented. Coming soon ...')

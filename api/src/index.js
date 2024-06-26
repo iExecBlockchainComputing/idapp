@@ -1,46 +1,35 @@
 import 'dotenv/config';
-import { createServer } from 'node:http';
+import express from 'express';
 import { sconify } from './sconify.js';
 
+const app = express();
 const hostname = '0.0.0.0';
 const port = 3000;
 
-const server = createServer(async (req, res) => {
-  if (req.url === '/sconify') {
-    const json = await new Promise((resolve, reject) => {
-      req.on('data', (data) => {
-        const dataStr = String(data, 'utf-8');
-        resolve(JSON.parse(dataStr));
-      });
-    });
-    console.log('json', json);
+app.use(express.json());
 
-    sconify({
-      dockerImageToSconify: json.dockerhubImageToSconify,
-      userWalletPublicAddress: json.yourWalletPublicAddress,
-    })
-      .then(({ sconifiedImage, appContractAddress, transferAppTxHash }) => {
-        res.writeHead(200, { 'Content-Type': 'application/json' });
-        res.end(
-          JSON.stringify({
-            success: true,
-            sconifiedImage,
-            appContractAddress,
-            transferAppTxHash,
-          })
-        );
-      })
-      .catch((err) => {
-        res.writeHead(500, { 'Content-Type': 'application/json' });
-        res.end(JSON.stringify({ success: false, error: err.message }));
-      });
-  } else {
-    res.statusCode = 200;
-    res.setHeader('Content-Type', 'text/plain');
-    res.end('Hello from idapp-sconifier-api 👋');
+app.post('/sconify', async (req, res) => {
+  const { yourWalletPublicAddress } = req.body;
+
+  try {
+    const { appContractAddress, transferAppTxHash } = await sconify({
+      userWalletPublicAddress: yourWalletPublicAddress,
+    });
+
+    res.status(200).json({
+      success: true,
+      appContractAddress,
+      transferAppTxHash,
+    });
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
   }
 });
 
-server.listen(port, hostname, () => {
+app.get('/', (req, res) => {
+  res.status(200).send('Hello from idapp-sconifier-api 👋');
+});
+
+app.listen(port, hostname, () => {
   console.log(`Server running at http://${hostname}:${port}/`);
 });

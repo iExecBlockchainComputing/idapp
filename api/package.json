@@ -12,6 +12,7 @@
   "dependencies": {
     "dockerode": "^4.0.2",
     "ethers": "^6.13.0",
+    "express": "^4.19.2",
     "iexec": "^8.8.0"
   },
   "devDependencies": {

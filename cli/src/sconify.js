@@ -14,6 +14,9 @@ export async function sconify({
     try {
       const { body } = await request(`${SCONIFY_API_URL}/sconify`, {
         method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
         body: JSON.stringify({
           dockerhubImageToSconify: iDappNameToSconify,
           yourWalletPublicAddress: wallet.address,

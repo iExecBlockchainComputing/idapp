@@ -9,10 +9,10 @@ const port = 3000;
 app.use(express.json());
 
 app.post('/sconify', async (req, res) => {
-  const { yourWalletPublicAddress } = req.body;
-
+  const { yourWalletPublicAddress, dockerhubImageToSconify } = req.body;
   try {
     const { appContractAddress, transferAppTxHash } = await sconify({
+      dockerImageToSconify: dockerhubImageToSconify,
       userWalletPublicAddress: yourWalletPublicAddress,
     });
 

@@ -15,7 +15,7 @@ export async function sconify({
       const { body } = await request(`${SCONIFY_API_URL}/sconify`, {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json'
+          'Content-Type': 'application/json',
         },
         body: JSON.stringify({
           dockerhubImageToSconify: iDappNameToSconify,
@@ -24,6 +24,7 @@ export async function sconify({
         throwOnError: true,
       });
       const json = await body.json();
+      
       // Extract necessary information
       const sconifiedImage = json.sconifiedImage;
       const appContractAddress = json.appContractAddress;

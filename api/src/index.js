@@ -11,13 +11,15 @@ app.use(express.json());
 app.post('/sconify', async (req, res) => {
   const { yourWalletPublicAddress, dockerhubImageToSconify } = req.body;
   try {
-    const { appContractAddress, transferAppTxHash } = await sconify({
-      dockerImageToSconify: dockerhubImageToSconify,
-      userWalletPublicAddress: yourWalletPublicAddress,
-    });
+    const { sconifiedImage, appContractAddress, transferAppTxHash } =
+      await sconify({
+        dockerImageToSconify: dockerhubImageToSconify,
+        userWalletPublicAddress: yourWalletPublicAddress,
+      });
 
     res.status(200).json({
       success: true,
+      sconifiedImage,
       appContractAddress,
       transferAppTxHash,
     });

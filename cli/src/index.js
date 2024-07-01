@@ -40,16 +40,6 @@ yargs(hideBin(process.argv))
     'Deploy your non-tee or tee idapp',
     (yargs) => {
       return yargs
-        .option('tee', {
-          describe: 'Deploy a tee idapp',
-          type: 'boolean',
-          default: false,
-        })
-        .option('non-tee', {
-          describe: 'Deploy a non-tee iDapp',
-          type: 'boolean',
-          default: false,
-        })
         .option('prod', {
           describe: 'Deploy idapp for production mode',
           type: 'boolean',

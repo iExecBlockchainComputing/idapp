@@ -25,11 +25,10 @@
 - [ ] CLI work only with node18 but iDapp dependency should be installed with node14. Not very friendly for builder
 - [ ] convert to typescript project
 - [ ] Have a global progress bar (sconification process when calling API may take 6-7min)
-- [ ] Have type for the idapp.config.json to enable builder to know available configs
+- [ ] Have a type for the idapp.config.json to enable builder to know available configs
 - [ ] Test with some fancy dependencies in the idapp (node-gyp stuff?), see how sconification process behaves
 - [ ] Test with an access to **a protected data** inside the idapp
-- [ ] Once sconified, be able to test the app locally, maybe before deploying the app contract
-- [ ] Propose to run sconified app in real condition, which would internally call `iexec app run` (or the SDK version of it)
+- [X] Once sconified, be able to test the app locally, maybe before deploying the app contract
 - [ ] Fix commend "$> idapp" to display help
 - [ ] Try with node v20 in app. Scone says it should work! (cf. some shared emails)
 - [ ] New command to publish order? It seems to work without it... (Thanks to `iexec app run` magic?)

@@ -1,6 +1,7 @@
 import 'dotenv/config';
 import express from 'express';
 import { sconify } from './sconify.js';
+import { removeDockerImageWithVolumes } from './utils/saveDockerSpace.js';
 
 const app = express();
 const hostname = '0.0.0.0';
@@ -23,6 +24,12 @@ app.post('/sconify', async (req, res) => {
       appContractAddress,
       transferAppTxHash,
     });
+
+    // Supprimer l'image dockerhubImageToSconify après utilisation
+    removeDockerImageWithVolumes(dockerhubImageToSconify);
+
+    // Supprimer l'image sconifiedImage après utilisation
+    removeDockerImageWithVolumes(sconifiedImage);
   } catch (err) {
     res.status(500).json({ success: false, error: err.message });
   }

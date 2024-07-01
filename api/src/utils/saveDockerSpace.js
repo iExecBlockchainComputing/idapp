@@ -3,7 +3,7 @@ import Docker from 'dockerode';
 const docker = new Docker();
 
 // Fonction pour supprimer une image Docker avec ses volumes associés
-export const removeImageWithVolumes = async (imageName) => {
+export const removeDockerImageWithVolumes = async (imageName) => {
   try {
     // Récupérer tous les conteneurs qui utilisent cette image
     const containers = await docker.listContainers({

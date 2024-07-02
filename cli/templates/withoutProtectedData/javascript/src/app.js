@@ -11,10 +11,6 @@ const main = async () => {
 
     const text = figlet.textSync(`Hello, ${message}!`);
 
-    // FOR DEBUG ONLY
-    // We should not reveal this secret value in the logs
-    // console.log(text);
-
     // Append some results in /iexec_out/
     await fsPromises.writeFile(`${output}/result.txt`, text);
     // Declare everything is computed

@@ -179,7 +179,9 @@ export async function runInDebug(argv) {
     requestorder,
   });
   addRunData({ iDappAddress, dealid, txHash });
-  spinner.succeed(`Deal created successfully, this is your deal ID: ${dealid}`);
+  spinner.succeed(
+    `Deal created successfully, this is your deal ID: https://explorer.iex.ec/bellecour/deal/${dealid}`
+  );
 
   spinner = ora('Observing task...').start();
   const taskId = await iexec.deal.computeTaskId(dealid, 0);
@@ -196,15 +198,17 @@ export async function runInDebug(argv) {
 
   spinner.succeed('Task finalized');
   spinner.stop();
+
+  const task = await iexec.task.show(taskId);
   console.log(
     chalk.green(
-      `You can download the result of your task here: https://explorer.iex.ec/bellecour/task/${taskId}`
+      `You can download the result of your task here: https://ipfs-gateway.v8-bellecour.iex.ec${task?.results?.location}`
     )
   );
 }
 
 // TODO: Implement
-export async function runInProd(argv) {
+async function runInProd(argv) {
   console.log(
     chalk.red('This feature is not yet implemented. Coming soon ...')
   );

@@ -16,19 +16,27 @@ import {
 const execAsync = util.promisify(exec);
 
 export async function deploy(argv) {
-  let sconifyAnswer;
+  let mode;
   if (!argv.prod && !argv.debug) {
-    sconifyAnswer = await inquirer.prompt([
+    const modeAnswer = await inquirer.prompt([
       {
         type: 'list',
-        name: 'sconify',
-        message: 'Would you like to deploy your idapp for prod or debug?',
+        name: 'mode',
+        message: 'Would you like to run your idapp for prod or debug?',
         choices: ['Debug', 'Prod'],
         default: 0, // Default to 'Debug'
       },
     ]);
+    mode = modeAnswer.mode;
   }
+  if (argv.debug || mode === 'Debug') {
+    await deployInDebug(argv);
+  } else {
+    deployInProd(argv);
+  }
+}
 
+export async function deployInDebug(argv) {
   let dockerhubUsername = readIDappConfig().dockerhubUsername || '';
   if (!dockerhubUsername) {
     const { dockerHubUserNameAnswer } = await inquirer.prompt({
@@ -62,7 +70,6 @@ export async function deploy(argv) {
 
   // Get wallet from privateKey
   const wallet = await privateKeyManagement();
-  // const mainSpinner = ora('Start deploying your idapp ...').start();
 
   const iDappName = readPackageJonConfig().name.toLowerCase();
 
@@ -71,7 +78,12 @@ export async function deploy(argv) {
     const dockerLoginSpinner = ora('Docker login ...').start();
     await execAsync('docker login');
     dockerLoginSpinner.succeed('Docker login successful.');
+  } catch (error) {
+    console.log(chalk.red(`\n Failed to login to DockerHub: ${e}`));
+    return;
+  }
 
+  try {
     const dockerBuildSpinner = ora('Docker build ...').start();
     await execDockerBuild({
       dockerHubUser: dockerhubUsername,
@@ -91,7 +103,11 @@ export async function deploy(argv) {
     );
     dockerPushSpinner.succeed('Docker image pushed.');
   } catch (e) {
-    console.log(chalk.red(`An error occurred during the deployment of the non-tee image: ${e}`));
+    console.log(
+      chalk.red(
+        `An error occurred during the deployment of the non-tee image: ${e}`
+      )
+    );
     return;
   }
 
@@ -101,12 +117,18 @@ export async function deploy(argv) {
   ).start();
   const { dockerHubUrl } = await sconify({
     mainSpinner: sconifySpinner,
-    sconifyForProd: argv.prod || sconifyAnswer?.sconify === 'Prod',
+    sconifyForProd: false,
     iDappNameToSconify: `${dockerhubUsername}/${iDappName}:${idappVersion}-debug`,
     wallet,
   });
 
   sconifySpinner.succeed(
     `Deployment of your idapp completed successfully: ${dockerHubUrl}`
+  );
+}
+
+async function deployInProd(argv) {
+  console.log(
+    chalk.red('This feature is not yet implemented. Coming soon ...')
   );
 }

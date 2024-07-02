@@ -14,15 +14,17 @@ const main = async () => {
 
     const text = figlet.textSync(`Hello, ${message}!`);
 
-    const deserializer = new IExecDataProtectorDeserializer();
-    const file = await deserializer.getValue('email', 'string');
-
-    // FOR DEBUG ONLY
-    // We should not reveal this secret value in the logs
-    // console.log(text);
+    let file;
+    try {
+      const deserializer = new IExecDataProtectorDeserializer();
+      file = await deserializer.getValue('email', 'string');
+    } catch (e) {
+      file = 'missing protectedData';
+      console.log('It seems there is an issue with your protectedData :', e);
+    }
 
     // Append some results in /iexec_out/
-    const combinedContent = `${text}\n${file}`;
+    const combinedContent = `${text}\n Your ProtectedData content: ${file}`;
     await fsPromises.writeFile(`${output}/result.txt`, combinedContent);
     // Declare everything is computed
     const computedJsonObj = {

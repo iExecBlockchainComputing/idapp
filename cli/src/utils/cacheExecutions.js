@@ -70,14 +70,14 @@ export function addRunData({ iDappAddress, dealid, txHash }) {
 export function addDeploymentData({
   sconifiedImage,
   appContractAddress,
-  transferAppTxHash,
+  owner,
 }) {
   const formattedDate = getFormattedDateInParis();
   const deploymentData = {
     date: formattedDate,
     sconifiedImage,
     appContractAddress,
-    transferAppTxHash,
+    owner,
   };
   addDataToCache('deployments.json', deploymentData);
 }

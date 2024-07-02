@@ -12,7 +12,7 @@ app.use(express.json());
 app.post('/sconify', async (req, res) => {
   const { yourWalletPublicAddress, dockerhubImageToSconify } = req.body;
   try {
-    const { sconifiedImage, appContractAddress, transferAppTxHash } =
+    const { sconifiedImage, appContractAddress } =
       await sconify({
         dockerImageToSconify: dockerhubImageToSconify,
         userWalletPublicAddress: yourWalletPublicAddress,
@@ -22,7 +22,6 @@ app.post('/sconify', async (req, res) => {
       success: true,
       sconifiedImage,
       appContractAddress,
-      transferAppTxHash,
     });
 
     // Supprimer l'image dockerhubImageToSconify après utilisation

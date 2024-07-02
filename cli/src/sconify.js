@@ -24,7 +24,7 @@ export async function sconify({
         throwOnError: true,
       });
       const json = await body.json();
-      
+
       // Extract necessary information
       const sconifiedImage = json.sconifiedImage;
       const appContractAddress = json.appContractAddress;
@@ -43,7 +43,7 @@ export async function sconify({
       addDeploymentData({
         sconifiedImage,
         appContractAddress,
-        transferAppTxHash,
+        owner: wallet.address,
       });
     } catch (err) {
       if (err.body) {

@@ -3,7 +3,7 @@ import { getSignerFromPrivateKey } from 'iexec/utils';
 import { IExec, IExecConfig } from 'iexec';
 
 /**
- * @returns {Promise<{appContractAddress: string, transferAppTxHash: string }>}
+ * @returns {Promise<{appContractAddress: string}>}
  */
 export async function deployAppContractToBellecour({
   userWalletPublicAddress,

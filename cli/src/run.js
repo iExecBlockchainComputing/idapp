@@ -44,15 +44,15 @@ export async function runInDebug(argv) {
   let protectedDataAddress;
   if (argv.protectedData) {
     protectedDataAddress = argv.protectedData;
-  }
-  // Is valid ProtectedData Address
-  if (!ethers.isAddress(protectedDataAddress)) {
-    console.log(
-      chalk.red(
-        'The protectedData address is invalid. Be careful ENS name is not implemented yet ...'
-      )
-    );
-    return;
+    // Is valid ProtectedData Address
+    if (!ethers.isAddress(protectedDataAddress)) {
+      console.log(
+        chalk.red(
+          'The protectedData address is invalid. Be careful ENS name is not implemented yet ...'
+        )
+      );
+      return;
+    }
   }
 
   // Get wallet from privateKey

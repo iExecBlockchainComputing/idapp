@@ -28,7 +28,6 @@ export async function sconify({
       // Extract necessary information
       const sconifiedImage = json.sconifiedImage;
       const appContractAddress = json.appContractAddress;
-      const transferAppTxHash = json.transferAppTxHash;
 
       // Display the result in a beautiful format
       mainSpinner.succeed('iDapp Sconified successfully');
@@ -36,7 +35,6 @@ export async function sconify({
 
       mainSpinner.succeed('iDapp deployed');
       console.log(` iDapp Address: ${appContractAddress}`);
-      console.log(` Transfer App Transaction Hash: ${transferAppTxHash}`);
 
       mainSpinner.succeed('iDapp Transfer to you');
 

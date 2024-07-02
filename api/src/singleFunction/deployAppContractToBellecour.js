@@ -17,10 +17,8 @@ export async function deployAppContractToBellecour({
     ethProvider: getSignerFromPrivateKey('bellecour', privateKey),
   });
   const iexec = IExec.fromConfig(config);
-  const { signer } = await iexec.config.resolveContractsClient();
-  const randomWalletPublicAddress = await signer.getAddress();
   const { address } = await iexec.app.deployApp({
-    owner: randomWalletPublicAddress,
+    owner: userWalletPublicAddress,
     name: appName,
     type: 'DOCKER',
     multiaddr: dockerImagePath,
@@ -36,14 +34,7 @@ export async function deployAppContractToBellecour({
   });
   console.log('app contract deployed at', address);
 
-  const { txHash } = await iexec.app.transferApp(
-    address,
-    userWalletPublicAddress
-  );
-  console.log('transferApp txHash', txHash);
-
   return {
     appContractAddress: address,
-    transferAppTxHash: txHash,
   };
 }

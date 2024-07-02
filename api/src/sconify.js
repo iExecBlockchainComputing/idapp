@@ -107,21 +107,19 @@ export async function sconify({
     console.log('fingerprint', fingerprint);
 
     console.log('\n\n---------- 8 ---------- Deploying app contract...');
-    const { appContractAddress, transferAppTxHash } =
-      await deployAppContractToBellecour({
-        userWalletPublicAddress,
-        appName: `${dockerUserName}-${targetImageName}-${Date.now().toString()}`,
-        dockerImagePath: targetImagePath,
-        dockerImageDigest: imageOnlyChecksum,
-        fingerprint,
-      });
+    const { appContractAddress } = await deployAppContractToBellecour({
+      userWalletPublicAddress,
+      appName: `${dockerUserName}-${targetImageName}-${Date.now().toString()}`,
+      dockerImagePath: targetImagePath,
+      dockerImageDigest: imageOnlyChecksum,
+      fingerprint,
+    });
     console.log('Deployed.');
 
     console.log('All operations completed successfully.');
     return {
       sconifiedImage: targetImagePath,
       appContractAddress,
-      transferAppTxHash,
     };
   } catch (error) {
     console.error('An error occurred during the process:', error);

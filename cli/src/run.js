@@ -141,7 +141,7 @@ export async function runInDebug(argv) {
         maxTag: SCONE_TAG,
       }
     );
-    const datasetorder = datasetOrderbook.orders[0]?.order;
+    datasetorder = datasetOrderbook.orders[0]?.order;
     if (!datasetorder) {
       spinner.fail('No matching ProtectedData access found');
       console.log(
@@ -158,7 +158,7 @@ export async function runInDebug(argv) {
   const requestorderToSign = await iexec.order.createRequestorder({
     app: iDappAddress,
     category: workerpoolorder.category,
-    dataset: datasetorder || ethers.ZeroAddress,
+    dataset: protectedDataAddress || ethers.ZeroAddress,
     appmaxprice: apporder.appprice,
     datasetmaxprice: datasetorder?.datasetprice || 0,
     workerpoolmaxprice: workerpoolorder.workerpoolprice,
@@ -174,6 +174,7 @@ export async function runInDebug(argv) {
   spinner = ora('Matching orders...').start();
   const { dealid, txHash } = await iexec.order.matchOrders({
     apporder,
+    datasetorder: protectedDataAddress ? datasetorder : undefined,
     workerpoolorder,
     requestorder,
   });
@@ -195,6 +196,11 @@ export async function runInDebug(argv) {
 
   spinner.succeed('Task finalized');
   spinner.stop();
+  console.log(
+    chalk.green(
+      `You can download the result of your task here: https://explorer.iex.ec/bellecour/task/${taskId}`
+    )
+  );
 }
 
 // TODO: Implement

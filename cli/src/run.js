@@ -3,7 +3,6 @@ import chalk from 'chalk';
 import inquirer from 'inquirer';
 import { ethers } from 'ethers';
 import { IExec, utils } from 'iexec';
-import { readIDappConfig } from './utils/fs.js';
 import { privateKeyManagement } from './utils/privateKeyManagement.js';
 import { SCONE_TAG, WORKERPOOL_DEBUG } from './config/config.js';
 import { addRunData } from './utils/cacheExecutions.js';
@@ -32,6 +31,7 @@ export async function run(argv) {
 export async function runInDebug(argv) {
   const iDappAddress = argv.iDappAddress;
 
+  // Is valid iDapp Address
   if (!ethers.isAddress(iDappAddress)) {
     console.log(
       chalk.red(
@@ -41,21 +41,22 @@ export async function runInDebug(argv) {
     return;
   }
 
-  let withProtectedData;
-  try {
-    const config = readIDappConfig();
-    withProtectedData = config.withProtectedData;
-  } catch (err) {
-    console.log('err', err);
+  let protectedDataAddress;
+  if (argv.protectedData) {
+    protectedDataAddress = argv.protectedData;
+  }
+  // Is valid ProtectedData Address
+  if (!ethers.isAddress(protectedDataAddress)) {
+    console.log(
+      chalk.red(
+        'The protectedData address is invalid. Be careful ENS name is not implemented yet ...'
+      )
+    );
     return;
   }
 
   // Get wallet from privateKey
   const wallet = await privateKeyManagement();
-
-  const iexecOptions = {
-    smsURL: 'https://sms.scone-debug.v8-bellecour.iex.ec',
-  };
 
   const iexec = new IExec(
     {
@@ -65,15 +66,45 @@ export async function runInDebug(argv) {
       ),
     },
     {
-      iexecOptions: iexecOptions,
+      smsURL: 'https://sms.scone-debug.v8-bellecour.iex.ec',
     }
   );
 
+  // Make some ProtectedData preflight check
+  if (protectedDataAddress) {
+    try {
+      // Check the protectedData has its privateKey registered into the debug sms
+      console.log(protectedDataAddress);
+      const isSecretSet = await iexec.dataset.checkDatasetSecretExists(
+        protectedDataAddress,
+        {
+          teeFramework: 'scone',
+        }
+      );
+      console.log('🚀 ~ runInDebug ~ isSecretSet:', isSecretSet);
+      if (!isSecretSet) {
+        console.log(
+          chalk.red(
+            `Your protectedData secret key is not registered in the debug secret management service (SMS) of iexec protocol`
+          )
+        );
+        return;
+      }
+    } catch (e) {
+      console.log(
+        chalk.red(
+          `Error while running your iDapp with your protectedData: ${e.message}`
+        )
+      );
+    }
+  }
+
+  // Workerpool Order
   let spinner = ora('Fetching workerpool order...').start();
   const workerpoolOrderbook = await iexec.orderbook.fetchWorkerpoolOrderbook({
     workerpool: WORKERPOOL_DEBUG,
     app: iDappAddress,
-    // dataset: vProtectedData,
+    dataset: protectedDataAddress || ethers.ZeroAddress,
     minTag: SCONE_TAG,
     maxTag: SCONE_TAG,
   });
@@ -85,6 +116,7 @@ export async function runInDebug(argv) {
   }
   spinner.succeed('Workerpool order fetched');
 
+  // App Order
   spinner = ora('Creating and publishing app order...').start();
   const apporderTemplate = await iexec.order.createApporder({
     app: iDappAddress,
@@ -95,13 +127,40 @@ export async function runInDebug(argv) {
   await iexec.order.publishApporder(apporder);
   spinner.succeed('AppOrder created and published');
 
+  // Dataset Order
+  let datasetorder;
+  if (protectedDataAddress) {
+    spinner = ora('Fetching protectedData access...').start();
+    const datasetOrderbook = await iexec.orderbook.fetchDatasetOrderbook(
+      protectedDataAddress,
+      {
+        app: iDappAddress,
+        workerpool: workerpoolorder.workerpool,
+        requester: wallet.address,
+        minTag: SCONE_TAG,
+        maxTag: SCONE_TAG,
+      }
+    );
+    const datasetorder = datasetOrderbook.orders[0]?.order;
+    if (!datasetorder) {
+      spinner.fail('No matching ProtectedData access found');
+      console.log(
+        chalk.red(
+          'It seems the protectedData is not allow to be consume by your iDapp, please grantAccess to it'
+        )
+      );
+      return;
+    }
+    spinner.succeed('ProtectedData access found');
+  }
+
   spinner = ora('Creating and publishing request order...').start();
   const requestorderToSign = await iexec.order.createRequestorder({
     app: iDappAddress,
     category: workerpoolorder.category,
-    // dataset: vProtectedData,
+    dataset: datasetorder || ethers.ZeroAddress,
     appmaxprice: apporder.appprice,
-    // datasetmaxprice: datasetorder.datasetprice,
+    datasetmaxprice: datasetorder?.datasetprice || 0,
     workerpoolmaxprice: workerpoolorder.workerpoolprice,
     tag: SCONE_TAG,
     workerpool: workerpoolorder.workerpool,

@@ -73,6 +73,11 @@ yargs(hideBin(process.argv))
           describe: 'Run idapp in debug mode',
           type: 'boolean',
           default: false,
+        })
+        .option('protectedData', {
+          describe: 'Specify the protected data address',
+          type: 'string',
+          default: null, // Set default to null or undefined to make it optional
         });
     },
     run

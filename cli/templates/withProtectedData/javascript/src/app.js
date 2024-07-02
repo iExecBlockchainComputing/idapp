@@ -15,10 +15,7 @@ const main = async () => {
     const text = figlet.textSync(`Hello, ${message}!`);
 
     const deserializer = new IExecDataProtectorDeserializer();
-    const file = await deserializer.getValue(
-      'file',
-      'application/octet-stream'
-    );
+    const file = await deserializer.getValue('email', 'string');
 
     // FOR DEBUG ONLY
     // We should not reveal this secret value in the logs

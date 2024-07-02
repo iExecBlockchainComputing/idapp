@@ -1,6 +1,9 @@
 # Hello World
 
-[Start your HelloWorld here](./cli/README.md)
+To get started with the iDapp CLI and create your "Hello World" application,
+follow these steps to understand its usage:
+
+[iDapp Cli](./cli/README.md)
 
 ## Architecture of the project
 

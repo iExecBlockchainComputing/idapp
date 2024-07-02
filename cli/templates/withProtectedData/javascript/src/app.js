@@ -22,7 +22,8 @@ const main = async () => {
     // console.log(text);
 
     // Append some results in /iexec_out/
-    await fsPromises.writeFile(`${output}/result.txt`, file);
+    const combinedContent = `${text}\n${file}`;
+    await fsPromises.writeFile(`${output}/result.txt`, combinedContent);
     // Declare everything is computed
     const computedJsonObj = {
       'deterministic-output-path': `${output}/result.txt`,

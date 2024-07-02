@@ -11,7 +11,10 @@ This CLI provides an interface to guide you through different steps:
 
 ### Install
 
-bash npm i -g .
+```sh
+npm ci
+npm i -g .
+```
 
 ## Commands
 

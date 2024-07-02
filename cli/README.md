@@ -1,105 +1,88 @@
-# idapp-sconifier > CLI
+# idapp-cli
 
 This CLI provides an interface to guide you through different steps:
 
 - Create a simple JavaScript app with the necessary structure to run on a
-  decentralized worker,
+  decentralized worker
 - Test it locally, with or without Docker,
-- Build a Docker image and push it to Docker Hub,
-- Sconify it and get a TEE-compatible Docker image.
+- Deploy and sconified your iDapp on the iexec protocol.
 
-# Use it as a CLI (Globally)
+# Use it (Globally)
 
 ### Install
 
-```bash
-npm i -g .
-```
+bash npm i -g .
 
 ## Commands
 
-### init
+### `--help`
+
+Command:
+
+```bash
+idapp --help
+```
+
+Description: Display help information about the `idapp-sconifier` CLI and its
+available commands and options. This option provides a quick reference guide for
+users to understand how to use each command effectively.
+
+### `init`
+
+Command:
 
 ```bash
 idapp init
 ```
 
-### test
+Description: Initialize the framework with the necessary structure to build your
+iexec decentralized application.
+
+---
+
+### `test`
+
+Command:
 
 ```bash
-idapp test
+idapp test [--docker] [--param <input>]
 ```
 
-You can add `--docker` option if you want to test as close as possible to the
-workerpool environment
+Description: Test your iDapp locally. Use the `--docker` option to simulate the
+workerpool environment closely. Optionally, use `--param` to provide input
+parameter to your iDapp during testing.
+
+---
+
+### `deploy`
+
+Command:
 
 ```bash
-idapp test --docker
+idapp deploy [--debug | --prod]
 ```
 
-### deploy
+Description: Deploy your iDapp on the iexec protocol. Choose between deploying
+in debug mode or production mode (`--debug` or `--prod`). Note that the
+production mode option (`--prod`) will be available soon.
 
-This command, will ask you to choose if you want to deploy in debug or prod.
+---
+
+### `run`
+
+Command:
 
 ```bash
-idapp deploy
+idapp run <my-idapp-address> [--protectedData <protectedData-address>] [--debug | --prod]
 ```
 
-If you already know the target environment you can set `--prod` or `--debug`
-option to go faster
-
-```bash
-idapp deploy --debug
-```
-
-or
-
-```bash
-idapp deploy --prod
-```
-
-# Use it locally
-
-## Commands
-
-### --help
-
-```bash
-npm start
-```
-
-### init
-
-```bash
-npm run init
-```
-
-This will create a new `build` folder, ask you a few questions, init an npm
-project, create some `./input` and `./output` folders.
-
-### test-idapp
-
-```bash
-npm run test-idapp
-npm run test-idapp --params your-name
-```
-
-### test-idapp --docker
-
-```bash
-npm run test-idapp:docker
-npm run test-idapp:docker --params your-name
-```
-
-### deploy
-
-You need to log in to docker before.
-
-```bash
-npm run deploy
-```
+Description: Run your deployed iDapp. Provide the address of your iDapp
+(`<my-idapp-address>`). Optionally, if your iDapp processes protected data,
+include the `--protectedData` option followed by the address of the protected
+data.
 
 ### What's next?
+
 To get logs about your running task:
 
 ```

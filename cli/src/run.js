@@ -81,7 +81,7 @@ export async function runInDebug(argv) {
           teeFramework: 'scone',
         }
       );
-      console.log('🚀 ~ runInDebug ~ isSecretSet:', isSecretSet);
+
       if (!isSecretSet) {
         console.log(
           chalk.red(

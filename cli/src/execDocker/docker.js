@@ -32,6 +32,7 @@ export async function dockerBuild({
     context: process.cwd(), // Use current working directory
     src: ['./'],
   };
+
   if (osType === 'Darwin') {
     // For MacOS
     if (isForTest) {
@@ -63,7 +64,6 @@ export async function dockerBuild({
             reject(err);
           } else {
             buildSpinner.succeed('Docker image built.');
-            console.log(res);
             resolve(res);
           }
         });
@@ -135,16 +135,21 @@ export async function runDockerContainer({
   ).start();
 
   try {
-    console.log(`${dockerhubUsername}/${imageName}`);
-    const container = docker.createContainer({
-      Image: `${dockerhubUsername}/${imageName}:latest`,
+    const container = await docker.createContainer({
+      Image: `${dockerhubUsername}/${imageName}`,
       Cmd: [arg],
-      context: process.cwd(),
+      HostConfig: {
+        Binds: [
+          `${process.cwd()}/input:/iexec_in`,
+          `${process.cwd()}/output:/iexec_out`,
+        ],
+        AutoRemove: true,
+      },
       Env: [
-        `IEXEC_IN=./input`,
-        `IEXEC_OUT=./output`,
+        `IEXEC_IN=/iexec_in`,
+        `IEXEC_OUT=/iexec_out`,
         ...(withProtectedData
-          ? [`IEXEC_DATASET_FILENAME=./input/protectedData.zip`]
+          ? [`IEXEC_DATASET_FILENAME=protectedData.zip`]
           : []),
       ],
     });

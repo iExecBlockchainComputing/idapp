@@ -9,14 +9,22 @@ This CLI provides an interface to guide you through different steps:
 
 # Use it (Globally)
 
+Ensure the following prerequisites are met before proceeding:
+
+- Node.js version 18 or higher is installed.
+- You have a directory where you want to use this setup. If not, create a new folder.
+
 ### Install
 
 ```sh
+cd idapp/cli
 npm ci
 npm i -g .
 ```
 
 ## Commands
+
+idapp should directly
 
 ### `--help`
 

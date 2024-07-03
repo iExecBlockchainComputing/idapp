@@ -126,9 +126,11 @@ export async function runDockerContainer({
   arg,
   withProtectedData,
 }) {
-  let runDockerContainerSpinner = ora('Installing dependencies...').start();
+  const runDockerContainerSpinner = ora(
+    'Setting up Docker container...'
+  ).start();
+
   try {
-    // Replace with dockerode logic for running containers
     const container = await docker.createContainer({
       Image: `${dockerhubUsername}/${imageName}`,
       Cmd: [arg],
@@ -142,22 +144,45 @@ export async function runDockerContainer({
       Env: [
         `IEXEC_IN=/iexec_in`,
         `IEXEC_OUT=/iexec_out`,
-        withProtectedData ? `IEXEC_DATASET_FILENAME=protectedData.zip` : '',
-      ].filter(Boolean),
+        ...(withProtectedData
+          ? [`IEXEC_DATASET_FILENAME=protectedData.zip`]
+          : []),
+      ],
     });
 
+    // Attach to container output stream for real-time logging
+    container.attach(
+      { stream: true, stdout: true, stderr: true },
+      function (err, stream) {
+        if (err) {
+          console.error('Error attaching to container:', err);
+          runDockerContainerSpinner.fail(
+            'Failed to attach to Docker container.'
+          );
+          throw err;
+        }
+
+        stream.pipe(process.stdout); // Pipe container output to stdout
+      }
+    );
+
+    // Start the container
     await container.start();
+    runDockerContainerSpinner.text = 'Running Docker container...';
 
     // Wait for the container to finish
     await container.wait();
-    const logs = await container.logs({ stdout: true, stderr: true });
 
-    runDockerContainerSpinner.succeed('Docker container run successfully.');
-    console.log(logs.stdout ? chalk.blue(logs.stdout) : '');
-    if (logs.stderr) {
-      console.log(chalk.red(logs.stderr));
+    // Check container status after waiting
+    const containerInspect = await container.inspect();
+    if (containerInspect.State.Status !== 'exited') {
+      runDockerContainerSpinner.succeed('Docker container run successfully.');
+    } else {
+      runDockerContainerSpinner.fail('Docker container exited unexpectedly.');
+      throw new Error('Docker container exited unexpectedly.');
     }
 
+    // Prompt user to view result
     const continueAnswer = await inquirer.prompt({
       type: 'confirm',
       name: 'continue',
@@ -165,10 +190,12 @@ export async function runDockerContainer({
     });
     if (continueAnswer.continue) {
       const { stdout } = await execAsync('cat output/result.txt');
-      console.log(stdout);
+      console.log(stdout.toString());
     }
   } catch (error) {
     runDockerContainerSpinner.fail('Failed to run Docker container.');
     throw error;
+  } finally {
+    runDockerContainerSpinner.stop();
   }
 }

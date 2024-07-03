@@ -5,8 +5,11 @@ import chalk from 'chalk';
 import { exec } from 'child_process';
 import ora from 'ora';
 import { readIDappConfig } from './utils/fs.js';
-import { dockerBuild } from './execDocker/docker.js';
-import { execDockerInfo } from './execDocker/info.js';
+import {
+  dockerBuild,
+  checkDockerDaemon,
+  runDockerContainer,
+} from './execDocker/docker.js';
 
 const execAsync = util.promisify(exec);
 
@@ -65,95 +68,65 @@ async function testWithoutDocker(arg) {
   }
 }
 
-async function testWithDocker(arg) {
-  let idappConfig = await readIDappConfig();
-  let dockerhubUsername = idappConfig.dockerhubUsername || '';
+export async function testWithDocker(arg) {
+  let idappConfig;
+  let dockerhubUsername;
 
-  if (!dockerhubUsername) {
-    const { dockerHubUserNameAnswer } = await inquirer.prompt({
-      type: 'input',
-      name: 'dockerHubUserNameAnswer',
-      message:
-        'What is your username on Docker Hub? (It will be used to properly tag the Docker image)',
-    });
+  const spinner = ora('Setting up...').start();
 
-    if (!/^[a-zA-Z0-9-]+$/.test(dockerHubUserNameAnswer)) {
-      console.log(
-        chalk.red(
+  try {
+    idappConfig = await readIDappConfig();
+    dockerhubUsername = idappConfig.dockerhubUsername || '';
+
+    if (!dockerhubUsername) {
+      const { dockerHubUserNameAnswer } = await inquirer.prompt({
+        type: 'input',
+        name: 'dockerHubUserNameAnswer',
+        message:
+          'What is your username on Docker Hub? (It will be used to properly tag the Docker image)',
+      });
+
+      if (!/^[a-zA-Z0-9-]+$/.test(dockerHubUserNameAnswer)) {
+        spinner.fail(
           'Invalid Docker Hub username. Login to https://hub.docker.com/repositories, your username is what gets added to this URL.'
-        )
+        );
+        return;
+      }
+
+      dockerhubUsername = dockerHubUserNameAnswer;
+      idappConfig.dockerhubUsername = dockerHubUserNameAnswer;
+      fs.writeFileSync(
+        './idapp.config.json',
+        JSON.stringify(idappConfig, null, 2)
       );
-      return;
     }
 
-    dockerhubUsername = dockerHubUserNameAnswer;
-    idappConfig.dockerhubUsername = dockerHubUserNameAnswer;
-    fs.writeFileSync(
-      './idapp.config.json',
-      JSON.stringify(idappConfig, null, 2)
-    );
-  }
-
-  const spinner = ora('Running your idapp ... \n').start();
-  let withProtectedData;
-  try {
-    withProtectedData = readIDappConfig().withProtectedData;
-  } catch (err) {
-    console.log('err', err);
-    spinner.fail('Failed to read idapp.config.json file.');
-  }
-  try {
     spinner.text = 'Installing dependencies...';
-    await execAsync('npm ci'); // be careful dependency should be installed for node14
+    await execAsync('npm ci'); // Assuming this installs necessary dependencies
     spinner.succeed('Dependencies installed.');
-  } catch (e) {
-    spinner.fail('Failed to install dependencies.');
-    console.log(chalk.red('You need to install dotenv and figlet.'));
-    return;
-  }
 
-  spinner.text = 'Checking Docker daemon...';
-  await execDockerInfo(spinner);
+    spinner.text = 'Checking Docker daemon...';
+    await checkDockerDaemon(spinner);
 
-  const dockerImageName = 'hello-world';
-  try {
     spinner.text = 'Building Docker image...';
+    const dockerImageName = 'hello-world';
     await dockerBuild({
       dockerHubUser: dockerhubUsername,
       dockerImageName,
-      isForTest: true,
+      isForTest: idappConfig.withProtectedData || false, // Adjust based on your logic
     });
-    spinner.succeed('Docker image built.');
-  } catch (e) {
-    spinner.fail('Failed to build Docker image.');
-    console.log(chalk.red(`Failed to build Docker image: ${e.message}`));
-    return;
-  }
 
-  try {
     spinner.text = 'Running Docker container...';
-    let command = `docker run --rm -v ./input:/iexec_in -v ./output:/iexec_out -e IEXEC_IN=/iexec_in -e IEXEC_OUT=/iexec_out ${dockerhubUsername}/${dockerImageName} ${arg}`;
-    if (withProtectedData) {
-      command = `docker run --rm -v ./input:/iexec_in -v ./output:/iexec_out -e IEXEC_IN=/iexec_in -e IEXEC_OUT=/iexec_out -e IEXEC_DATASET_FILENAME="protectedData.zip" ${dockerhubUsername}/${dockerImageName} ${arg}`;
-    }
-
-    const { stdout, stderr } = await execAsync(command);
-    spinner.succeed('Docker container run successfully.');
-    console.log(stderr ? chalk.red(stderr) : chalk.blue(stdout));
-
-    const continueAnswer = await inquirer.prompt({
-      type: 'confirm',
-      name: 'continue',
-      message:
-        'Would you like to see the result? (`cat tmp/iexec_out/result.txt`)',
-    });
-    if (continueAnswer.continue) {
-      const { stdout } = await execAsync('cat output/result.txt');
-      console.log(stdout);
-    }
-  } catch (e) {
+    const containerConfig = {
+      dockerhubUsername,
+      imageName: dockerImageName,
+      arg,
+      withProtectedData: idappConfig.withProtectedData,
+    };
+    await runDockerContainer(containerConfig, spinner);
+  } catch (error) {
     spinner.fail('Failed to run Docker container.');
-    console.log(chalk.red(`Failed to run Docker container: ${e.message}`));
+    console.error(chalk.red(`Error: ${error.message}`));
   } finally {
     spinner.stop();
   }

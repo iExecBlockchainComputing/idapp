@@ -1,23 +1,19 @@
 import ora from 'ora';
-import util from 'util';
 import chalk from 'chalk';
 import inquirer from 'inquirer';
-import { exec } from 'child_process';
 import { sconify } from './sconify.js';
 import {
   dockerBuild,
   tagDockerImage,
   pushDockerImage,
+  checkDockerDaemon,
 } from './execDocker/docker.js';
-import { execDockerInfo } from './execDocker/info.js';
 import { privateKeyManagement } from './utils/privateKeyManagement.js';
 import {
   readIDappConfig,
   readPackageJonConfig,
   writeIDappConfig,
 } from './utils/fs.js';
-
-const execAsync = util.promisify(exec);
 
 export async function deploy(argv) {
   let mode;
@@ -77,22 +73,14 @@ export async function deployInDebug(argv) {
 
   const iDappName = readPackageJonConfig().name.toLowerCase();
 
-  console.log('test before execDockerInfo');
-  await execDockerInfo();
+  await checkDockerDaemon();
 
   try {
-    console.log('test');
-    const dockerBuildSpinner = ora('Docker build ...').start();
     await dockerBuild({
       dockerHubUser: dockerhubUsername,
       dockerImageName: iDappName,
     });
-    dockerBuildSpinner.succeed('Docker image built.');
-
-    const dockerTagSpinner = ora('Docker tag ...').start();
     await tagDockerImage(dockerhubUsername, iDappName, idappVersion);
-    dockerTagSpinner.succeed('Docker image tagged.');
-
     await pushDockerImage(dockerhubUsername, iDappName, idappVersion);
   } catch (e) {
     console.log(
@@ -103,6 +91,7 @@ export async function deployInDebug(argv) {
     return;
   }
 
+  try{
   // Sconifying iDapp
   const sconifySpinner = ora(
     'Sconifying your idapp, this may take a few minutes ...'
@@ -116,7 +105,10 @@ export async function deployInDebug(argv) {
 
   sconifySpinner.succeed(
     `Deployment of your idapp completed successfully: ${dockerHubUrl}`
-  );
+    );
+  } catch (e) {
+    
+  }
 }
 
 async function deployInProd(argv) {

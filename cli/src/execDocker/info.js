@@ -6,8 +6,8 @@ const execAsync = util.promisify(exec);
 
 export async function execDockerInfo(spinner) {
   try {
-
     await execAsync('docker info');
+    console.log('every things looks good');
     // spinner.succeed('Docker daemon is running.');
   } catch (e) {
     // spinner.fail('Docker daemon is not running.');

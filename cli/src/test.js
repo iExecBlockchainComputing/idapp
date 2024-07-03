@@ -5,7 +5,7 @@ import chalk from 'chalk';
 import { exec } from 'child_process';
 import ora from 'ora';
 import { readIDappConfig } from './utils/fs.js';
-import { execDockerBuild } from './execDocker/build.js';
+import { dockerBuild } from './execDocker/docker.js';
 import { execDockerInfo } from './execDocker/info.js';
 
 const execAsync = util.promisify(exec);
@@ -118,7 +118,7 @@ async function testWithDocker(arg) {
   const dockerImageName = 'hello-world';
   try {
     spinner.text = 'Building Docker image...';
-    await execDockerBuild({
+    await dockerBuild({
       dockerHubUser: dockerhubUsername,
       dockerImageName,
       isForTest: true,

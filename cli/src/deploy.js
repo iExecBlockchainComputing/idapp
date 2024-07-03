@@ -4,7 +4,11 @@ import chalk from 'chalk';
 import inquirer from 'inquirer';
 import { exec } from 'child_process';
 import { sconify } from './sconify.js';
-import { execDockerBuild } from './execDocker/build.js';
+import {
+  dockerBuild,
+  tagDockerImage,
+  pushDockerImage,
+} from './execDocker/docker.js';
 import { execDockerInfo } from './execDocker/info.js';
 import { privateKeyManagement } from './utils/privateKeyManagement.js';
 import {
@@ -73,39 +77,27 @@ export async function deployInDebug(argv) {
 
   const iDappName = readPackageJonConfig().name.toLowerCase();
 
+  console.log('test before execDockerInfo');
   await execDockerInfo();
-  try {
-    const dockerLoginSpinner = ora('Docker login ...').start();
-    await execAsync('docker login');
-    dockerLoginSpinner.succeed('Docker login successful.');
-  } catch (error) {
-    console.log(chalk.red(`\n Failed to login to DockerHub: ${e}`));
-    return;
-  }
 
   try {
+    console.log('test');
     const dockerBuildSpinner = ora('Docker build ...').start();
-    await execDockerBuild({
+    await dockerBuild({
       dockerHubUser: dockerhubUsername,
       dockerImageName: iDappName,
     });
     dockerBuildSpinner.succeed('Docker image built.');
 
     const dockerTagSpinner = ora('Docker tag ...').start();
-    await execAsync(
-      `docker tag ${dockerhubUsername}/${iDappName} ${dockerhubUsername}/${iDappName}:${idappVersion}-debug`
-    );
+    await tagDockerImage(dockerhubUsername, iDappName, idappVersion);
     dockerTagSpinner.succeed('Docker image tagged.');
 
-    const dockerPushSpinner = ora('Docker push ...').start();
-    await execAsync(
-      `docker push ${dockerhubUsername}/${iDappName}:${idappVersion}-debug`
-    );
-    dockerPushSpinner.succeed('Docker image pushed.');
+    await pushDockerImage(dockerhubUsername, iDappName, idappVersion);
   } catch (e) {
     console.log(
       chalk.red(
-        `An error occurred during the deployment of the non-tee image: ${e}`
+        `\n An error occurred during the deployment of the non-tee image: ${e.message}`
       )
     );
     return;

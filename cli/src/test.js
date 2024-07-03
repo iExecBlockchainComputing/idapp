@@ -1,7 +1,9 @@
-import chalk from 'chalk';
-import { exec } from 'child_process';
 import fs from 'fs';
+import path from 'path';
+import { exec } from 'child_process';
+import chalk from 'chalk';
 import inquirer from 'inquirer';
+import { select } from '@inquirer/prompts';
 import ora from 'ora';
 import util from 'util';
 import {
@@ -23,18 +25,21 @@ export async function test(argv) {
 }
 
 async function testWithoutDocker(arg) {
+  const projectDir = await askForProjectDirectory();
+
   const spinner = ora('Running your idapp ... \n').start();
 
   let withProtectedData;
   try {
-    withProtectedData = readIDappConfig().withProtectedData;
+    withProtectedData = readIDappConfig({ projectDir }).withProtectedData;
   } catch (err) {
     console.log('err', err);
     spinner.fail('Failed to read idapp.config.json file.');
   }
+
   try {
     spinner.text = 'Installing dependencies...';
-    await execAsync('npm ci');
+    await execAsync(`cd ${projectDir} && npm ci`);
     spinner.succeed('Dependencies installed.');
   } catch (e) {
     spinner.fail('Failed to install dependencies.');
@@ -44,9 +49,9 @@ async function testWithoutDocker(arg) {
 
   try {
     spinner.text = 'Running iDapp...';
-    let command = `cross-env IEXEC_OUT=./output IEXEC_IN=./input node ./src/app.js ${arg}`;
+    let command = `cross-env IEXEC_OUT=./${projectDir}/output IEXEC_IN=./${projectDir}/input node ./${projectDir}/src/app.js ${arg}`;
     if (withProtectedData) {
-      command = `cross-env IEXEC_OUT=./output IEXEC_IN=./input IEXEC_DATASET_FILENAME="protectedData.zip" node ./src/app.js ${arg}`;
+      command = `cross-env IEXEC_OUT=./${projectDir}/output IEXEC_IN=./${projectDir}/input IEXEC_DATASET_FILENAME="protectedData.zip" node ./${projectDir}/src/app.js ${arg}`;
     }
 
     const { stdout, stderr } = await execAsync(command);
@@ -59,7 +64,7 @@ async function testWithoutDocker(arg) {
       message: 'Would you like to see the result? (`cat output/result.txt`)',
     });
     if (continueAnswer.continue) {
-      const { stdout } = await execAsync('cat output/result.txt');
+      const { stdout } = await execAsync(`cat ${projectDir}/output/result.txt`);
       console.log(stdout);
     }
   } catch (err) {
@@ -73,8 +78,10 @@ export async function testWithDocker(arg) {
   let idappConfig;
   let dockerhubUsername;
 
+  const projectDir = await askForProjectDirectory();
+
   try {
-    idappConfig = await readIDappConfig();
+    idappConfig = await readIDappConfig({ projectDir });
     dockerhubUsername = idappConfig.dockerhubUsername || '';
 
     const dockerHubUserNameAnswer =
@@ -86,31 +93,53 @@ export async function testWithDocker(arg) {
     dockerhubUsername = dockerHubUserNameAnswer;
     idappConfig.dockerhubUsername = dockerHubUserNameAnswer;
     fs.writeFileSync(
-      './idapp.config.json',
+      path.join(projectDir, 'idapp.config.json'),
       JSON.stringify(idappConfig, null, 2)
     );
 
     const installDepSpinner = ora('Installing dependencies...').start();
-    await execAsync('npm ci'); // Assuming this installs necessary dependencies
+    await execAsync(`cd ${projectDir} && npm ci`);
     installDepSpinner.succeed('Dependencies installed.');
 
     await checkDockerDaemon();
 
-    const dockerImageName = 'hello-world';
+    const dockerImageName = projectDir;
     await dockerBuild({
+      projectDir,
       dockerHubUser: dockerhubUsername,
       dockerImageName,
       isForTest: idappConfig.withProtectedData || false, // Adjust based on your logic
     });
 
-    const containerConfig = {
+    await runDockerContainer({
+      projectDir,
       dockerhubUsername,
       imageName: dockerImageName,
-      arg,
+      arg: arg || 'World',
       withProtectedData: idappConfig.withProtectedData,
-    };
-    await runDockerContainer(containerConfig);
+    });
   } catch (error) {
     console.error(chalk.red(`Error: ${error.message}`));
   }
+}
+
+async function askForProjectDirectory() {
+  const projectNames = fs
+    .readdirSync('.', { withFileTypes: true })
+    .filter((item) => item.isDirectory())
+    .filter((dir) => {
+      return fs.existsSync(path.join('.', dir.name, 'idapp.config.json'));
+    })
+    .map((dir) => dir.name);
+
+  const projectName = await select({
+    message:
+      'What\'s the name of the project you\'d like to test? (Folders containing an "idapp.config.json" file)',
+    choices: projectNames.map((projectName) => ({
+      name: projectName,
+      value: projectName,
+    })),
+  });
+
+  return projectName;
 }

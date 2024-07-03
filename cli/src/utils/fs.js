@@ -1,9 +1,13 @@
 import fs from 'fs';
+import path from 'path';
 
 // Read configuration file
-export function readIDappConfig() {
+export function readIDappConfig({ projectDir }) {
   try {
-    const configContent = fs.readFileSync('./idapp.config.json', 'utf8');
+    const configContent = fs.readFileSync(
+      path.join(projectDir, 'idapp.config.json'),
+      'utf8'
+    );
     const config = JSON.parse(configContent);
     return config;
   } catch (err) {
@@ -12,9 +16,12 @@ export function readIDappConfig() {
 }
 
 // Read configuration file
-export function readPackageJonConfig() {
+export function readPackageJonConfig({ projectDir }) {
   try {
-    const configContent = fs.readFileSync('./package.json', 'utf8');
+    const configContent = fs.readFileSync(
+      path.join(projectDir, 'package.json'),
+      'utf8'
+    );
     const config = JSON.parse(configContent);
     return config;
   } catch (err) {

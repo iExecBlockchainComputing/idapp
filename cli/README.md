@@ -11,7 +11,10 @@ This CLI provides an interface to guide you through different steps:
 
 ### Install
 
+Be sure to use node >= v18
+
 ```sh
+cd cli
 npm ci
 npm i -g .
 ```
@@ -106,3 +109,11 @@ iexec task show 0x62ed16ebc52c9437af45f57dc30819254ce391633c090e125253726eb76e07
 
 Unzip the downloaded file and you will find the output of your task in a
 `result.txt` file.
+
+---
+
+### Encountered errors
+
+> Error: (HTTP code 409) unexpected - can not get logs from container which is dead or marked for removal 
+
+Is there a dangling image? Check on your Docker Desktop app. If so, delete it and retry.

@@ -8,6 +8,7 @@ const writeFileAsync = util.promisify(fs.writeFile);
 const accessAsync = util.promisify(fs.access);
 
 export async function initHelloWorldApp({
+  targetDir,
   projectName,
   hasProtectedData,
   template,
@@ -15,36 +16,27 @@ export async function initHelloWorldApp({
   try {
     if (hasProtectedData) {
       copyChosenTemplateFiles({
+        targetDir,
         projectName,
         template: `withProtectedData/${template}`,
       });
     } else {
       copyChosenTemplateFiles({
+        targetDir,
         projectName,
         template: `withoutProtectedData/${template}`,
       });
     }
 
     // Create idapp.config.json
-    await createConfigurationFiles({ hasProtectedData });
+    await createConfigurationFiles({ targetDir, hasProtectedData });
   } catch (err) {
     console.log('Error during project initialization:', err);
     throw err;
   }
 }
 
-async function createConfigurationFiles({ hasProtectedData }) {
-  // Create a simple iDapp configuration file
-  const configContent = `{
-  "dockerhubUsername": "",
-  "withProtectedData": ${hasProtectedData}
-}
-`;
-
-  await writeFileAsync('./idapp.config.json', configContent, 'utf8');
-}
-
-function copyChosenTemplateFiles({ projectName, template }) {
+function copyChosenTemplateFiles({ targetDir, projectName, template }) {
   const templateDir = path.resolve(
     fileURLToPath(import.meta.url),
     '../../..',
@@ -52,7 +44,7 @@ function copyChosenTemplateFiles({ projectName, template }) {
   );
 
   const write = (file, content) => {
-    const targetPath = path.join(process.cwd(), file);
+    const targetPath = path.join(targetDir, file);
     if (content) {
       fs.writeFileSync(targetPath, content);
     } else {
@@ -72,4 +64,16 @@ function copyChosenTemplateFiles({ projectName, template }) {
   pkg.name = projectName;
 
   write('package.json', JSON.stringify(pkg, null, 2) + '\n');
+}
+
+async function createConfigurationFiles({ targetDir, hasProtectedData }) {
+  // Create a simple iDapp configuration file
+  const configContent = `{
+  "dockerhubUsername": "",
+  "withProtectedData": ${hasProtectedData}
+}
+`;
+
+  const targetPath = path.join(targetDir, './idapp.config.json');
+  await writeFileAsync(targetPath, configContent, 'utf8');
 }

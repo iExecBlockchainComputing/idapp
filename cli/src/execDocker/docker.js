@@ -1,9 +1,10 @@
-import ora from 'ora';
-import os from 'os';
-import Docker from 'dockerode';
-import inquirer from 'inquirer';
+import path from 'path';
 import util from 'util';
 import { exec } from 'child_process';
+import os from 'os';
+import ora from 'ora';
+import Docker from 'dockerode';
+import inquirer from 'inquirer';
 
 const docker = new Docker();
 const execAsync = util.promisify(exec);
@@ -22,6 +23,7 @@ export async function checkDockerDaemon() {
 }
 
 export async function dockerBuild({
+  projectDir,
   dockerHubUser,
   dockerImageName,
   isForTest = false,
@@ -30,10 +32,13 @@ export async function dockerBuild({
   const buildSpinner = ora('Building Docker image ...').start();
 
   let buildArgs = {
-    context: process.cwd(), // Use current working directory
+    context: path.join(process.cwd(), projectDir), // Use project directory
     src: ['Dockerfile'], // Specify Dockerfile path
-    t: `${dockerHubUser}/${dockerImageName}`, // Tag for the image
   };
+  const imageTag = {
+    t: `${dockerHubUser}/${dockerImageName}`,
+  };
+  console.log('imageTag', imageTag);
 
   if (osType === 'Darwin') {
     // For MacOS
@@ -48,7 +53,7 @@ export async function dockerBuild({
 
   // Perform the Docker build operation
   return new Promise((resolve, reject) => {
-    docker.buildImage(buildArgs, (error, stream) => {
+    docker.buildImage(buildArgs, imageTag, (error, stream) => {
       if (error) {
         buildSpinner.fail('Failed to build Docker image.');
         reject(error);
@@ -121,6 +126,7 @@ async function getDockerCredentials() {
 }
 
 export async function runDockerContainer({
+  projectDir,
   dockerhubUsername,
   imageName,
   arg,
@@ -134,15 +140,17 @@ export async function runDockerContainer({
       Cmd: [arg],
       HostConfig: {
         Binds: [
-          `${process.cwd()}/input:/iexec_in`,
-          `${process.cwd()}/output:/iexec_out`,
+          `${process.cwd()}/${projectDir}/input:/iexec_in`,
+          `${process.cwd()}/${projectDir}/output:/iexec_out`,
         ],
         AutoRemove: true,
       },
       Env: [
-        `IEXEC_IN=/iexec_in`,
-        `IEXEC_OUT=/iexec_out`,
-        withProtectedData ? `IEXEC_DATASET_FILENAME=protectedData.zip` : '',
+        `IEXEC_IN=/${projectDir}/iexec_in`,
+        `IEXEC_OUT=/${projectDir}/iexec_out`,
+        withProtectedData
+          ? `IEXEC_DATASET_FILENAME=${projectDir}/protectedData.zip`
+          : '',
       ].filter(Boolean),
     });
 

@@ -1,16 +1,16 @@
-import fs from 'fs';
-import inquirer from 'inquirer';
-import util from 'util';
 import chalk from 'chalk';
 import { exec } from 'child_process';
+import fs from 'fs';
+import inquirer from 'inquirer';
 import ora from 'ora';
-import { readIDappConfig } from './utils/fs.js';
+import util from 'util';
 import {
-  dockerBuild,
   checkDockerDaemon,
+  dockerBuild,
   runDockerContainer,
 } from './execDocker/docker.js';
 import { promptForDockerHubUsername } from './execDocker/prompt.js';
+import { readIDappConfig } from './utils/fs.js';
 
 const execAsync = util.promisify(exec);
 
@@ -44,9 +44,9 @@ async function testWithoutDocker(arg) {
 
   try {
     spinner.text = 'Running iDapp...';
-    let command = `IEXEC_OUT=./output IEXEC_IN=./input node ./src/app.js ${arg}`;
+    let command = `cross-env IEXEC_OUT=./output IEXEC_IN=./input node ./src/app.js ${arg}`;
     if (withProtectedData) {
-      command = `IEXEC_OUT=./output IEXEC_IN=./input IEXEC_DATASET_FILENAME="protectedData.zip" node ./src/app.js ${arg}`;
+      command = `cross-env IEXEC_OUT=./output IEXEC_IN=./input IEXEC_DATASET_FILENAME="protectedData.zip" node ./src/app.js ${arg}`;
     }
 
     const { stdout, stderr } = await execAsync(command);

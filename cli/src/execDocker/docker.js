@@ -1,9 +1,9 @@
-import ora from 'ora';
-import os from 'os';
+import { exec } from 'child_process';
 import Docker from 'dockerode';
 import inquirer from 'inquirer';
+import ora from 'ora';
+import os from 'os';
 import util from 'util';
-import { exec } from 'child_process';
 
 const docker = new Docker();
 const execAsync = util.promisify(exec);
@@ -28,13 +28,10 @@ export async function dockerBuild({
 }) {
   const osType = os.type();
   const buildSpinner = ora('Building Docker image ...').start();
-
   let buildArgs = {
     context: process.cwd(), // Use current working directory
-    src: ['Dockerfile'], // Specify Dockerfile path
-    t: `${dockerHubUser}/${dockerImageName}`, // Tag for the image
+    src: ['./'],
   };
-
   if (osType === 'Darwin') {
     // For MacOS
     if (isForTest) {
@@ -48,23 +45,30 @@ export async function dockerBuild({
 
   // Perform the Docker build operation
   return new Promise((resolve, reject) => {
-    docker.buildImage(buildArgs, (error, stream) => {
-      if (error) {
-        buildSpinner.fail('Failed to build Docker image.');
-        reject(error);
-        return;
-      }
-
-      docker.modem.followProgress(stream, (err, res) => {
-        if (err) {
+    docker.buildImage(
+      buildArgs,
+      {
+        t: `${dockerHubUser}/${dockerImageName}`,
+      },
+      (error, stream) => {
+        if (error) {
           buildSpinner.fail('Failed to build Docker image.');
-          reject(err);
-        } else {
-          buildSpinner.succeed('Docker image built.');
-          resolve(res);
+          reject(error);
+          return;
         }
-      });
-    });
+
+        docker.modem.followProgress(stream, (err, res) => {
+          if (err) {
+            buildSpinner.fail('Failed to build Docker image.');
+            reject(err);
+          } else {
+            buildSpinner.succeed('Docker image built.');
+            console.log(res);
+            resolve(res);
+          }
+        });
+      }
+    );
   });
 }
 
@@ -131,21 +135,16 @@ export async function runDockerContainer({
   ).start();
 
   try {
-    const container = await docker.createContainer({
-      Image: `${dockerhubUsername}/${imageName}`,
+    console.log(`${dockerhubUsername}/${imageName}`);
+    const container = docker.createContainer({
+      Image: `${dockerhubUsername}/${imageName}:latest`,
       Cmd: [arg],
-      HostConfig: {
-        Binds: [
-          `${process.cwd()}/input:/iexec_in`,
-          `${process.cwd()}/output:/iexec_out`,
-        ],
-        AutoRemove: true,
-      },
+      context: process.cwd(),
       Env: [
-        `IEXEC_IN=/iexec_in`,
-        `IEXEC_OUT=/iexec_out`,
+        `IEXEC_IN=./input`,
+        `IEXEC_OUT=./output`,
         ...(withProtectedData
-          ? [`IEXEC_DATASET_FILENAME=protectedData.zip`]
+          ? [`IEXEC_DATASET_FILENAME=./input/protectedData.zip`]
           : []),
       ],
     });

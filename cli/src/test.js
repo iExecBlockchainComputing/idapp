@@ -10,6 +10,7 @@ import {
   checkDockerDaemon,
   runDockerContainer,
 } from './execDocker/docker.js';
+import { promptForDockerHubUsername } from './execDocker/prompt.js';
 
 const execAsync = util.promisify(exec);
 
@@ -72,43 +73,29 @@ export async function testWithDocker(arg) {
   let idappConfig;
   let dockerhubUsername;
 
-  const spinner = ora('Setting up...').start();
-
   try {
     idappConfig = await readIDappConfig();
     dockerhubUsername = idappConfig.dockerhubUsername || '';
 
-    if (!dockerhubUsername) {
-      const { dockerHubUserNameAnswer } = await inquirer.prompt({
-        type: 'input',
-        name: 'dockerHubUserNameAnswer',
-        message:
-          'What is your username on Docker Hub? (It will be used to properly tag the Docker image)',
-      });
-
-      if (!/^[a-zA-Z0-9-]+$/.test(dockerHubUserNameAnswer)) {
-        spinner.fail(
-          'Invalid Docker Hub username. Login to https://hub.docker.com/repositories, your username is what gets added to this URL.'
-        );
-        return;
-      }
-
-      dockerhubUsername = dockerHubUserNameAnswer;
-      idappConfig.dockerhubUsername = dockerHubUserNameAnswer;
-      fs.writeFileSync(
-        './idapp.config.json',
-        JSON.stringify(idappConfig, null, 2)
-      );
+    const dockerHubUserNameAnswer =
+      await promptForDockerHubUsername(dockerhubUsername);
+    if (!dockerHubUserNameAnswer) {
+      return;
     }
 
-    spinner.text = 'Installing dependencies...';
+    dockerhubUsername = dockerHubUserNameAnswer;
+    idappConfig.dockerhubUsername = dockerHubUserNameAnswer;
+    fs.writeFileSync(
+      './idapp.config.json',
+      JSON.stringify(idappConfig, null, 2)
+    );
+
+    const installDepSpinner = ora('Installing dependencies...').start();
     await execAsync('npm ci'); // Assuming this installs necessary dependencies
-    spinner.succeed('Dependencies installed.');
+    installDepSpinner.succeed('Dependencies installed.');
 
-    spinner.text = 'Checking Docker daemon...';
-    await checkDockerDaemon(spinner);
+    await checkDockerDaemon();
 
-    spinner.text = 'Building Docker image...';
     const dockerImageName = 'hello-world';
     await dockerBuild({
       dockerHubUser: dockerhubUsername,
@@ -116,18 +103,14 @@ export async function testWithDocker(arg) {
       isForTest: idappConfig.withProtectedData || false, // Adjust based on your logic
     });
 
-    spinner.text = 'Running Docker container...';
     const containerConfig = {
       dockerhubUsername,
       imageName: dockerImageName,
       arg,
       withProtectedData: idappConfig.withProtectedData,
     };
-    await runDockerContainer(containerConfig, spinner);
+    await runDockerContainer(containerConfig);
   } catch (error) {
-    spinner.fail('Failed to run Docker container.');
     console.error(chalk.red(`Error: ${error.message}`));
-  } finally {
-    spinner.stop();
   }
 }

@@ -120,11 +120,13 @@ async function getDockerCredentials() {
   }
 }
 
-export async function runDockerContainer(
-  { dockerhubUsername, imageName, arg, withProtectedData },
-  spinner
-) {
-  console.log("runDockerContainers")
+export async function runDockerContainer({
+  dockerhubUsername,
+  imageName,
+  arg,
+  withProtectedData,
+}) {
+  let runDockerContainerSpinner = ora('Installing dependencies...').start();
   try {
     // Replace with dockerode logic for running containers
     const container = await docker.createContainer({
@@ -150,7 +152,7 @@ export async function runDockerContainer(
     await container.wait();
     const logs = await container.logs({ stdout: true, stderr: true });
 
-    spinner.succeed('Docker container run successfully.');
+    runDockerContainerSpinner.succeed('Docker container run successfully.');
     console.log(logs.stdout ? chalk.blue(logs.stdout) : '');
     if (logs.stderr) {
       console.log(chalk.red(logs.stderr));
@@ -166,7 +168,7 @@ export async function runDockerContainer(
       console.log(stdout);
     }
   } catch (error) {
-    spinner.fail('Failed to run Docker container.');
+    runDockerContainerSpinner.fail('Failed to run Docker container.');
     throw error;
   }
 }

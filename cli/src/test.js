@@ -100,7 +100,7 @@ export async function testWithDocker(arg) {
     await dockerBuild({
       dockerHubUser: dockerhubUsername,
       dockerImageName,
-      isForTest: idappConfig.withProtectedData || false, // Adjust based on your logic
+      isForTest: true, // Adjust based on your logic
     });
 
     const containerConfig = {

@@ -56,11 +56,11 @@ iexec decentralized application.
 Command:
 
 ```bash
-idapp test [--docker] [--param <input>]
+idapp test [--docker] [--params <input>]
 ```
 
 Description: Test your iDapp locally. Use the `--docker` option to simulate the
-workerpool environment closely. Optionally, use `--param` to provide input
+workerpool environment closely. Optionally, use `--params` to provide input
 parameter to your iDapp during testing.
 
 ---

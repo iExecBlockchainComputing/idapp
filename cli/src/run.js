@@ -74,7 +74,6 @@ export async function runInDebug(argv) {
   if (protectedDataAddress) {
     try {
       // Check the protectedData has its privateKey registered into the debug sms
-      console.log(protectedDataAddress);
       const isSecretSet = await iexec.dataset.checkDatasetSecretExists(
         protectedDataAddress,
         {

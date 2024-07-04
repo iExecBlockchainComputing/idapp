@@ -21,6 +21,7 @@ export async function checkDockerDaemon() {
   }
 }
 
+// TODO: fix plateform for dockerode
 // export async function dockerBuild({
 //   dockerHubUser,
 //   dockerImageName,

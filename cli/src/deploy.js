@@ -69,6 +69,7 @@ export async function deployInDebug(argv) {
   ]);
 
   // Get wallet from privateKey
+  // TODO We need to find a workaround and stop asking the user their password (sensitive info!)
   const wallet = await privateKeyManagement();
 
   const iDappName = readPackageJonConfig().name.toLowerCase();
@@ -91,24 +92,22 @@ export async function deployInDebug(argv) {
     return;
   }
 
-  try{
-  // Sconifying iDapp
-  const sconifySpinner = ora(
-    'Sconifying your idapp, this may take a few minutes ...'
-  ).start();
-  const { dockerHubUrl } = await sconify({
-    mainSpinner: sconifySpinner,
-    sconifyForProd: false,
-    iDappNameToSconify: `${dockerhubUsername}/${iDappName}:${idappVersion}-debug`,
-    wallet,
-  });
+  try {
+    // Sconifying iDapp
+    const sconifySpinner = ora(
+      'Sconifying your idapp, this may take a few minutes ...'
+    ).start();
+    const { dockerHubUrl } = await sconify({
+      mainSpinner: sconifySpinner,
+      sconifyForProd: false,
+      iDappNameToSconify: `${dockerhubUsername}/${iDappName}:${idappVersion}-debug`,
+      wallet,
+    });
 
-  sconifySpinner.succeed(
-    `Deployment of your idapp completed successfully: ${dockerHubUrl}`
+    sconifySpinner.succeed(
+      `Deployment of your idapp completed successfully: ${dockerHubUrl}`
     );
-  } catch (e) {
-    
-  }
+  } catch (e) {}
 }
 
 async function deployInProd(argv) {

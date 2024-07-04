@@ -112,6 +112,8 @@ export async function tagDockerImage(dockerhubUsername, imageName, version) {
 
 // Function to push a Docker image
 export async function pushDockerImage(dockerhubUsername, imageName, version) {
+  // TODO Probably no need to ask again for dockerHubUsername, we have it in idapp.config.json
+  // TODO We need to handle this push without asking the user their password (sensitive info!)
   const { dockerHubUsername, dockerHubPassword } = await getDockerCredentials();
 
   const dockerPushSpinner = ora('Docker push ...').start();

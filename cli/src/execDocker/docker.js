@@ -89,20 +89,31 @@ export async function tagDockerImage(dockerhubUsername, imageName, version) {
 export async function pushDockerImage(dockerhubUsername, imageName, version) {
   // TODO Probably no need to ask again for dockerHubUsername, we have it in idapp.config.json
   // TODO We need to handle this push without asking the user their password (sensitive info!)
-  const { dockerHubUsername, dockerHubPassword } = await getDockerCredentials();
+  try {
+    const { dockerHubUsername, dockerHubPassword } =
+      await getDockerCredentials();
 
-  const dockerPushSpinner = ora('Docker push ...').start();
-  const image = docker.getImage(
-    `${dockerhubUsername}/${imageName}:${version}-debug`
-  );
-  dockerPushSpinner.succeed('Docker image pushed.');
+    if (!dockerHubUsername || !dockerHubPassword) {
+      throw new Error('DockerHub credentials not found.');
+    }
 
-  await image.push({
-    authconfig: {
-      username: dockerHubUsername,
-      password: dockerHubPassword,
-    },
-  });
+    const dockerPushSpinner = ora('Docker push ...').start();
+    const image = docker.getImage(
+      `${dockerhubUsername}/${imageName}:${version}-debug`
+    );
+
+    await image.push({
+      authconfig: {
+        username: dockerHubUsername,
+        password: dockerHubPassword,
+      },
+    });
+
+    dockerPushSpinner.succeed('Docker image pushed.');
+  } catch (error) {
+    console.error('Error pushing Docker image:', error);
+    throw error; // Re-throwing the error for higher-level handling if needed
+  }
 }
 
 async function getDockerCredentials() {

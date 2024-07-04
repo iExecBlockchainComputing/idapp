@@ -22,83 +22,57 @@ export async function checkDockerDaemon() {
 }
 
 // TODO: fix plateform for dockerode
-// export async function dockerBuild({
-//   dockerHubUser,
-//   dockerImageName,
-//   isForTest = false,
-// }) {
-//   const osType = os.type();
-//   // const buildSpinner = ora('Building Docker image ...').start();
-//   let buildArgs = {
-//     context: process.cwd(), // Use current working directory
-//     src: ['./'],
-//   };
-
-//   // if (osType === 'Darwin') {
-//   //   console.log("ON MAC")
-//   //   // For MacOS
-//   //   if (isForTest) {
-//   //     // ARM64 variant for local testing only
-//   //     buildArgs.platform = 'linux/arm64';
-//   //   } else {
-//   //     console.log('here');
-//   //     // AMD64 variant to deploy on iExec
-//   //     buildArgs.platform = 'linux/amd64';
-//   //   }
-//   // }
-
-//   // Perform the Docker build operation
-//   return new Promise((resolve, reject) => {
-//     docker.buildImage(
-//       buildArgs,
-//       {
-//         t: `${dockerHubUser}/${dockerImageName}`,
-//         platform: 'linux/amd64',
-//       },
-//       (error, stream) => {
-//         if (error) {
-//           // buildSpinner.fail('Failed to build Docker image.');
-//           reject(error);
-//           return;
-//         }
-
-//         docker.modem.followProgress(stream, (err, res) => {
-//           if (err) {
-//             // buildSpinner.fail('Failed to build Docker image.');
-//             reject(err);
-//           } else {
-//             // buildSpinner.succeed('Docker image built.');
-//             resolve(res);
-//           }
-//         });
-//       }
-//     );
-//   });
-// }
-
 export async function dockerBuild({
   dockerHubUser,
   dockerImageName,
   isForTest = false,
 }) {
   const osType = os.type();
+  const buildSpinner = ora('Building Docker image ...').start();
+  let buildArgs = {
+    context: process.cwd(), // Use current working directory
+    src: ['./'],
+  };
+
+  let platform;
   if (osType === 'Darwin') {
     // For MacOS
     if (isForTest) {
       // ARM64 variant for local testing only
-      await execAsync(
-        `docker buildx build --platform linux/arm64 -t ${dockerHubUser}/${dockerImageName} .`
-      );
+      platform = 'linux/arm64';
     } else {
       // AMD64 variant to deploy on iExec
-      await execAsync(
-        `docker buildx build --platform linux/amd64 -t ${dockerHubUser}/${dockerImageName} .`
-      );
+      platform = 'linux/amd64';
     }
-  } else {
-    // For linux or windows
-    await execAsync(`docker build -t ${dockerHubUser}/${dockerImageName} .`);
   }
+
+  // Perform the Docker build operation
+  return new Promise((resolve, reject) => {
+    docker.buildImage(
+      buildArgs,
+      {
+        t: `${dockerHubUser}/${dockerImageName}`,
+        platform,
+      },
+      (error, stream) => {
+        if (error) {
+          buildSpinner.fail('Failed to build Docker image.');
+          reject(error);
+          return;
+        }
+
+        docker.modem.followProgress(stream, (err, res) => {
+          if (err) {
+            buildSpinner.fail('Failed to build Docker image.');
+            reject(err);
+          } else {
+            buildSpinner.succeed('Docker image built.');
+            resolve(res);
+          }
+        });
+      }
+    );
+  });
 }
 
 // Function to tag a Docker image

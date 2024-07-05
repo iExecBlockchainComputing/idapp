@@ -3,6 +3,7 @@ import figlet from 'figlet';
 import inquirer from 'inquirer';
 import ora from 'ora';
 import { initHelloWorldApp } from './utils/initHelloWorldApp.js';
+import { isFolderEmpty } from './utils/isFolderEmpty.js';
 import { isValidPackageName } from './utils/isValidPackageName.js';
 
 export async function init() {
@@ -24,6 +25,12 @@ export async function init() {
   });
   if (!continueAnswer.continue) {
     process.exit(0);
+  }
+
+  if (!isFolderEmpty(process.cwd())) {
+    console.error('⚠️ Folder is not empty, prefer to stop');
+    console.log(`Want to run "mkdir hello-world && cd hello-world"?`);
+    process.exit(1);
   }
 
   const currentFolderName = process.cwd().split('/').pop();

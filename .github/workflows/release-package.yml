@@ -22,7 +22,7 @@ jobs:
           node-version: '18'
 
       - name: Install dependencies
-        run: npm ci
+        run: cd cli && npm ci
 
       - name: Publish to GitHub Package Registry
         run: npm publish --registry=https://npm.pkg.github.com/

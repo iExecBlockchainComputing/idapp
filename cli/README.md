@@ -20,7 +20,7 @@ Ensure the following prerequisites are met before proceeding:
 ```sh
 cd idapp/cli
 npm ci
-npm i -g .
+npm i -g .  (don't forget the final '.')
 ```
 
 ## Commands

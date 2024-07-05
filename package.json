@@ -1,0 +1,18 @@
+{
+  "name": "idapp",
+  "version": "1.0.0-beta",
+  "description": "A CLI to guide you through the process of sconifying an iExec idapp",
+  "main": "src/index.js",
+  "type": "module",
+  "bin": {
+    "idapp": "cli/src/index.js"
+  },
+  "homepage": "https://github.com/iExecBlockchainComputing/idapp/blob/main/cli/README.md",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/iExecBlockchainComputing/idapp.git"
+  },
+  "publishConfig": {
+    "registry": "https://npm.pkg.github.com/"
+  }
+}

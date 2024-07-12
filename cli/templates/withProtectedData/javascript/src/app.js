@@ -10,7 +10,10 @@ const main = async () => {
 
     // Example of process.argv:
     // [ '/usr/local/bin/node', '/app/src/app.js', 'Bob' ]
-    const message = !!process.argv?.[2] ? process.argv[2] : 'World';
+    const message =
+      !!process.argv?.[2] && process.argv[2] !== 'undefined'
+        ? process.argv[2]
+        : 'World';
 
     // Transform input text into an ASCII Art text
     const asciiArtText = figlet.textSync(`Hello, ${message}!`);

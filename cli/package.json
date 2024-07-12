@@ -1,5 +1,5 @@
 {
-  "name": "@iexecblockchaincomputing/idapp",
+  "name": "idapp-cli",
   "version": "0.1.0-beta.1",
   "description": "A CLI to guide you through the process of sconifying an iExec idapp",
   "main": "src/index.js",
@@ -32,7 +32,9 @@
     "inquirer": "^9.2.20",
     "ora": "^8.0.1",
     "undici": "^6.18.2",
-    "yargs": "^17.7.2"
+    "yargs": "^17.7.2",
+    "zod": "^3.23.8",
+    "zod-validation-error": "^3.3.0"
   },
   "devDependencies": {
     "@types/yargs": "^17.0.32",

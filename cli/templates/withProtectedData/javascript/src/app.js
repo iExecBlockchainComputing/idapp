@@ -7,26 +7,28 @@ const {
 const main = async () => {
   try {
     const output = process.env.IEXEC_OUT;
-    const message =
-      process.argv.length > 2 && process.argv[2] !== 'undefined'
-        ? process.argv[2]
-        : 'World';
 
-    const text = figlet.textSync(`Hello, ${message}!`);
+    // Example of process.argv:
+    // [ '/usr/local/bin/node', '/app/src/app.js', 'Bob' ]
+    const message = !!process.argv?.[2] ? process.argv[2] : 'World';
+
+    // Transform input text into an ASCII Art text
+    const asciiArtText = figlet.textSync(`Hello, ${message}!`);
 
     let file;
     try {
       const deserializer = new IExecDataProtectorDeserializer();
       file = await deserializer.getValue('email', 'string');
     } catch (e) {
-      file = 'missing protectedData';
-      console.log('It seems there is an issue with your protectedData :', e);
+      file = 'Missing protectedData';
+      console.log('It seems there is an issue with your protected data:', e);
     }
 
-    // Append some results in /iexec_out/
-    const combinedContent = `${text}\n Your ProtectedData content: ${file}`;
+    // Write result to /iexec_out/
+    const combinedContent = `${asciiArtText}\n Your Protected Data content: ${file}`;
     await fsPromises.writeFile(`${output}/result.txt`, combinedContent);
-    // Declare everything is computed
+
+    // Build and save a "computed.json" file
     const computedJsonObj = {
       'deterministic-output-path': `${output}/result.txt`,
     };

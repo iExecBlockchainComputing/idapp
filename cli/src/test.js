@@ -1,6 +1,5 @@
 import chalk from 'chalk';
 import { exec } from 'child_process';
-import fs from 'fs';
 import inquirer from 'inquirer';
 import ora from 'ora';
 import util from 'util';
@@ -9,8 +8,8 @@ import {
   dockerBuild,
   runDockerContainer,
 } from './execDocker/docker.js';
-import { promptForDockerHubUsername } from './execDocker/prompt.js';
-import { readIDappConfig } from './utils/fs.js';
+import { askForDockerhubUsername } from './utils/askForDockerhubUsername.js';
+import { readIDappConfig } from './utils/idappConfigFile.js';
 
 const execAsync = util.promisify(exec);
 
@@ -23,27 +22,23 @@ export async function test(argv) {
 }
 
 async function testWithoutDocker(arg) {
-  const spinner = ora('Running your idapp ... \n').start();
+  const spinner = ora('Reading iDapp JSON config file ...').start();
 
-  let withProtectedData;
+  const withProtectedData = readIDappConfig(spinner).withProtectedData;
+  spinner.succeed('Reading idapp JSON config file.');
+
   try {
-    withProtectedData = readIDappConfig().withProtectedData;
-  } catch (err) {
-    console.log('err', err);
-    spinner.fail('Failed to read idapp.config.json file.');
-  }
-  try {
-    spinner.text = 'Installing dependencies...';
+    spinner.start('Installing dependencies...');
     await execAsync('npm ci');
     spinner.succeed('Dependencies installed.');
   } catch (e) {
     spinner.fail('Failed to install dependencies.');
     console.log(chalk.red('You need to install dotenv and figlet.'));
-    return;
+    process.exit(1);
   }
 
   try {
-    spinner.text = 'Running iDapp...';
+    spinner.start('Running iDapp...');
     let command = `cross-env IEXEC_OUT=./output IEXEC_IN=./input node ./src/app.js ${arg}`;
     if (withProtectedData) {
       command = `cross-env IEXEC_OUT=./output IEXEC_IN=./input IEXEC_DATASET_FILENAME="protectedData.zip" node ./src/app.js ${arg}`;
@@ -70,42 +65,27 @@ async function testWithoutDocker(arg) {
 }
 
 export async function testWithDocker(arg) {
-  let idappConfig;
-  let dockerhubUsername;
-
   try {
-    idappConfig = await readIDappConfig();
-    dockerhubUsername = idappConfig.dockerhubUsername || '';
-
-    const dockerHubUserNameAnswer =
-      await promptForDockerHubUsername(dockerhubUsername);
-    if (!dockerHubUserNameAnswer) {
-      return;
-    }
-
-    dockerhubUsername = dockerHubUserNameAnswer;
-    idappConfig.dockerhubUsername = dockerHubUserNameAnswer;
-    fs.writeFileSync(
-      './idapp.config.json',
-      JSON.stringify(idappConfig, null, 2)
-    );
+    const dockerhubUsername = await askForDockerhubUsername();
 
     const installDepSpinner = ora('Installing dependencies...').start();
-    await execAsync('npm ci'); // Assuming this installs necessary dependencies
+    await execAsync('npm ci');
     installDepSpinner.succeed('Dependencies installed.');
 
     await checkDockerDaemon();
 
-    const dockerImageName = 'hello-world';
+    const idappConfig = readIDappConfig();
+    const projectName = idappConfig.projectName;
+
     await dockerBuild({
       dockerHubUser: dockerhubUsername,
-      dockerImageName,
+      dockerImageName: projectName,
       isForTest: true, // Adjust based on your logic
     });
 
     const containerConfig = {
       dockerhubUsername,
-      imageName: dockerImageName,
+      imageName: projectName,
       arg,
       withProtectedData: idappConfig.withProtectedData,
     };

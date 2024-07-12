@@ -1,4 +1,4 @@
-import fs from 'fs';
+import fs from 'node:fs';
 
 export function isFolderEmpty(path) {
   const files = fs.readdirSync(path);

@@ -8,12 +8,9 @@ import {
   pushDockerImage,
   checkDockerDaemon,
 } from './execDocker/docker.js';
-import { privateKeyManagement } from './utils/privateKeyManagement.js';
-import {
-  readIDappConfig,
-  readPackageJonConfig,
-  writeIDappConfig,
-} from './utils/fs.js';
+import { askForDockerhubUsername } from './utils/askForDockerhubUsername.js';
+import { askForWalletAddress } from './utils/askForWalletAddress.js';
+import { readPackageJonConfig } from './utils/idappConfigFile.js';
 
 export async function deploy(argv) {
   let mode;
@@ -22,7 +19,7 @@ export async function deploy(argv) {
       {
         type: 'list',
         name: 'mode',
-        message: 'Would you like to run your idapp for prod or debug?',
+        message: 'Would you like to build your iDapp for prod or debug?',
         choices: ['Debug', 'Prod (soon)'],
         default: 0, // Default to 'Debug'
       },
@@ -30,47 +27,29 @@ export async function deploy(argv) {
     mode = modeAnswer.mode;
   }
   if (argv.debug || mode === 'Debug') {
-    await deployInDebug(argv);
+    await deployForDebug();
   } else {
-    deployInProd(argv);
+    deployForProd();
   }
+  process.exit(0);
 }
 
-export async function deployInDebug(argv) {
-  let dockerhubUsername = readIDappConfig().dockerhubUsername || '';
-  if (!dockerhubUsername) {
-    const { dockerHubUserNameAnswer } = await inquirer.prompt({
-      type: 'input',
-      name: 'dockerHubUserNameAnswer',
-      message: 'What is your username on Docker Hub?',
-    });
-
-    if (!/[a-zA-Z0-9-]+/.test(dockerHubUserNameAnswer)) {
-      console.log(
-        chalk.red(
-          'Invalid Docker Hub username. Login to https://hub.docker.com/repositories, your username is what gets added to this URL.'
-        )
-      );
-      return;
-    }
-    dockerhubUsername = dockerHubUserNameAnswer;
-    const config = readIDappConfig();
-    config.dockerhubUsername = dockerhubUsername;
-    writeIDappConfig(config);
-  }
+export async function deployForDebug() {
+  const dockerhubUsername = await askForDockerhubUsername();
 
   const { idappVersion } = await inquirer.prompt([
     {
       type: 'input',
       name: 'idappVersion',
-      message: 'Please enter the version of your iDapp:',
+      message: 'What is the version of your iDapp?',
       default: '0.1.0',
     },
   ]);
 
   // Get wallet from privateKey
   // TODO We need to find a workaround and stop asking the user their password (sensitive info!)
-  const wallet = await privateKeyManagement();
+  // const wallet = await privateKeyManagement();
+  const walletAddress = await askForWalletAddress();
 
   const iDappName = readPackageJonConfig().name.toLowerCase();
 
@@ -95,22 +74,24 @@ export async function deployInDebug(argv) {
   try {
     // Sconifying iDapp
     const sconifySpinner = ora(
-      'Sconifying your idapp, this may take a few minutes ...'
+      'Sconifying your iDapp, this may take a few minutes ...'
     ).start();
     const { dockerHubUrl } = await sconify({
       mainSpinner: sconifySpinner,
       sconifyForProd: false,
       iDappNameToSconify: `${dockerhubUsername}/${iDappName}:${idappVersion}-debug`,
-      wallet,
+      walletAddress,
     });
 
     sconifySpinner.succeed(
-      `Deployment of your idapp completed successfully: ${dockerHubUrl}`
+      `Deployment of your iDapp completed successfully: ${dockerHubUrl}`
     );
-  } catch (e) {}
+  } catch (e) {
+    process.exit(1);
+  }
 }
 
-async function deployInProd(argv) {
+function deployForProd() {
   console.log(
     chalk.red('This feature is not yet implemented. Coming soon ...')
   );

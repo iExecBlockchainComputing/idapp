@@ -7,7 +7,7 @@ export async function sconify({
   mainSpinner,
   sconifyForProd,
   iDappNameToSconify,
-  wallet,
+  walletAddress,
 }) {
   let teeDockerhubImagePath = '';
   if (!sconifyForProd) {
@@ -19,7 +19,7 @@ export async function sconify({
         },
         body: JSON.stringify({
           dockerhubImageToSconify: iDappNameToSconify,
-          yourWalletPublicAddress: wallet.address,
+          yourWalletPublicAddress: walletAddress,
         }),
         throwOnError: true,
       });
@@ -30,20 +30,20 @@ export async function sconify({
       const appContractAddress = json.appContractAddress;
 
       // Display the result in a beautiful format
-      mainSpinner.succeed('iDapp Sconified successfully');
-      console.log(` Sconified Image: ${sconifiedImage}`);
+      mainSpinner.succeed('iDapp sconified successfully.');
+      console.log(` Sconified image: ${sconifiedImage}`);
 
       mainSpinner.succeed('iDapp deployed');
-      console.log(` iDapp Address: ${appContractAddress}`);
+      console.log(` iDapp address: ${appContractAddress}`);
 
-      mainSpinner.succeed('iDapp Transfer to you');
+      mainSpinner.succeed('iDapp transferred to you');
 
       // Add deployment data to deployments.json
       teeDockerhubImagePath = json.sconifiedImage.split(':')[0];
       addDeploymentData({
         sconifiedImage,
         appContractAddress,
-        owner: wallet.address,
+        owner: walletAddress,
       });
     } catch (err) {
       if (err.body) {
@@ -58,8 +58,8 @@ export async function sconify({
           console.log('\nerr', err);
         }
       }
-      mainSpinner.fail('Failed to sconify your idapp');
-      return;
+      mainSpinner.fail('Failed to sconify your iDapp');
+      throw err;
     }
   }
 
@@ -69,12 +69,9 @@ export async function sconify({
         chalk.red('This feature is not yet implemented. Coming soon ...')
       );
     } catch (e) {
-      stepSpinner.fail(
-        'An error occurred during the production deployment process.'
-      );
       console.log(chalk.red(e));
-      mainSpinner.fail('Failed to deploy your idapp.');
-      return;
+      mainSpinner.fail('Failed to deploy your iDapp.');
+      throw err;
     }
   }
 

@@ -26,16 +26,17 @@ export async function initHelloWorldApp({
     }
 
     // Create idapp.config.json
-    await createConfigurationFiles({ hasProtectedData });
+    await createConfigurationFiles({ projectName, hasProtectedData });
   } catch (err) {
     console.log('Error during project initialization:', err);
     throw err;
   }
 }
 
-async function createConfigurationFiles({ hasProtectedData }) {
+async function createConfigurationFiles({ projectName, hasProtectedData }) {
   // Create a simple iDapp configuration file
   const configContent = `{
+  "projectName": "${projectName}",
   "dockerhubUsername": "",
   "withProtectedData": ${hasProtectedData}
 }

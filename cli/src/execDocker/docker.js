@@ -4,6 +4,8 @@ import inquirer from 'inquirer';
 import ora from 'ora';
 import os from 'os';
 import util from 'util';
+import { askForDockerhubAccessToken } from '../utils/askForDockerhubAccessToken.js';
+import { askForDockerhubUsername } from '../utils/askForDockerhubUsername.js';
 
 const docker = new Docker();
 const execAsync = util.promisify(exec);
@@ -41,7 +43,7 @@ export async function dockerBuild({
       // ARM64 variant for local testing only
       platform = 'linux/arm64';
     } else {
-      // AMD64 variant to deploy on iExec
+      // AMD64 variant to deploy to iExec stack
       platform = 'linux/amd64';
     }
   }
@@ -90,10 +92,10 @@ export async function pushDockerImage(dockerhubUsername, imageName, version) {
   // TODO Probably no need to ask again for dockerHubUsername, we have it in idapp.config.json
   // TODO We need to handle this push without asking the user their password (sensitive info!)
   try {
-    const { dockerHubUsername, dockerHubPassword } =
-      await getDockerCredentials();
+    const dockerHubUsername = await askForDockerhubUsername();
+    const dockerHubAccessToken = await askForDockerhubAccessToken();
 
-    if (!dockerHubUsername || !dockerHubPassword) {
+    if (!dockerHubUsername || !dockerHubAccessToken) {
       throw new Error('DockerHub credentials not found.');
     }
 
@@ -105,7 +107,7 @@ export async function pushDockerImage(dockerhubUsername, imageName, version) {
     await image.push({
       authconfig: {
         username: dockerHubUsername,
-        password: dockerHubPassword,
+        password: dockerHubAccessToken,
       },
     });
 
@@ -113,30 +115,6 @@ export async function pushDockerImage(dockerhubUsername, imageName, version) {
   } catch (error) {
     console.error('Error pushing Docker image:', error);
     throw error; // Re-throwing the error for higher-level handling if needed
-  }
-}
-
-async function getDockerCredentials() {
-  try {
-    // Prompt user for Docker Hub credentials
-    const answers = await inquirer.prompt([
-      {
-        type: 'input',
-        name: 'dockerHubUsername',
-        message: 'Enter your Docker Hub username:',
-      },
-      {
-        type: 'password',
-        name: 'dockerHubPassword',
-        message: 'Enter your Docker Hub password:',
-        mask: '*',
-      },
-    ]);
-
-    return answers;
-  } catch (err) {
-    console.error('Failed to retrieve or save Docker credentials:', err);
-    throw err;
   }
 }
 

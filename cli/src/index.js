@@ -21,12 +21,12 @@ yargs(hideBin(process.argv))
     (yargs) => {
       return yargs
         .option('docker', {
-          describe: 'Test your idapp in real condition with docker',
+          describe: 'Test your iDapp in real condition with docker',
           type: 'boolean',
           default: false,
         })
         .option('params', {
-          describe: 'Parameters that will be accessible into the idapp',
+          describe: 'Parameters that will be accessible into the iDapp',
           type: 'string',
           demandOption: false,
         });
@@ -37,16 +37,16 @@ yargs(hideBin(process.argv))
   // Build and publish docker image
   .command(
     'deploy',
-    'Deploy your non-tee or tee idapp',
+    'Deploy your non-tee or tee iDapp',
     (yargs) => {
       return yargs
         .option('prod', {
-          describe: 'Deploy idapp for production mode',
+          describe: 'Deploy iDapp for production mode',
           type: 'boolean',
           default: false,
         })
         .option('debug', {
-          describe: 'Deploy idapp in debug mode',
+          describe: 'Deploy iDapp for debug mode',
           type: 'boolean',
           default: false,
         });
@@ -65,12 +65,12 @@ yargs(hideBin(process.argv))
           type: 'string',
         })
         .option('prod', {
-          describe: 'Run idapp for production mode',
+          describe: 'Run iDapp in production mode (soon)',
           type: 'boolean',
           default: false,
         })
         .option('debug', {
-          describe: 'Run idapp in debug mode',
+          describe: 'Run iDapp in debug mode',
           type: 'boolean',
           default: false,
         })

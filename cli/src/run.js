@@ -3,6 +3,7 @@ import chalk from 'chalk';
 import inquirer from 'inquirer';
 import { ethers } from 'ethers';
 import { IExec, utils } from 'iexec';
+import { askForWalletPrivateKey } from './utils/askForWalletPrivateKey.js';
 import { privateKeyManagement } from './utils/privateKeyManagement.js';
 import { SCONE_TAG, WORKERPOOL_DEBUG } from './config/config.js';
 import { addRunData } from './utils/cacheExecutions.js';
@@ -15,7 +16,7 @@ export async function run(argv) {
         type: 'list',
         name: 'mode',
         message: 'Would you like to run your idapp for prod or debug?',
-        choices: ['Debug', 'Prod'],
+        choices: ['Debug', 'Prod (soon)'],
         default: 0, // Default to 'Debug'
       },
     ]);
@@ -56,7 +57,8 @@ export async function runInDebug(argv) {
   }
 
   // Get wallet from privateKey
-  const wallet = await privateKeyManagement();
+  const walletPrivateKey = await askForWalletPrivateKey();
+  const wallet = new ethers.Wallet(walletPrivateKey);
 
   const iexec = new IExec(
     {

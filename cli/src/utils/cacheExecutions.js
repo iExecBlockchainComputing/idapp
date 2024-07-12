@@ -1,4 +1,4 @@
-import fs from 'fs';
+import fs from 'node:fs';
 
 // Utility function to ensure the cache directory and file exist
 function ensureCacheFileExists(fileName) {

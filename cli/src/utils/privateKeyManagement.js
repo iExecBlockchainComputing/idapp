@@ -1,7 +1,7 @@
 import inquirer from 'inquirer';
 import chalk from 'chalk';
 import { ethers } from 'ethers';
-import { readIDappConfig, writeIDappConfig } from './fs.js';
+import { readIDappConfig, writeIDappConfig } from './idappConfigFile.js';
 
 export async function privateKeyManagement() {
   let userWalletPrivateKey;

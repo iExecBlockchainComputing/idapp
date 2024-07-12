@@ -23,7 +23,7 @@ export async function deploy(argv) {
         type: 'list',
         name: 'mode',
         message: 'Would you like to run your idapp for prod or debug?',
-        choices: ['Debug', 'Prod'],
+        choices: ['Debug', 'Prod (soon)'],
         default: 0, // Default to 'Debug'
       },
     ]);

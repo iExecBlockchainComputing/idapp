@@ -51,8 +51,15 @@ export async function init() {
       type: 'list',
       name: 'language',
       message: 'Which language do you want to use to build your iDapp?',
-      choices: ['JavaScript', 'Typescript', 'Python', 'Rust', 'bash'],
-      default: 0,
+      choices: [
+        'JavaScript',
+        'Typescript (soon)',
+        'Python (soon)',
+        'Go (soon)',
+        'Rust (soon)',
+        'bash (soon)',
+      ],
+      default: 0, // Default to 'JavaScript'
     },
   ]);
 

@@ -61,7 +61,7 @@ export async function sconify({
 
     const targetImageRepo = 'teamproduct';
     const targetImageName = imageName;
-    const targetImageTag = `${imageTag}-debug-tee-scone`;
+    const targetImageTag = `${imageTag}-tee-scone`;
     const targetImagePath = `${targetImageRepo}/${dockerUserName}-${targetImageName}:${targetImageTag}`;
     console.log('targetImagePath', targetImagePath);
 

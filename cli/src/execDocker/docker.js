@@ -19,7 +19,7 @@ export async function checkDockerDaemon() {
     checkDockerDaemonSpinner.succeed('Docker daemon is running');
   } catch (e) {
     checkDockerDaemonSpinner.fail('You docker daemon is not up');
-    throw new Error(e.message);
+    process.exit(1);
   }
 }
 

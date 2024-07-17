@@ -31,9 +31,9 @@ async function testWithoutDocker(arg) {
     spinner.start('Installing dependencies...');
     await execAsync('npm ci');
     spinner.succeed('Dependencies installed.');
-  } catch (e) {
+  } catch (err) {
     spinner.fail('Failed to install dependencies.');
-    console.log(chalk.red('You need to install dotenv and figlet.'));
+    console.error(err);
     process.exit(1);
   }
 

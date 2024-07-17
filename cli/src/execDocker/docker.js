@@ -49,37 +49,39 @@ export async function dockerBuild({
   }
 
   // Perform the Docker build operation
-  return new Promise((resolve, reject) => {
-    docker.buildImage(
-      buildArgs,
-      {
-        t: `${dockerHubUser}/${dockerImageName}`,
-        platform,
-      },
-      (error, stream) => {
-        if (error) {
-          buildSpinner.fail('Failed to build Docker image.');
-          reject(error);
-          return;
-        }
+  const buildImageStream = await docker.buildImage(buildArgs, {
+    t: `${dockerHubUser}/${dockerImageName}`,
+    platform,
+  });
 
-        docker.modem.followProgress(stream, (err, res) => {
-          if (err) {
-            buildSpinner.fail('Failed to build Docker image.');
-            reject(err);
-          } else {
-            buildSpinner.succeed('Docker image built.');
-            resolve(res);
-          }
-        });
+  await new Promise((resolve, reject) => {
+    docker.modem.followProgress(buildImageStream, onFinished, onProgress);
+
+    function onFinished(err, _output) {
+      if (err) {
+        buildSpinner.fail('Failed to build Docker image.');
+        return reject(err);
       }
-    );
+      buildSpinner.succeed('Docker image built.');
+      resolve();
+    }
+
+    function onProgress(event) {
+      if (event?.stream) {
+        if (event.stream !== '\n') {
+          console.log(event.stream);
+        }
+        return;
+      }
+      console.log(event);
+    }
   });
 }
 
 // Function to tag a Docker image
 export async function tagDockerImage(dockerhubUsername, imageName, version) {
   const tagSpinner = ora('Tagging Docker image ...').start();
+  console.log(`${dockerhubUsername}/${imageName}`);
   const image = docker.getImage(`${dockerhubUsername}/${imageName}`);
   await image.tag({
     repo: `${dockerhubUsername}/${imageName}:${version}-debug`,

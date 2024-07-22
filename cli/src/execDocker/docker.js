@@ -101,16 +101,38 @@ export async function pushDockerImage(dockerhubUsername, imageName, version) {
       throw new Error('DockerHub credentials not found.');
     }
 
+    const imageFullName = `${dockerhubUsername}/${imageName}:${version}-debug`;
     const dockerPushSpinner = ora('Docker push ...').start();
-    const image = docker.getImage(
-      `${dockerhubUsername}/${imageName}:${version}-debug`
-    );
+    const image = docker.getImage(imageFullName);
 
-    await image.push({
+    const imagePushStream = await image.push({
       authconfig: {
         username: dockerHubUsername,
         password: dockerHubAccessToken,
       },
+    });
+
+    await new Promise((resolve, reject) => {
+      docker.modem.followProgress(imagePushStream, onFinished, onProgress);
+
+      function onFinished(err, _output) {
+        if (err) {
+          console.error('Error in image pushing process:', err);
+          return reject(err);
+        }
+        console.log(
+          `Successfully pushed the image to DockerHub => ${imageFullName}`
+        );
+        resolve();
+      }
+
+      function onProgress(event) {
+        if (event.error) {
+          console.error('[img.push] onProgress ERROR', event.error);
+        } else {
+          console.log('[img.push] onProgress', event);
+        }
+      }
     });
 
     dockerPushSpinner.succeed('Docker image pushed.');

@@ -60,7 +60,7 @@ export async function sconify({
         err?.code === 'ECONNREFUSED' ||
         err?.code === 'UND_ERR_CONNECT_TIMEOUT'
       ) {
-        console.error('\n⚠️ Sconification server seems to be down!');
+        console.error("\n⚠️ Can't reach sconification server!");
       } else {
         console.log('\nerr', err);
       }

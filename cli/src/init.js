@@ -46,30 +46,6 @@ export async function init() {
     process.exit(1);
   }
 
-  const { language } = await inquirer.prompt([
-    {
-      type: 'list',
-      name: 'language',
-      message: 'Which language do you want to use to build your iDapp?',
-      choices: [
-        'JavaScript',
-        'Typescript (soon)',
-        'Python (soon)',
-        'Go (soon)',
-        'Rust (soon)',
-        'bash (soon)',
-      ],
-      default: 0, // Default to 'JavaScript'
-    },
-  ]);
-
-  if (language !== 'JavaScript') {
-    console.log(
-      chalk.red(`Oops, ${language} is not supported yet. Coming soon...`)
-    );
-    process.exit(0);
-  }
-
   const { hasProtectedData } = await inquirer.prompt({
     type: 'confirm',
     name: 'hasProtectedData',
@@ -84,14 +60,14 @@ export async function init() {
 
   const spinner = ora('Initializing iexec framework ...').start();
 
-  // Copying JavaScript simple project files from templates/javascript/
+  // Copying JavaScript simple project files from templates/
   let initSpinner;
   try {
     initSpinner = ora('Creating "Hello World" JavaScript app...').start();
     await initHelloWorldApp({
       projectName,
       hasProtectedData,
-      template: language.toLowerCase(),
+      template: 'javascript',
     });
     initSpinner.succeed('JavaScript app setup complete.');
   } catch (err) {

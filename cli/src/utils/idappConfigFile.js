@@ -17,9 +17,14 @@ export function readIDappConfig(spinner) {
     const configContent = fs.readFileSync('./idapp.config.json', 'utf8');
     configAsObject = JSON.parse(configContent);
   } catch (err) {
-    spinner?.fail(
-      'Failed to read idapp.config.json file: JSON seems to be invalid.'
-    );
+    const readableMessage =
+      'Failed to read idapp.config.json file: JSON seems to be invalid.';
+    if (spinner) {
+      spinner.fail(readableMessage);
+    } else {
+      console.error(readableMessage);
+    }
+    console.error('[readIDappConfig] ERROR', err);
     process.exit(1);
   }
 
@@ -27,9 +32,13 @@ export function readIDappConfig(spinner) {
     return jsonConfigFileSchema.parse(configAsObject);
   } catch (err) {
     const validationError = fromError(err);
-    spinner?.fail(
-      'Failed to read idapp.config.json file: ' + validationError.toString()
-    );
+    const errorMessage =
+      'Failed to read idapp.config.json file: ' + validationError.toString();
+    if (spinner) {
+      spinner.fail(errorMessage);
+    } else {
+      console.error(errorMessage);
+    }
     process.exit(1);
   }
 }

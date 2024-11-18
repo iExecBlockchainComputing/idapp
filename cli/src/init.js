@@ -50,6 +50,7 @@ export async function init() {
     type: 'confirm',
     name: 'hasProtectedData',
     message: 'Would you like to access a protected data inside your iDapp?',
+    default: false,
   });
 
   console.log('-----');

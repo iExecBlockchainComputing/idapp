@@ -2,8 +2,8 @@ import chalk from 'chalk';
 import figlet from 'figlet';
 import inquirer from 'inquirer';
 import ora from 'ora';
+import { checkIfFolderIsClean } from './utils/checkIfFolderIsClean.js';
 import { initHelloWorldApp } from './utils/initHelloWorldApp.js';
-import { isFolderEmpty } from './utils/isFolderEmpty.js';
 import { isValidPackageName } from './utils/isValidPackageName.js';
 
 export async function init() {
@@ -27,11 +27,7 @@ export async function init() {
     process.exit(0);
   }
 
-  if (!isFolderEmpty(process.cwd())) {
-    console.error('⚠️ Folder is not empty, prefer to stop');
-    console.log(`Want to run "mkdir hello-world && cd hello-world"?`);
-    process.exit(1);
-  }
+  const folderCreated = await checkIfFolderIsClean();
 
   const currentFolderName = process.cwd().split('/').pop();
   const { projectName } = await inquirer.prompt({
@@ -81,6 +77,8 @@ export async function init() {
 
   console.log('You can now make your changes in the `src/app.js file`,');
   console.log('and then test you idapp locally:');
+  console.log('');
+  console.log(`$> cd ${folderCreated}`);
   console.log('');
   console.log('$> idapp test');
   console.log('');

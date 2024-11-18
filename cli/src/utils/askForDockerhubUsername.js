@@ -5,7 +5,9 @@ import { readIDappConfig, writeIDappConfig } from './idappConfigFile.js';
 export async function askForDockerhubUsername() {
   const dockerhubUsername = readIDappConfig().dockerhubUsername || '';
   if (dockerhubUsername) {
-    console.log('Using saved dockerhubUsername (from "idapp.config.json")');
+    console.log(
+      `Using saved dockerhubUsername (from "idapp.config.json") -> ${dockerhubUsername}`
+    );
     return dockerhubUsername;
   }
 

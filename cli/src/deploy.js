@@ -56,12 +56,12 @@ export async function deployForDebug() {
   await checkDockerDaemon();
 
   try {
+    const imageName = `${dockerhubUsername}/${iDappName}`;
     await dockerBuild({
-      dockerHubUser: dockerhubUsername,
-      dockerImageName: iDappName,
+      image: imageName,
     });
-    await tagDockerImage(dockerhubUsername, iDappName, idappVersion);
-    await pushDockerImage(dockerhubUsername, iDappName, idappVersion);
+    await tagDockerImage({ image: imageName, version: idappVersion });
+    await pushDockerImage({ image: imageName, version: idappVersion });
   } catch (e) {
     console.log(
       chalk.red(

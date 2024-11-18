@@ -24,11 +24,7 @@ export async function checkDockerDaemon() {
 }
 
 // TODO: fix plateform for dockerode
-export async function dockerBuild({
-  dockerHubUser,
-  dockerImageName,
-  isForTest = false,
-}) {
+export async function dockerBuild({ image, isForTest = false }) {
   const osType = os.type();
   const buildSpinner = ora('Building Docker image ...').start();
   let buildArgs = {
@@ -50,7 +46,7 @@ export async function dockerBuild({
 
   // Perform the Docker build operation
   const buildImageStream = await docker.buildImage(buildArgs, {
-    t: `${dockerHubUser}/${dockerImageName}`,
+    t: image,
     platform,
   });
 
@@ -79,18 +75,17 @@ export async function dockerBuild({
 }
 
 // Function to tag a Docker image
-export async function tagDockerImage(dockerhubUsername, imageName, version) {
+export async function tagDockerImage({ image, version }) {
   const tagSpinner = ora('Tagging Docker image ...').start();
-  console.log(`${dockerhubUsername}/${imageName}`);
-  const image = docker.getImage(`${dockerhubUsername}/${imageName}`);
-  await image.tag({
-    repo: `${dockerhubUsername}/${imageName}:${version}-debug`,
+  const dockerImage = docker.getImage(image);
+  await dockerImage.tag({
+    repo: `${image}:${version}-debug`,
   });
   tagSpinner.succeed('Docker image tagged.');
 }
 
 // Function to push a Docker image
-export async function pushDockerImage(dockerhubUsername, imageName, version) {
+export async function pushDockerImage({ image, version }) {
   // TODO Probably no need to ask again for dockerHubUsername, we have it in idapp.config.json
   // TODO We need to handle this push without asking the user their password (sensitive info!)
   try {
@@ -101,11 +96,11 @@ export async function pushDockerImage(dockerhubUsername, imageName, version) {
       throw new Error('DockerHub credentials not found.');
     }
 
-    const imageFullName = `${dockerhubUsername}/${imageName}:${version}-debug`;
+    const imageFullName = `${image}:${version}-debug`;
     const dockerPushSpinner = ora('Docker push ...').start();
-    const image = docker.getImage(imageFullName);
+    const dockerImage = docker.getImage(imageFullName);
 
-    const imagePushStream = await image.push({
+    const imagePushStream = await dockerImage.push({
       authconfig: {
         username: dockerHubUsername,
         password: dockerHubAccessToken,
@@ -143,10 +138,10 @@ export async function pushDockerImage(dockerhubUsername, imageName, version) {
 }
 
 export async function runDockerContainer({
-  dockerhubUsername,
-  imageName,
-  arg,
-  withProtectedData,
+  image,
+  cmd,
+  volumes = [],
+  env = [],
 }) {
   const runDockerContainerSpinner = ora(
     'Setting up Docker container...'
@@ -154,22 +149,13 @@ export async function runDockerContainer({
 
   try {
     const container = await docker.createContainer({
-      Image: `${dockerhubUsername}/${imageName}`,
-      Cmd: [arg],
+      Image: image,
+      Cmd: cmd,
       HostConfig: {
-        Binds: [
-          `${process.cwd()}/input:/iexec_in`,
-          `${process.cwd()}/output:/iexec_out`,
-        ],
+        Binds: volumes,
         AutoRemove: true,
       },
-      Env: [
-        `IEXEC_IN=/iexec_in`,
-        `IEXEC_OUT=/iexec_out`,
-        ...(withProtectedData
-          ? [`IEXEC_DATASET_FILENAME=protectedData.zip`]
-          : []),
-      ],
+      Env: env,
     });
 
     // Attach to container output stream for real-time logging

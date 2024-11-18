@@ -9,7 +9,6 @@ import {
   dockerBuild,
   runDockerContainer,
 } from './execDocker/docker.js';
-import { askForDockerhubUsername } from './utils/askForDockerhubUsername.js';
 import { readIDappConfig } from './utils/idappConfigFile.js';
 
 const TEST_OUTPUT_DIR = 'output';
@@ -75,8 +74,6 @@ async function testWithoutDocker(arg) {
 
 export async function testWithDocker(arg) {
   try {
-    const dockerhubUsername = await askForDockerhubUsername();
-
     const installDepSpinner = ora('Installing dependencies...').start();
     await execAsync('npm ci');
     installDepSpinner.succeed('Dependencies installed.');
@@ -84,21 +81,28 @@ export async function testWithDocker(arg) {
     await checkDockerDaemon();
 
     const idappConfig = readIDappConfig();
-    const projectName = idappConfig.projectName;
+    const { projectName, withProtectedData } = idappConfig;
 
     await dockerBuild({
-      dockerHubUser: dockerhubUsername,
-      dockerImageName: projectName,
+      image: projectName,
       isForTest: true, // Adjust based on your logic
     });
 
-    const containerConfig = {
-      dockerhubUsername,
-      imageName: projectName,
-      arg,
-      withProtectedData: idappConfig.withProtectedData,
-    };
-    await runDockerContainer(containerConfig);
+    await runDockerContainer({
+      image: projectName,
+      cmd: [arg],
+      volumes: [
+        `${process.cwd()}/input:/iexec_in`,
+        `${process.cwd()}/${TEST_OUTPUT_DIR}:/iexec_out`,
+      ],
+      env: [
+        `IEXEC_IN=/iexec_in`,
+        `IEXEC_OUT=/iexec_out`,
+        ...(withProtectedData
+          ? [`IEXEC_DATASET_FILENAME=protectedData.zip`]
+          : []),
+      ],
+    });
   } catch (error) {
     console.error(chalk.red(`Error: ${error.message}`));
   }

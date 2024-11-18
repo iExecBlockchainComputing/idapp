@@ -1,11 +1,12 @@
 import chalk from 'chalk';
 import inquirer from 'inquirer';
 import { readIDappConfig, writeIDappConfig } from './idappConfigFile.js';
+import { CONFIG_FILE } from '../config/config.js';
 
 export async function askForDockerhubUsername() {
   const dockerhubUsername = readIDappConfig().dockerhubUsername || '';
   if (dockerhubUsername) {
-    console.log('Using saved dockerhubUsername (from "idapp.config.json")');
+    console.log(`Using saved dockerhubUsername (from "${CONFIG_FILE}")`);
     return dockerhubUsername;
   }
 
@@ -29,7 +30,7 @@ export async function askForDockerhubUsername() {
   const config = readIDappConfig();
   config.dockerhubUsername = dockerHubUserNameAnswer;
   writeIDappConfig(config);
-  console.log('dockerhubUsername saved to "idapp.config.json"');
+  console.log(`dockerhubUsername saved to "${CONFIG_FILE}"`);
 
   return dockerHubUserNameAnswer;
 }

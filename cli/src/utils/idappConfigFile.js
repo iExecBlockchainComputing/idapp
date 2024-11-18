@@ -1,6 +1,7 @@
 import fs from 'node:fs';
 import { z } from 'zod';
 import { fromError } from 'zod-validation-error';
+import { CONFIG_FILE } from '../config/config';
 
 const jsonConfigFileSchema = z.object({
   projectName: z.string(),
@@ -14,11 +15,11 @@ const jsonConfigFileSchema = z.object({
 export function readIDappConfig(spinner) {
   let configAsObject;
   try {
-    const configContent = fs.readFileSync('./idapp.config.json', 'utf8');
+    const configContent = fs.readFileSync(CONFIG_FILE, 'utf8');
     configAsObject = JSON.parse(configContent);
   } catch (err) {
     spinner?.fail(
-      'Failed to read idapp.config.json file: JSON seems to be invalid.'
+      `Failed to read ${CONFIG_FILE} file: JSON seems to be invalid.`
     );
     process.exit(1);
   }
@@ -28,7 +29,7 @@ export function readIDappConfig(spinner) {
   } catch (err) {
     const validationError = fromError(err);
     spinner?.fail(
-      'Failed to read idapp.config.json file: ' + validationError.toString()
+      `Failed to read ${CONFIG_FILE} file: ${validationError.toString()}`
     );
     process.exit(1);
   }
@@ -40,12 +41,11 @@ export function readPackageJonConfig() {
     const packageContent = fs.readFileSync('./package.json', 'utf8');
     return JSON.parse(packageContent);
   } catch (err) {
-    console.error('Failed to read idapp.config.json file.', err);
+    console.error(`Failed to read ${CONFIG_FILE} file`, err);
   }
 }
 
 // Utility function to write the iDapp JSON configuration file
 export function writeIDappConfig(config) {
-  const configPath = 'idapp.config.json';
-  fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
+  fs.writeFileSync(CONFIG_FILE, JSON.stringify(config, null, 2));
 }

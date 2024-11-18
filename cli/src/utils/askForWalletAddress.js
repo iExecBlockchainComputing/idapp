@@ -1,11 +1,12 @@
 import chalk from 'chalk';
 import inquirer from 'inquirer';
 import { readIDappConfig, writeIDappConfig } from './idappConfigFile.js';
+import { CONFIG_FILE } from '../config/config.js';
 
 export async function askForWalletAddress() {
   const walletAddress = readIDappConfig().walletAddress || '';
   if (walletAddress) {
-    console.log('Using saved walletAddress (from "idapp.config.json")');
+    console.log(`Using saved walletAddress (from "${CONFIG_FILE}")`);
     return walletAddress;
   }
 
@@ -30,7 +31,7 @@ export async function askForWalletAddress() {
   const config = readIDappConfig();
   config.walletAddress = walletAddressAnswer;
   writeIDappConfig(config);
-  console.log('walletAddress saved to "idapp.config.json"');
+  console.log(`walletAddress saved to "${CONFIG_FILE}"`);
 
   return walletAddressAnswer;
 }

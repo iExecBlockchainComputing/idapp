@@ -10,6 +10,7 @@ export async function initHelloWorldApp({
   template,
 }) {
   try {
+    // Copy template
     if (hasProtectedData) {
       await copyChosenTemplateFiles({
         projectName,
@@ -22,7 +23,7 @@ export async function initHelloWorldApp({
       });
     }
 
-    // Create idapp.config.json
+    // Create other files
     await createConfigurationFiles({ projectName, hasProtectedData });
     await createInputFolder();
   } catch (err) {

@@ -6,7 +6,9 @@ import { CONFIG_FILE } from '../config/config.js';
 export async function askForDockerhubUsername() {
   const dockerhubUsername = readIDappConfig().dockerhubUsername || '';
   if (dockerhubUsername) {
-    console.log(`Using saved dockerhubUsername (from "${CONFIG_FILE}")`);
+    console.log(
+      `Using saved dockerhubUsername (from "${CONFIG_FILE}") -> ${dockerhubUsername}`
+    );
     return dockerhubUsername;
   }
 

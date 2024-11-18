@@ -1,8 +1,6 @@
-const fsPromises = require('fs').promises;
-const figlet = require('figlet');
-const {
-  IExecDataProtectorDeserializer,
-} = require('@iexec/dataprotector-deserializer');
+import { writeFile } from 'fs/promises';
+import figlet from 'figlet';
+import { IExecDataProtectorDeserializer } from '@iexec/dataprotector-deserializer';
 
 const main = async () => {
   try {
@@ -29,16 +27,13 @@ const main = async () => {
 
     // Write result to /iexec_out/
     const combinedContent = `${asciiArtText}\n Your Protected Data content: ${file}`;
-    await fsPromises.writeFile(`${output}/result.txt`, combinedContent);
+    await writeFile(`${output}/result.txt`, combinedContent);
 
     // Build and save a "computed.json" file
     const computedJsonObj = {
       'deterministic-output-path': `${output}/result.txt`,
     };
-    await fsPromises.writeFile(
-      `${output}/computed.json`,
-      JSON.stringify(computedJsonObj)
-    );
+    await writeFile(`${output}/computed.json`, JSON.stringify(computedJsonObj));
   } catch (e) {
     console.log(e);
     process.exit(1);

@@ -13,14 +13,33 @@ const jsonConfigFileSchema = z.object({
 
 // Read JSON configuration file
 export function readIDappConfig(spinner) {
+  let configContent;
   let configAsObject;
   try {
-    const configContent = fs.readFileSync(CONFIG_FILE, 'utf8');
+    configContent = fs.readFileSync(CONFIG_FILE, 'utf8');
+  } catch (err) {
+    const readableMessage = `Failed to read \`${CONFIG_FILE}\` file. Are you in your idapp project folder?`;
+    if (spinner) {
+      console.log('\n');
+      spinner.fail(readableMessage);
+    } else {
+      console.error('\n' + readableMessage);
+    }
+    console.error('\n[readIDappConfig] ERROR', err);
+    process.exit(1);
+  }
+
+  try {
     configAsObject = JSON.parse(configContent);
   } catch (err) {
-    spinner?.fail(
-      `Failed to read ${CONFIG_FILE} file: JSON seems to be invalid.`
-    );
+    const readableMessage = `Failed to read \`${CONFIG_FILE}\` file, JSON seems to be invalid.`;
+    if (spinner) {
+      console.log('\n');
+      spinner.fail(readableMessage);
+    } else {
+      console.error('\n' + readableMessage);
+    }
+    console.error('\n[readIDappConfig] ERROR', err);
     process.exit(1);
   }
 
@@ -28,9 +47,12 @@ export function readIDappConfig(spinner) {
     return jsonConfigFileSchema.parse(configAsObject);
   } catch (err) {
     const validationError = fromError(err);
-    spinner?.fail(
-      `Failed to read ${CONFIG_FILE} file: ${validationError.toString()}`
-    );
+    const errorMessage = `Failed to read \`${CONFIG_FILE}\` file: ${validationError.toString()}`;
+    if (spinner) {
+      spinner.fail(errorMessage);
+    } else {
+      console.error('\n' + errorMessage);
+    }
     process.exit(1);
   }
 }
@@ -41,7 +63,7 @@ export function readPackageJonConfig() {
     const packageContent = fs.readFileSync('./package.json', 'utf8');
     return JSON.parse(packageContent);
   } catch (err) {
-    console.error(`Failed to read ${CONFIG_FILE} file`, err);
+    console.error(`Failed to read \`${CONFIG_FILE}\` file.`, err);
   }
 }
 

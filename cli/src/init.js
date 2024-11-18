@@ -75,16 +75,21 @@ export async function init() {
 
   spinner.stop();
 
-  console.log('You can now make your changes in the `src/app.js file`,');
-  console.log('and then test you idapp locally:');
+  console.log(
+    '\n You can now make your changes in the `src/app.js file` and then:'
+  );
   console.log('');
-  console.log(`$> cd ${folderCreated}`);
+  console.log(` $> cd ${folderCreated}`);
   console.log('');
-  console.log('$> idapp test');
+  console.log(` 👉 Test you idapp locally:`);
+  console.log(' $> idapp test');
+  console.log(' $> idapp test --params your-name');
+  console.log(' $> idapp test --docker');
+  console.log(' $> idapp test --docker --params your-name');
   console.log('');
-  console.log('$> idapp test --params your-name');
+  console.log(` 👉 Deploy your idapp on the iExec protocol:`);
+  console.log(' $> idapp deploy');
   console.log('');
-  console.log('$> idapp test --docker');
-  console.log('');
-  console.log('$> idapp test --docker --params your-name');
+  console.log(` 👉 Ask an iExec worker to run your confidential idapp:`);
+  console.log(' $> idapp run <my-idapp-address>');
 }

@@ -10,10 +10,11 @@ export async function askForDockerhubAccessToken() {
   }
 
   console.info(
-    'Got to your docker hub account: https://hub.docker.com/settings/security'
+    'Go to your docker hub account: https://hub.docker.com/settings/security'
   );
-  console.log('and click on "New Access Token"');
-  console.log('You can name it "Test iExec iDapp CLI"');
+  console.log('click on "Personal access tokens"');
+  console.log('click on "New Access Token"');
+  console.log('you can name it "Test iExec iDapp CLI"');
   console.log('and select "Read & Write" Access permissions');
   const { dockerHubAccessTokenAnswer } = await inquirer.prompt({
     type: 'password',

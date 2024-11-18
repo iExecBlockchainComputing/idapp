@@ -1,20 +1,23 @@
-import fs from 'node:fs';
+import fs from 'node:fs/promises';
 import path from 'node:path';
 
-export function copy(src, dest) {
-  const stat = fs.statSync(src);
+export async function copy(src, dest) {
+  const stat = await fs.stat(src);
   if (stat.isDirectory()) {
-    copyDir(src, dest);
+    await copyDir(src, dest);
   } else {
-    fs.copyFileSync(src, dest);
+    await fs.copyFile(src, dest);
   }
 }
 
-function copyDir(srcDir, destDir) {
-  fs.mkdirSync(destDir, { recursive: true });
-  for (const file of fs.readdirSync(srcDir)) {
-    const srcFile = path.resolve(srcDir, file);
-    const destFile = path.resolve(destDir, file);
-    copy(srcFile, destFile);
-  }
+async function copyDir(srcDir, destDir) {
+  await fs.mkdir(destDir, { recursive: true });
+  const files = await fs.readdir(srcDir);
+  await Promise.all(
+    files.map((file) => {
+      const srcFile = path.resolve(srcDir, file);
+      const destFile = path.resolve(destDir, file);
+      return copy(srcFile, destFile);
+    })
+  );
 }

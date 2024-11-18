@@ -12,19 +12,35 @@ const jsonConfigFileSchema = z.object({
 
 // Read JSON configuration file
 export function readIDappConfig(spinner) {
+  let configContent;
   let configAsObject;
   try {
-    const configContent = fs.readFileSync('./idapp.config.json', 'utf8');
+    configContent = fs.readFileSync('./idapp.config.json', 'utf8');
+  } catch (err) {
+    const readableMessage =
+      'Failed to read `idapp.config.json` file. Are you in your idapp project folder?';
+    if (spinner) {
+      console.log('\n');
+      spinner.fail(readableMessage);
+    } else {
+      console.error('\n' + readableMessage);
+    }
+    console.error('\n[readIDappConfig] ERROR', err);
+    process.exit(1);
+  }
+
+  try {
     configAsObject = JSON.parse(configContent);
   } catch (err) {
     const readableMessage =
-      'Failed to read idapp.config.json file: JSON seems to be invalid.';
+      'Failed to read `idapp.config.json` file, JSON seems to be invalid.';
     if (spinner) {
+      console.log('\n');
       spinner.fail(readableMessage);
     } else {
-      console.error(readableMessage);
+      console.error('\n' + readableMessage);
     }
-    console.error('[readIDappConfig] ERROR', err);
+    console.error('\n[readIDappConfig] ERROR', err);
     process.exit(1);
   }
 
@@ -33,11 +49,11 @@ export function readIDappConfig(spinner) {
   } catch (err) {
     const validationError = fromError(err);
     const errorMessage =
-      'Failed to read idapp.config.json file: ' + validationError.toString();
+      'Failed to read `idapp.config.json` file: ' + validationError.toString();
     if (spinner) {
       spinner.fail(errorMessage);
     } else {
-      console.error(errorMessage);
+      console.error('\n' + errorMessage);
     }
     process.exit(1);
   }
@@ -49,7 +65,7 @@ export function readPackageJonConfig() {
     const packageContent = fs.readFileSync('./package.json', 'utf8');
     return JSON.parse(packageContent);
   } catch (err) {
-    console.error('Failed to read idapp.config.json file.', err);
+    console.error('Failed to read `idapp.config.json` file.', err);
   }
 }
 

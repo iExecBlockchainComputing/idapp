@@ -25,8 +25,6 @@ npm i -g .  (don't forget the final '.')
 
 ## Commands
 
-idapp should directly
-
 ### `--help`
 
 Command:

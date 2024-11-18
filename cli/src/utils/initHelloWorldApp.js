@@ -5,7 +5,6 @@ import util from 'util';
 import { copy } from './copy.js';
 
 const writeFileAsync = util.promisify(fs.writeFile);
-const accessAsync = util.promisify(fs.access);
 
 export async function initHelloWorldApp({
   projectName,

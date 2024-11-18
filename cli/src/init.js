@@ -2,8 +2,8 @@ import chalk from 'chalk';
 import figlet from 'figlet';
 import inquirer from 'inquirer';
 import ora from 'ora';
+import { checkIfFolderIsClean } from './utils/checkIfFolderIsClean.js';
 import { initHelloWorldApp } from './utils/initHelloWorldApp.js';
-import { isFolderEmpty } from './utils/isFolderEmpty.js';
 import { isValidPackageName } from './utils/isValidPackageName.js';
 
 export async function init() {
@@ -27,11 +27,7 @@ export async function init() {
     process.exit(0);
   }
 
-  if (!isFolderEmpty(process.cwd())) {
-    console.error('⚠️ Folder is not empty, prefer to stop');
-    console.log(`Want to run "mkdir hello-world && cd hello-world"?`);
-    process.exit(1);
-  }
+  const folderCreated = await checkIfFolderIsClean();
 
   const currentFolderName = process.cwd().split('/').pop();
   const { projectName } = await inquirer.prompt({
@@ -46,34 +42,11 @@ export async function init() {
     process.exit(1);
   }
 
-  const { language } = await inquirer.prompt([
-    {
-      type: 'list',
-      name: 'language',
-      message: 'Which language do you want to use to build your iDapp?',
-      choices: [
-        'JavaScript',
-        'Typescript (soon)',
-        'Python (soon)',
-        'Go (soon)',
-        'Rust (soon)',
-        'bash (soon)',
-      ],
-      default: 0, // Default to 'JavaScript'
-    },
-  ]);
-
-  if (language !== 'JavaScript') {
-    console.log(
-      chalk.red(`Oops, ${language} is not supported yet. Coming soon...`)
-    );
-    process.exit(0);
-  }
-
   const { hasProtectedData } = await inquirer.prompt({
     type: 'confirm',
     name: 'hasProtectedData',
     message: 'Would you like to access a protected data inside your iDapp?',
+    default: false,
   });
 
   console.log('-----');
@@ -84,14 +57,14 @@ export async function init() {
 
   const spinner = ora('Initializing iexec framework ...').start();
 
-  // Copying JavaScript simple project files from templates/javascript/
+  // Copying JavaScript simple project files from templates/
   let initSpinner;
   try {
     initSpinner = ora('Creating "Hello World" JavaScript app...').start();
     await initHelloWorldApp({
       projectName,
       hasProtectedData,
-      template: language.toLowerCase(),
+      template: 'javascript',
     });
     initSpinner.succeed('JavaScript app setup complete.');
   } catch (err) {
@@ -104,6 +77,8 @@ export async function init() {
 
   console.log('You can now make your changes in the `src/app.js file`,');
   console.log('and then test you idapp locally:');
+  console.log('');
+  console.log(`$> cd ${folderCreated}`);
   console.log('');
   console.log('$> idapp test');
   console.log('');

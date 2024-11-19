@@ -3,7 +3,7 @@ import fs from 'node:fs';
 import { isFolderEmpty } from './isFolderEmpty.js';
 
 export async function checkIfFolderIsClean() {
-  if (isFolderEmpty(process.cwd())) {
+  if (await isFolderEmpty(process.cwd())) {
     return;
   }
 

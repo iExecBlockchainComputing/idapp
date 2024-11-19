@@ -46,12 +46,10 @@ async function testWithoutDocker(arg) {
 
   try {
     spinner.start('Running iDapp...');
-    let command = `cross-env IEXEC_OUT=./${TEST_OUTPUT_DIR} IEXEC_IN=./input node ./src/app.js ${arg}`;
+    let command = `cross-env IEXEC_OUT=${TEST_OUTPUT_DIR} IEXEC_IN=${TEST_INPUT_DIR} node ./src/app.js ${arg}`;
     if (withProtectedData) {
-      command = `cross-env IEXEC_OUT=./${TEST_OUTPUT_DIR} IEXEC_IN=./input IEXEC_DATASET_FILENAME="protectedData.zip" node ./src/app.js ${arg}`;
+      command = `cross-env IEXEC_OUT=${TEST_OUTPUT_DIR} IEXEC_IN=${TEST_INPUT_DIR} IEXEC_DATASET_FILENAME="protectedData.zip" node ./src/app.js ${arg}`;
     }
-
-    console.log('command', command);
 
     const { stdout, stderr } = await execAsync(command);
     spinner.succeed('Run completed.');

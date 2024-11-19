@@ -24,10 +24,10 @@ export async function checkDockerDaemon() {
 }
 
 // TODO: fix platform for dockerode
-export async function dockerBuild({ image, isForTest = false }) {
+export async function dockerBuild({ image = undefined, isForTest = false }) {
   const osType = os.type();
   const buildSpinner = ora('Building Docker image ...').start();
-  let buildArgs = {
+  const buildArgs = {
     context: process.cwd(), // Use current working directory
     src: ['./'],
   };
@@ -50,16 +50,55 @@ export async function dockerBuild({ image, isForTest = false }) {
     platform,
   });
 
-  await new Promise((resolve, reject) => {
+  const imageId = await new Promise((resolve, reject) => {
     docker.modem.followProgress(buildImageStream, onFinished, onProgress);
 
-    function onFinished(err, _output) {
-      if (err) {
+    function onFinished(err, output) {
+      /**
+       * expected output format for image id
+       * ```
+       *   {
+       *    aux: {
+       *      ID: 'sha256:e994101ce877e9b42f31f1508e11bbeb8fa5096a1fb2d0c650a6a26797b1906b'
+       *    }
+       *  },
+       * ```
+       */
+      const builtImageId = output?.find((row) => row?.aux?.ID)?.aux?.ID;
+
+      /**
+       * 3 kind of error possible, we want to catch both:
+       * - stream error
+       * - build error
+       * - no image id (should not happen)
+       *
+       * expected output format for build error
+       * ```
+       *   {
+       *     errorDetail: {
+       *       code: 1,
+       *       message: "The command '/bin/sh -c npm ci' returned a non-zero code: 1"
+       *     },
+       *     error: "The command '/bin/sh -c npm ci' returned a non-zero code: 1"
+       *   }
+       * ```
+       */
+      const errorOrErrorMessage =
+        err || // stream error
+        output.find((row) => row?.error)?.error || // build error message
+        (!builtImageId && 'Failed to retrieve generated image ID'); // no image id -> error message
+
+      if (errorOrErrorMessage) {
+        const error =
+          errorOrErrorMessage instanceof Error
+            ? errorOrErrorMessage
+            : Error(errorOrErrorMessage);
         buildSpinner.fail('Failed to build Docker image.');
-        return reject(err);
+        reject(error);
+      } else {
+        buildSpinner.succeed(`Docker image built (${builtImageId})`);
+        resolve(builtImageId);
       }
-      buildSpinner.succeed('Docker image built.');
-      resolve();
     }
 
     function onProgress(event) {
@@ -72,6 +111,8 @@ export async function dockerBuild({ image, isForTest = false }) {
       console.log(event);
     }
   });
+
+  return imageId;
 }
 
 // Function to tag a Docker image

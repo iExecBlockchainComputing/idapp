@@ -2,7 +2,12 @@ import fs from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { copy } from './copy.js';
-import { CONFIG_FILE, TEST_INPUT_DIR } from '../config/config.js';
+import {
+  CONFIG_FILE,
+  TEST_INPUT_DIR,
+  TEST_OUTPUT_DIR,
+  CACHE_DIR,
+} from '../config/config.js';
 
 export async function initHelloWorldApp({
   projectName,
@@ -25,15 +30,19 @@ export async function initHelloWorldApp({
 
     // Create other files
     await createConfigurationFiles({ projectName, hasProtectedData });
-    await createInputFolder();
+    await createProjectDirectories();
   } catch (err) {
     console.log('Error during project initialization:', err);
     throw err;
   }
 }
 
-async function createInputFolder() {
-  await fs.mkdir(TEST_INPUT_DIR, { recursive: true });
+async function createProjectDirectories() {
+  await Promise.all([
+    fs.mkdir(TEST_INPUT_DIR, { recursive: true }),
+    fs.mkdir(TEST_OUTPUT_DIR, { recursive: true }),
+    fs.mkdir(CACHE_DIR, { recursive: true }),
+  ]);
 }
 
 async function createConfigurationFiles({ projectName, hasProtectedData }) {
@@ -51,10 +60,10 @@ async function createConfigurationFiles({ projectName, hasProtectedData }) {
 }
 
 async function copyChosenTemplateFiles({ projectName, template }) {
-  const templateDir = path.resolve(
+  const templatesBaseDir = path.resolve(
     fileURLToPath(import.meta.url),
     '../../..',
-    `templates/${template}`
+    'templates'
   );
 
   const write = async (file, content) => {
@@ -65,18 +74,21 @@ async function copyChosenTemplateFiles({ projectName, template }) {
       await copy(path.join(templateDir, file), targetPath);
     }
   };
-
+  // copy selected template
+  const templateDir = path.resolve(templatesBaseDir, template);
   const files = await fs.readdir(templateDir);
-
   await Promise.all(
     files.filter((file) => file !== 'package.json').map((file) => write(file))
   );
 
+  // package json special treatment for name
   const pkg = JSON.parse(
     await fs.readFile(path.join(templateDir, `package.json`), 'utf8')
   );
-
   pkg.name = projectName;
-
   await write('package.json', JSON.stringify(pkg, null, 2) + '\n');
+
+  // copy common README
+  const readmePath = path.resolve(templatesBaseDir, 'common/README.md');
+  await copy(readmePath, path.join(process.cwd(), 'README.md'));
 }

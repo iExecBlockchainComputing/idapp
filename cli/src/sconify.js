@@ -46,7 +46,7 @@ export async function sconify({
 
     // Add deployment data to deployments.json
     teeDockerhubImagePath = json.sconifiedImage.split(':')[0];
-    addDeploymentData({
+    await addDeploymentData({
       sconifiedImage,
       appContractAddress,
       owner: walletAddress,

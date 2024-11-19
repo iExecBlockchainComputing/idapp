@@ -178,7 +178,7 @@ export async function runInDebug(argv) {
     workerpoolorder,
     requestorder,
   });
-  addRunData({ iDappAddress, dealid, txHash });
+  await addRunData({ iDappAddress, dealid, txHash });
   spinner.succeed(
     `Deal created successfully, this is your deal ID: https://explorer.iex.ec/bellecour/deal/${dealid}`
   );

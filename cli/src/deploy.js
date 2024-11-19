@@ -51,7 +51,8 @@ export async function deployForDebug() {
   // const wallet = await privateKeyManagement();
   const walletAddress = await askForWalletAddress();
 
-  const iDappName = readPackageJonConfig().name.toLowerCase();
+  const config = await readPackageJonConfig();
+  const iDappName = config.name.toLowerCase();
 
   await checkDockerDaemon();
 

@@ -4,7 +4,8 @@ import { readIDappConfig, writeIDappConfig } from './idappConfigFile.js';
 import { CONFIG_FILE } from '../config/config.js';
 
 export async function askForWalletAddress() {
-  const walletAddress = readIDappConfig().walletAddress || '';
+  const config = await readIDappConfig();
+  const walletAddress = config.walletAddress || '';
   if (walletAddress) {
     console.log(`Using saved walletAddress (from "${CONFIG_FILE}")`);
     return walletAddress;
@@ -28,9 +29,8 @@ export async function askForWalletAddress() {
   }
 
   // Save it into JSON config file
-  const config = readIDappConfig();
   config.walletAddress = walletAddressAnswer;
-  writeIDappConfig(config);
+  await writeIDappConfig(config);
   console.log(`walletAddress saved to "${CONFIG_FILE}"`);
 
   return walletAddressAnswer;

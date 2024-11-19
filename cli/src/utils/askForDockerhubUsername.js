@@ -4,7 +4,9 @@ import { readIDappConfig, writeIDappConfig } from './idappConfigFile.js';
 import { CONFIG_FILE } from '../config/config.js';
 
 export async function askForDockerhubUsername() {
-  const dockerhubUsername = readIDappConfig().dockerhubUsername || '';
+  const config = await readIDappConfig();
+
+  const dockerhubUsername = config.dockerhubUsername || '';
   if (dockerhubUsername) {
     console.log(
       `Using saved dockerhubUsername (from "${CONFIG_FILE}") -> ${dockerhubUsername}`
@@ -29,9 +31,8 @@ export async function askForDockerhubUsername() {
   }
 
   // Save it into JSON config file
-  const config = readIDappConfig();
   config.dockerhubUsername = dockerHubUserNameAnswer;
-  writeIDappConfig(config);
+  await writeIDappConfig(config);
   console.log(`dockerhubUsername saved to "${CONFIG_FILE}"`);
 
   return dockerHubUserNameAnswer;

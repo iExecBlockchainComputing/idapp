@@ -4,9 +4,11 @@ import { ethers } from 'ethers';
 import { readIDappConfig, writeIDappConfig } from './idappConfigFile.js';
 
 export async function privateKeyManagement() {
+  let config;
   let userWalletPrivateKey;
+
   try {
-    const config = readIDappConfig();
+    config = await readIDappConfig();
     userWalletPrivateKey = config.account;
   } catch (err) {
     console.log('err', err);
@@ -35,10 +37,9 @@ export async function privateKeyManagement() {
     ]);
 
     if (saveKey) {
-      const config = readIDappConfig();
       config.account = userWalletPrivateKey;
       try {
-        writeIDappConfig(config);
+        await writeIDappConfig(config);
         console.log(chalk.green('Private key saved to config.'));
       } catch (err) {
         console.log(chalk.red('Failed to save private key to config.'));

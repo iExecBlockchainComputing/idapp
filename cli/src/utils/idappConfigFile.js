@@ -1,7 +1,7 @@
-import fs from 'node:fs';
+import { readFile, writeFile } from 'node:fs/promises';
 import { z } from 'zod';
 import { fromError } from 'zod-validation-error';
-import { CONFIG_FILE } from '../config/config';
+import { CONFIG_FILE } from '../config/config.js';
 
 const jsonConfigFileSchema = z.object({
   projectName: z.string(),
@@ -12,11 +12,11 @@ const jsonConfigFileSchema = z.object({
 });
 
 // Read JSON configuration file
-export function readIDappConfig(spinner) {
+export async function readIDappConfig(spinner) {
   let configContent;
   let configAsObject;
   try {
-    configContent = fs.readFileSync(CONFIG_FILE, 'utf8');
+    configContent = await readFile(CONFIG_FILE, 'utf8');
   } catch (err) {
     const readableMessage = `Failed to read \`${CONFIG_FILE}\` file. Are you in your idapp project folder?`;
     if (spinner) {
@@ -58,9 +58,9 @@ export function readIDappConfig(spinner) {
 }
 
 // Read package.json file
-export function readPackageJonConfig() {
+export async function readPackageJonConfig() {
   try {
-    const packageContent = fs.readFileSync('./package.json', 'utf8');
+    const packageContent = await readFile('./package.json', 'utf8');
     return JSON.parse(packageContent);
   } catch (err) {
     console.error(`Failed to read \`${CONFIG_FILE}\` file.`, err);
@@ -68,6 +68,6 @@ export function readPackageJonConfig() {
 }
 
 // Utility function to write the iDapp JSON configuration file
-export function writeIDappConfig(config) {
-  fs.writeFileSync(CONFIG_FILE, JSON.stringify(config, null, 2));
+export async function writeIDappConfig(config) {
+  await writeFile(CONFIG_FILE, JSON.stringify(config, null, 2));
 }

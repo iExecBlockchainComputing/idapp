@@ -31,7 +31,7 @@ async function cleanTestOutput() {
 async function testWithoutDocker(arg) {
   const spinner = ora('Reading iDapp JSON config file ...').start();
 
-  const withProtectedData = readIDappConfig(spinner).withProtectedData;
+  const withProtectedData = await readIDappConfig(spinner).withProtectedData;
   spinner.succeed('Reading idapp JSON config file.');
 
   try {
@@ -79,7 +79,7 @@ export async function testWithDocker(arg) {
 
     await checkDockerDaemon();
 
-    const idappConfig = readIDappConfig();
+    const idappConfig = await readIDappConfig();
     const { projectName, withProtectedData } = idappConfig;
 
     await dockerBuild({

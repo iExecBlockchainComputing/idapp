@@ -80,15 +80,16 @@ export async function testWithDocker(arg) {
     await checkDockerDaemon();
 
     const idappConfig = await readIDappConfig();
-    const { projectName, withProtectedData } = idappConfig;
+    const { withProtectedData } = idappConfig;
 
-    await dockerBuild({
-      image: projectName,
+    // build a temp image for test
+    const imageId = await dockerBuild({
       isForTest: true, // Adjust based on your logic
     });
 
+    // run the temp image
     await runDockerContainer({
-      image: projectName,
+      image: imageId,
       cmd: [arg],
       volumes: [
         `${process.cwd()}/${TEST_INPUT_DIR}:/iexec_in`,

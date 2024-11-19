@@ -4,7 +4,6 @@ import inquirer from 'inquirer';
 import { sconify } from './sconify.js';
 import {
   dockerBuild,
-  tagDockerImage,
   pushDockerImage,
   checkDockerDaemon,
 } from './execDocker/docker.js';
@@ -53,15 +52,16 @@ export async function deployForDebug() {
   const config = await readPackageJonConfig();
   const iDappName = config.name.toLowerCase();
 
+  // TODO the "debug" suffix should be set by the API rather than here
+  const imageTag = `${dockerhubUsername}/${iDappName}:${idappVersion}-debug`;
+
   await checkDockerDaemon();
 
   try {
-    const imageName = `${dockerhubUsername}/${iDappName}`;
     await dockerBuild({
-      image: imageName,
+      tag: imageTag,
     });
-    await tagDockerImage({ image: imageName, version: idappVersion });
-    await pushDockerImage({ image: imageName, version: idappVersion });
+    await pushDockerImage({ tag: imageTag });
   } catch (e) {
     console.log(
       chalk.red(
@@ -79,7 +79,7 @@ export async function deployForDebug() {
     const { dockerHubUrl } = await sconify({
       mainSpinner: sconifySpinner,
       sconifyForProd: false,
-      iDappNameToSconify: `${dockerhubUsername}/${iDappName}:${idappVersion}-debug`,
+      iDappNameToSconify: imageTag,
       walletAddress,
     });
 

@@ -52,8 +52,7 @@ export async function deployForDebug() {
   const config = await readPackageJonConfig();
   const iDappName = config.name.toLowerCase();
 
-  // TODO the "debug" suffix should be set by the API rather than here
-  const imageTag = `${dockerhubUsername}/${iDappName}:${idappVersion}-debug`;
+  const imageTag = `${dockerhubUsername}/${iDappName}:${idappVersion}`;
 
   await checkDockerDaemon();
 

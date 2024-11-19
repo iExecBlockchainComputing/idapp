@@ -1,4 +1,5 @@
 import chalk from 'chalk';
+import boxen from 'boxen';
 import figlet from 'figlet';
 import inquirer from 'inquirer';
 import ora from 'ora';
@@ -75,21 +76,33 @@ export async function init() {
 
   spinner.stop();
 
+  const output = `
+${chalk.bold.underline('Steps to Get Started:')}
+
+  Navigate to your project folder:
+  ${chalk.yellow(`$ cd ${folderCreated}`)}
+
+  ${chalk.green('Make your changes in the')} ${chalk.cyan('src/app.js')} ${chalk.green('file')}.
+
+  -1- Test your idapp locally:
+  ${chalk.yellow('$ idapp test')}
+  ${chalk.yellow('$ idapp test --params your-name')}
+  ${chalk.yellow('$ idapp test --docker')}
+  ${chalk.yellow('$ idapp test --docker --params your-name')}
+
+  -2- Deploy your idapp on the iExec protocol:
+  ${chalk.yellow('$ idapp deploy')}
+
+  -3- Ask an iExec worker to run your confidential idapp:
+  ${chalk.yellow('$ idapp run <my-idapp-address>')}
+`;
+
   console.log(
-    '\n You can now make your changes in the `src/app.js file` and then:'
+    boxen(output, {
+      padding: 1,
+      margin: 1,
+      borderStyle: 'round',
+      borderColor: 'cyan',
+    })
   );
-  console.log('');
-  console.log(` $> cd ${folderCreated}`);
-  console.log('');
-  console.log(` 👉 Test you idapp locally:`);
-  console.log(' $> idapp test');
-  console.log(' $> idapp test --params your-name');
-  console.log(' $> idapp test --docker');
-  console.log(' $> idapp test --docker --params your-name');
-  console.log('');
-  console.log(` 👉 Deploy your idapp on the iExec protocol:`);
-  console.log(' $> idapp deploy');
-  console.log('');
-  console.log(` 👉 Ask an iExec worker to run your confidential idapp:`);
-  console.log(' $> idapp run <my-idapp-address>');
 }

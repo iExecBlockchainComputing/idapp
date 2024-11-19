@@ -24,6 +24,7 @@
     "url": "git+https://github.com/iExecBlockchainComputing/idapp.git"
   },
   "dependencies": {
+    "boxen": "^8.0.1",
     "chalk": "^5.3.0",
     "dockerode": "^4.0.2",
     "ethers": "^6.13.4",

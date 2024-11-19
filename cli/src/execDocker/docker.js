@@ -117,18 +117,8 @@ export async function dockerBuild({ tag = undefined, isForTest = false }) {
   return imageId;
 }
 
-// Function to tag a Docker image
-export async function tagDockerImage({ image, version }) {
-  const tagSpinner = ora('Tagging Docker image ...').start();
-  const dockerImage = docker.getImage(image);
-  await dockerImage.tag({
-    repo: `${image}:${version}-debug`,
-  });
-  tagSpinner.succeed('Docker image tagged.');
-}
-
 // Function to push a Docker image
-export async function pushDockerImage({ image, version }) {
+export async function pushDockerImage({ tag }) {
   // TODO We need to handle this push without asking the user their password (sensitive info!)
   try {
     const dockerHubUsername = await askForDockerhubUsername();
@@ -137,10 +127,8 @@ export async function pushDockerImage({ image, version }) {
     if (!dockerHubUsername || !dockerHubAccessToken) {
       throw new Error('DockerHub credentials not found.');
     }
-
-    const imageFullName = `${image}:${version}-debug`;
     const dockerPushSpinner = ora('Docker push ...').start();
-    const dockerImage = docker.getImage(imageFullName);
+    const dockerImage = docker.getImage(tag);
 
     const imagePushStream = await dockerImage.push({
       authconfig: {
@@ -157,9 +145,7 @@ export async function pushDockerImage({ image, version }) {
           console.error('Error in image pushing process:', err);
           return reject(err);
         }
-        console.log(
-          `Successfully pushed the image to DockerHub => ${imageFullName}`
-        );
+        console.log(`Successfully pushed the image to DockerHub => ${tag}`);
         resolve();
       }
 

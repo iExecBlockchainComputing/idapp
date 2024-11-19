@@ -58,7 +58,7 @@ export async function deployForDebug() {
   try {
     const imageName = `${dockerhubUsername}/${iDappName}`;
     await dockerBuild({
-      image: imageName,
+      tag: imageName,
     });
     await tagDockerImage({ image: imageName, version: idappVersion });
     await pushDockerImage({ image: imageName, version: idappVersion });

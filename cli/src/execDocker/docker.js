@@ -24,7 +24,7 @@ export async function checkDockerDaemon() {
 }
 
 // TODO: fix platform for dockerode
-export async function dockerBuild({ image = undefined, isForTest = false }) {
+export async function dockerBuild({ tag = undefined, isForTest = false }) {
   const osType = os.type();
   const buildSpinner = ora('Building Docker image ...').start();
   const buildArgs = {
@@ -46,7 +46,7 @@ export async function dockerBuild({ image = undefined, isForTest = false }) {
 
   // Perform the Docker build operation
   const buildImageStream = await docker.buildImage(buildArgs, {
-    t: image,
+    t: tag,
     platform,
   });
 
@@ -96,7 +96,9 @@ export async function dockerBuild({ image = undefined, isForTest = false }) {
         buildSpinner.fail('Failed to build Docker image.');
         reject(error);
       } else {
-        buildSpinner.succeed(`Docker image built (${builtImageId})`);
+        buildSpinner.succeed(
+          `Docker image built (${tag ? tag : builtImageId})`
+        );
         resolve(builtImageId);
       }
     }

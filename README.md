@@ -36,7 +36,7 @@ This is a monorepo repository
 - [ ] Test with some fancy dependencies in the idapp (node-gyp stuff?), see how
       sconification process behaves
 - [ ] Test with an access to **a protected data** inside the idapp
-- [ ] Fix commend "$> idapp" to display help
+- [ ] Fix command "$> idapp" to display help
 - [ ] Try with node v20 in app. Scone says it should work! (cf. some shared
       emails)
 - [ ] New command to publish order? It seems to work without it... (Thanks to

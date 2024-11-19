@@ -48,10 +48,10 @@ export async function deployForDebug() {
 
   // Get wallet from privateKey
   // TODO We need to find a workaround and stop asking the user their password (sensitive info!)
-  // const wallet = await privateKeyManagement();
   const walletAddress = await askForWalletAddress();
 
-  const iDappName = readPackageJonConfig().name.toLowerCase();
+  const config = await readPackageJonConfig();
+  const iDappName = config.name.toLowerCase();
 
   await checkDockerDaemon();
 

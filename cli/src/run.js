@@ -4,7 +4,6 @@ import inquirer from 'inquirer';
 import { ethers } from 'ethers';
 import { IExec, utils } from 'iexec';
 import { askForWalletPrivateKey } from './utils/askForWalletPrivateKey.js';
-import { privateKeyManagement } from './utils/privateKeyManagement.js';
 import { SCONE_TAG, WORKERPOOL_DEBUG } from './config/config.js';
 import { addRunData } from './utils/cacheExecutions.js';
 
@@ -179,7 +178,7 @@ export async function runInDebug(argv) {
     workerpoolorder,
     requestorder,
   });
-  addRunData({ iDappAddress, dealid, txHash });
+  await addRunData({ iDappAddress, dealid, txHash });
   spinner.succeed(
     `Deal created successfully, this is your deal ID: https://explorer.iex.ec/bellecour/deal/${dealid}`
   );

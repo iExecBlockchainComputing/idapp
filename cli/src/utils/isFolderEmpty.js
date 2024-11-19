@@ -1,6 +1,6 @@
-import fs from 'node:fs';
+import { readdir } from 'node:fs/promises';
 
-export function isFolderEmpty(path) {
-  const files = fs.readdirSync(path);
+export async function isFolderEmpty(path) {
+  const files = await readdir(path);
   return files.length === 0 || (files.length === 1 && files[0] === '.git');
 }

@@ -1,11 +1,13 @@
-import chalk from 'chalk';
 import inquirer from 'inquirer';
 import { readIDappConfig, writeIDappConfig } from './idappConfigFile.js';
+import { CONFIG_FILE } from '../config/config.js';
 
 export async function askForDockerhubAccessToken() {
-  const dockerhubAccessToken = readIDappConfig().dockerhubAccessToken || '';
+  const config = await readIDappConfig();
+
+  const dockerhubAccessToken = config.dockerhubAccessToken || '';
   if (dockerhubAccessToken) {
-    console.log('Using saved dockerhubAccessToken (from "idapp.config.json")');
+    console.log(`Using saved dockerhubAccessToken (from "${CONFIG_FILE}")`);
     return dockerhubAccessToken;
   }
 
@@ -25,10 +27,9 @@ export async function askForDockerhubAccessToken() {
   });
 
   // Save it into JSON config file
-  const config = readIDappConfig();
   config.dockerhubAccessToken = dockerHubAccessTokenAnswer;
-  writeIDappConfig(config);
-  console.log('dockerhubAccessToken saved to "idapp.config.json"');
+  await writeIDappConfig(config);
+  console.log(`dockerhubAccessToken saved to "${CONFIG_FILE}"`);
 
   return dockerHubAccessTokenAnswer;
 }

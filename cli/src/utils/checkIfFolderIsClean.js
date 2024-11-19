@@ -1,9 +1,10 @@
 import inquirer from 'inquirer';
-import fs from 'node:fs';
+import { mkdir } from 'node:fs/promises';
 import { isFolderEmpty } from './isFolderEmpty.js';
+import { fileExists } from './fileExists.js';
 
 export async function checkIfFolderIsClean() {
-  if (isFolderEmpty(process.cwd())) {
+  if (await isFolderEmpty(process.cwd())) {
     return;
   }
 
@@ -26,8 +27,8 @@ export async function checkIfFolderIsClean() {
       projectFolderSuffix === 1
         ? folderName
         : folderName + '_' + projectFolderSuffix;
-    if (!fs.existsSync(folderToCreate)) {
-      fs.mkdirSync(folderToCreate);
+    if (!(await fileExists(folderToCreate))) {
+      await mkdir(folderToCreate);
       break;
     }
     projectFolderSuffix++;

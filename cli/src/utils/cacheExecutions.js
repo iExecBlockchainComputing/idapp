@@ -1,29 +1,29 @@
-import fs from 'node:fs';
+import { mkdir, readFile, writeFile } from 'node:fs/promises';
+import { fileExists } from './fileExists.js';
 
 // Utility function to ensure the cache directory and file exist
-function ensureCacheFileExists(fileName) {
+async function ensureCacheFileExists(fileName) {
   const cacheDir = 'cache';
   const cacheFile = `${cacheDir}/${fileName}`;
 
   // Create cache directory if it doesn't exist
-  if (!fs.existsSync(cacheDir)) {
-    fs.mkdirSync(cacheDir);
-  }
+  await mkdir(cacheDir, { recursive: true });
 
   // Create the specified cache file if it doesn't exist
-  if (!fs.existsSync(cacheFile)) {
-    fs.writeFileSync(cacheFile, JSON.stringify([]));
+  if (!(await fileExists(cacheFile))) {
+    await writeFile(cacheFile, JSON.stringify([]));
   }
 
   return cacheFile;
 }
 
 // Utility function to add data to the specified cache file
-function addDataToCache(fileName, data) {
-  const cacheFile = ensureCacheFileExists(fileName);
-  const existingData = JSON.parse(fs.readFileSync(cacheFile, 'utf8'));
+async function addDataToCache(fileName, data) {
+  const cacheFile = await ensureCacheFileExists(fileName);
+  const cacheFileContent = await readFile(cacheFile, 'utf8');
+  const existingData = JSON.parse(cacheFileContent);
   existingData.unshift(data); // Add the new data to the beginning of the array
-  fs.writeFileSync(cacheFile, JSON.stringify(existingData, null, 2));
+  await writeFile(cacheFile, JSON.stringify(existingData, null, 2));
 }
 
 // Utility function to format date in Europe/Paris timezone
@@ -55,7 +55,7 @@ function getFormattedDateInParis() {
 }
 
 // Function to add run data to runs.json
-export function addRunData({ iDappAddress, dealid, txHash }) {
+export async function addRunData({ iDappAddress, dealid, txHash }) {
   const formattedDate = getFormattedDateInParis();
   const runData = {
     date: formattedDate,
@@ -63,11 +63,11 @@ export function addRunData({ iDappAddress, dealid, txHash }) {
     dealid,
     txHash,
   };
-  addDataToCache('runs.json', runData);
+  await addDataToCache('runs.json', runData);
 }
 
 // Function to add deployment data to deployments.json
-export function addDeploymentData({
+export async function addDeploymentData({
   sconifiedImage,
   appContractAddress,
   owner,
@@ -79,5 +79,5 @@ export function addDeploymentData({
     appContractAddress,
     owner,
   };
-  addDataToCache('deployments.json', deploymentData);
+  await addDataToCache('deployments.json', deploymentData);
 }

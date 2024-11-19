@@ -1,11 +1,13 @@
-import chalk from 'chalk';
 import inquirer from 'inquirer';
 import { readIDappConfig, writeIDappConfig } from './idappConfigFile.js';
+import { CONFIG_FILE } from '../config/config.js';
 
 export async function askForWalletPrivateKey() {
-  const walletPrivateKey = readIDappConfig().walletPrivateKey || '';
+  const config = await readIDappConfig();
+
+  const walletPrivateKey = config.walletPrivateKey || '';
   if (walletPrivateKey) {
-    console.log('Using saved walletPrivateKey (from "idapp.config.json")');
+    console.log(`Using saved walletPrivateKey (from "${CONFIG_FILE}")`);
     return walletPrivateKey;
   }
 
@@ -30,10 +32,9 @@ export async function askForWalletPrivateKey() {
     return walletPrivateKeyAnswer;
   }
 
-  const config = readIDappConfig();
   config.walletPrivateKey = walletPrivateKeyAnswer;
-  writeIDappConfig(config);
-  console.log('walletPrivateKey saved to "idapp.config.json"');
+  await writeIDappConfig(config);
+  console.log(`walletPrivateKey saved to "${CONFIG_FILE}"`);
 
   return walletPrivateKeyAnswer;
 }

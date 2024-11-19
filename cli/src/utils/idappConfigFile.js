@@ -9,6 +9,7 @@ const jsonConfigFileSchema = z.object({
   dockerhubUsername: z.string().optional(),
   dockerhubAccessToken: z.string().optional(),
   walletAddress: z.string().optional(),
+  walletPrivateKey: z.string().optional(),
 });
 
 // Read JSON configuration file

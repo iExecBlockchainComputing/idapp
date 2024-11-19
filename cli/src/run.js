@@ -4,7 +4,6 @@ import inquirer from 'inquirer';
 import { ethers } from 'ethers';
 import { IExec, utils } from 'iexec';
 import { askForWalletPrivateKey } from './utils/askForWalletPrivateKey.js';
-import { privateKeyManagement } from './utils/privateKeyManagement.js';
 import { SCONE_TAG, WORKERPOOL_DEBUG } from './config/config.js';
 import { addRunData } from './utils/cacheExecutions.js';
 

@@ -1,4 +1,5 @@
 import Docker from 'dockerode';
+import { SCONIFY_IMAGE } from '../constants/constants.js';
 import { logger } from '../utils/logger.js';
 import { inspectImage } from './inspectImage.js';
 import { pullSconeImage } from './pullSconeImage.js';
@@ -8,13 +9,12 @@ const docker = new Docker();
 export async function sconifyImage({ fromImage, toImage, imageName }) {
   logger.info({ fromImage, toImage, imageName }, 'Running sconify command...');
 
-  const sconeImage = 'scone-production/iexec-sconify-image:5.7.6-v15';
-  logger.info({ sconeImage }, 'Pulling scone image...');
-  await pullSconeImage(`registry.scontain.com/${sconeImage}`);
+  logger.info({ sconeImage: SCONIFY_IMAGE }, 'Pulling scone image...');
+  await pullSconeImage(SCONIFY_IMAGE);
 
   const sconifyContainer = await docker.createContainer({
     // https://gitlab.scontain.com/scone-production/iexec-sconify-image/container_registry/99?after=NTA
-    Image: `registry.scontain.com/${sconeImage}`,
+    Image: SCONIFY_IMAGE,
     Cmd: [
       'sconify_iexec',
       `--name=${imageName}`,

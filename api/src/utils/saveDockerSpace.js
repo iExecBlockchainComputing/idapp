@@ -1,9 +1,72 @@
 import Docker from 'dockerode';
+import { SCONIFY_IMAGE } from '../constants/constants.js';
 import { logger } from './logger.js';
 
 const docker = new Docker();
 
-export async function removeDockerImageWithVolumes(imageName) {
+export async function cleanLocalDocker({
+  dockerhubImageToSconify,
+  sconifiedImage,
+}) {
+  // Clean user's docker image
+  try {
+    const { countImage, imageName, countContainers } =
+      await removeDockerImageWithVolumes({
+        imageName: dockerhubImageToSconify,
+      });
+    logger.info(
+      {
+        dockerhubImageToSconify,
+        countImage,
+        imageName,
+        countContainers,
+      },
+      'Origin docker image cleaned successfully'
+    );
+  } catch (error) {
+    logger.error(
+      { imageName: dockerhubImageToSconify, error },
+      `Error removing docker image, container and volumes`
+    );
+  }
+
+  // Clean sconified image now that it has been pushed to dockerhub
+  if (sconifiedImage) {
+    try {
+      await removeDockerImageWithVolumes({ imageName: sconifiedImage });
+      logger.info(
+        {
+          sconifiedImage,
+        },
+        'Target docker image cleaned successfully'
+      );
+    } catch (error) {
+      logger.error(
+        { imageName: sconifiedImage, error },
+        `Error removing docker image, container and volumes`
+      );
+    }
+  }
+
+  // Clean container used to sconify
+  try {
+    await removeDockerImageWithVolumes({
+      imageName: SCONIFY_IMAGE,
+      shouldRemoveImage: false,
+    });
+    logger.info(
+      {
+        sconifiedImage,
+      },
+      'Sconify docker container cleaned successfully'
+    );
+  } catch (err) {}
+}
+
+async function removeDockerImageWithVolumes({
+  imageName,
+  shouldRemoveImage = true,
+}) {
   // Get all containers based on this image
   const containers = await docker.listContainers({
     all: true,
@@ -17,6 +80,12 @@ export async function removeDockerImageWithVolumes(imageName) {
   );
 
   await removeContainersAndVolumes(containers);
+
+  if (!shouldRemoveImage) {
+    return {
+      countContainers: containers.length,
+    };
+  }
 
   // Remove the image itself
   const image = docker.getImage(imageName);

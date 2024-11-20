@@ -1,6 +1,6 @@
 import { z } from 'zod';
 import { logger } from '../utils/logger.js';
-import { removeDockerImageWithVolumes } from '../utils/saveDockerSpace.js';
+import { cleanLocalDocker } from '../utils/saveDockerSpace.js';
 import { sconify } from './sconify.service.js';
 
 const bodySchema = z.object({
@@ -50,54 +50,21 @@ export async function sconifyHandler(req, res) {
       appContractAddress,
     });
 
-    // Clean user's docker image
-    removeDockerImageWithVolumes(dockerhubImageToSconify)
-      .then((removeResult) => {
-        logger.info(
-          {
-            dockerhubImageToSconify,
-            ...removeResult,
-          },
-          'Origin docker image cleaned successfully'
-        );
-      })
-      .catch((error) => {
-        logger.error(
-          { imageName: dockerhubImageToSconify, error },
-          `Error removing docker image, container and volumes`
-        );
-      });
-
-    // Clean sconified image now that it has been pushed to dockerhub
-    removeDockerImageWithVolumes(sconifiedImage).then(() => {
-      logger.info(
-        {
-          sconifiedImage,
-        },
-        'Target docker image cleaned successfully'
-      );
+    cleanLocalDocker({
+      dockerhubImageToSconify,
+      sconifiedImage,
+    }).then(() => {
+      logger.info('Local docker cleaned');
     });
   } catch (error) {
     logger.error(error);
 
     res.status(500).json({ success: false, error: error.message });
 
-    // Clean user's docker image
-    removeDockerImageWithVolumes(dockerhubImageToSconify)
-      .then((removeResult) => {
-        logger.info(
-          {
-            dockerhubImageToSconify,
-            ...removeResult,
-          },
-          'Origin docker image cleaned successfully'
-        );
-      })
-      .catch((error) => {
-        logger.error(
-          { imageName: dockerhubImageToSconify, error },
-          `Error removing docker image, container and volumes`
-        );
-      });
+    cleanLocalDocker({
+      dockerhubImageToSconify,
+    }).then(() => {
+      logger.info('Local docker cleaned');
+    });
   }
 }

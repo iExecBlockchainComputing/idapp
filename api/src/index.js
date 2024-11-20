@@ -1,50 +1,33 @@
 import 'dotenv/config';
 import express from 'express';
 import { readFile } from 'fs/promises';
-import { sconify } from './sconify.js';
-import { removeDockerImageWithVolumes } from './utils/saveDockerSpace.js';
+import pino from 'pino';
+import { sconifyHandler } from './sconify/sconify.handler.js';
+import { configureLogger } from './utils/logger.js';
+import { session } from './utils/requestContext.js';
 
 const app = express();
 const hostname = '0.0.0.0';
 const port = 3000;
+
+const rootLogger = pino();
 
 // Read package.json to get the version
 const packageJson = JSON.parse(
   await readFile(new URL('../package.json', import.meta.url))
 );
 
+configureLogger(app, session);
+
 app.use(express.json());
 
-app.post('/sconify', async (req, res) => {
-  const { yourWalletPublicAddress, dockerhubImageToSconify } = req.body;
-  try {
-    const { sconifiedImage, appContractAddress } =
-      await sconify({
-        dockerImageToSconify: dockerhubImageToSconify,
-        userWalletPublicAddress: yourWalletPublicAddress,
-      });
-
-    res.status(200).json({
-      success: true,
-      sconifiedImage,
-      appContractAddress,
-    });
-
-    // Supprimer l'image dockerhubImageToSconify après utilisation
-    removeDockerImageWithVolumes(dockerhubImageToSconify);
-
-    // Supprimer l'image sconifiedImage après utilisation
-    removeDockerImageWithVolumes(sconifiedImage);
-  } catch (err) {
-    res.status(500).json({ success: false, error: err.message });
-  }
-});
+app.post('/sconify', sconifyHandler);
 
 // Health endpoint
 app.get('/health', (req, res) => {
   res.json({
     version: packageJson.version,
-    status: 'up'
+    status: 'up',
   });
 });
 
@@ -53,5 +36,18 @@ app.get('/', (req, res) => {
 });
 
 app.listen(port, hostname, () => {
-  console.log(`Server running at http://${hostname}:${port}/`);
+  rootLogger.info(`Server running at http://${hostname}:${port}/`);
+});
+
+process.on('uncaughtException', (err) => {
+  logger.error({ err }, 'Uncaught exception');
+  process.exit(1);
+});
+
+process.on('unhandledRejection', (err) => {
+  logger.error({ err }, 'Unhandled Rejection');
+});
+
+process.on('exit', (exitCode) => {
+  logger.info({ exitCode }, 'Exit');
 });

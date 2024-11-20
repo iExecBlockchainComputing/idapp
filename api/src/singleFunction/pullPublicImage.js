@@ -1,9 +1,10 @@
 import Docker from 'dockerode';
+import { logger } from '../utils/logger.js';
 
 const docker = new Docker();
 
 export function pullPublicImage(image) {
-  console.log(`Pulling image: ${image}...`);
+  logger.info({ image }, 'Pulling image...');
 
   return new Promise((resolve, reject) => {
     docker.pull(image, function (err, stream) {
@@ -16,10 +17,10 @@ export function pullPublicImage(image) {
 
       function onFinished(err, output) {
         if (err) {
-          console.error('Error in image pulling process:', err);
+          logger.error({ image, err }, 'Error in image pulling process');
           return reject(err);
         }
-        console.log(`Image ${image} pulled successfully.`);
+        logger.info({ image }, 'Image pulled successfully');
         resolve();
       }
 

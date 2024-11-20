@@ -15,7 +15,7 @@ This project is an iExec decentralized application scaffolded with `idapp init`
   commands
 - [src/](./src/) where your code lives when you [develop](#develop)
   your app
-- [Dockerfile](./Dockerfile) defines how to build your app docker image
+- [Dockerfile](./Dockerfile) how to build your app docker image
 - [input/](./input/) input directory for your [local tests](#test-locally)
 - [output/](./output/) output directory for your [local tests](#test-locally)
 - [cache/](./cache/) directory contains traces of your past app

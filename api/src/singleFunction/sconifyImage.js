@@ -63,9 +63,6 @@ export async function sconifyImage({ fromImage, toImage, imageName }) {
 
   await sconifyContainer.wait();
 
-  // await sconifyContainer.remove({ force: true });
-  // logger.info('Docker container cleaned');
-
   let builtImage;
   try {
     builtImage = await inspectImage(toImage);

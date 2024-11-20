@@ -3,7 +3,9 @@ import { v4 as uuidv4 } from 'uuid';
 import { pinoHttp } from 'pino-http';
 import { session } from './requestContext.js';
 
-// Alternative solution if needed: https://github.com/puzpuzpuz/cls-rtracer?tab=readme-ov-file#pino
+// Alternative solution for a dedicated request id per request: https://github.com/puzpuzpuz/cls-rtracer?tab=readme-ov-file#pino
+
+// Have an OpenTelemetry format: https://github.com/pinojs/pino/blob/main/docs/transports.md#pino-opentelemetry-transport
 
 export const logger = pino({
   mixin() {

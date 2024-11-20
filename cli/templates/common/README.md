@@ -37,7 +37,7 @@ Check the test output in the [output](./output/) directory
 
 ### Deploy on iExec
 
-Use the `deploy` command to deploy your app on the iExec decentralized platform
+Use the `deploy` command to transform your app into a TEE  app and deploy it on the iExec decentralized platform
 
 ```sh
 idapp deploy

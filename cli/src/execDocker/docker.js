@@ -23,7 +23,6 @@ export async function checkDockerDaemon() {
   }
 }
 
-// TODO: fix platform for dockerode
 export async function dockerBuild({ tag = undefined, isForTest = false }) {
   const osType = os.type();
   const buildSpinner = ora('Building Docker image ...').start();

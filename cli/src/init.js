@@ -52,7 +52,7 @@ export async function init() {
 
   console.log('-----');
   console.log(
-    'ℹ️  LIMITATION: Your JavaScript code will be run in a Node.js v14.4 environment.'
+    'ℹ️  LIMITATION: Your JavaScript code will be run in a Node.js v14.4 environment with npm v6.'
   );
   console.log('-----');
 

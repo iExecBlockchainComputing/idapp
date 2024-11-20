@@ -13,7 +13,7 @@ This project is an iExec decentralized application scaffolded with `idapp init`
 
 - [idapp.config.json](./idapp.config.json) configuration file for the `idapp`
   commands
-- [src/](./src/) directory is where your code lives when you [develop](#develop)
+- [src/](./src/) where your code lives when you [develop](#develop)
   your app
 - [Dockerfile](./Dockerfile) defines how to build your app docker image
 - [input/](./input/) input directory for your [local tests](#test-locally)

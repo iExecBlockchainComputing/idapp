@@ -5,6 +5,7 @@
   "type": "module",
   "scripts": {
     "start": "pm2 start ./src/index.js",
+    "stop": "pm2 stop default",
     "dev": "node --watch ./src/index.js",
     "dev:pretty": "node --watch ./src/index.js | pino-pretty -tc",
     "check-format": "prettier --check .",

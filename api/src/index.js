@@ -3,8 +3,8 @@ import express from 'express';
 import { readFile } from 'fs/promises';
 import pino from 'pino';
 import { sconifyHandler } from './sconify/sconify.handler.js';
-import { configureLogger } from './utils/logger.js';
-import { session } from './utils/requestContext.js';
+import { loggerMiddleware } from './utils/logger.js';
+import { requestIdMiddleware } from './utils/requestId.js';
 
 const app = express();
 const hostname = '0.0.0.0';
@@ -17,9 +17,9 @@ const packageJson = JSON.parse(
   await readFile(new URL('../package.json', import.meta.url))
 );
 
-configureLogger(app, session);
-
 app.use(express.json());
+app.use(requestIdMiddleware);
+app.use(loggerMiddleware);
 
 app.post('/sconify', sconifyHandler);
 

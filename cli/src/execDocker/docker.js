@@ -1,8 +1,6 @@
 import Docker from 'dockerode';
 import ora from 'ora';
 import os from 'os';
-import { askForDockerhubAccessToken } from '../utils/askForDockerhubAccessToken.js';
-import { askForDockerhubUsername } from '../utils/askForDockerhubUsername.js';
 
 const docker = new Docker();
 
@@ -114,22 +112,22 @@ export async function dockerBuild({ tag = undefined, isForTest = false }) {
 }
 
 // Function to push a Docker image
-export async function pushDockerImage({ tag }) {
-  // TODO We need to handle this push without asking the user their password (sensitive info!)
+export async function pushDockerImage({
+  tag,
+  dockerhubUsername,
+  dockerhubAccessToken,
+}) {
   try {
-    const dockerHubUsername = await askForDockerhubUsername();
-    const dockerHubAccessToken = await askForDockerhubAccessToken();
-
-    if (!dockerHubUsername || !dockerHubAccessToken) {
-      throw new Error('DockerHub credentials not found.');
+    if (!dockerhubUsername || !dockerhubAccessToken) {
+      throw new Error('Missing DockerHub credentials.');
     }
     const dockerPushSpinner = ora('Docker push ...').start();
     const dockerImage = docker.getImage(tag);
 
     const imagePushStream = await dockerImage.push({
       authconfig: {
-        username: dockerHubUsername,
-        password: dockerHubAccessToken,
+        username: dockerhubUsername,
+        password: dockerhubAccessToken,
       },
     });
 

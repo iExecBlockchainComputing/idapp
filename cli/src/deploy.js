@@ -10,6 +10,7 @@ import {
 import { askForDockerhubUsername } from './utils/askForDockerhubUsername.js';
 import { askForWalletAddress } from './utils/askForWalletAddress.js';
 import { readPackageJonConfig } from './utils/idappConfigFile.js';
+import { askForDockerhubAccessToken } from './utils/askForDockerhubAccessToken.js';
 
 export async function deploy(argv) {
   let mode;
@@ -35,6 +36,7 @@ export async function deploy(argv) {
 
 export async function deployForDebug() {
   const dockerhubUsername = await askForDockerhubUsername();
+  const dockerhubAccessToken = await askForDockerhubAccessToken();
 
   const { idappVersion } = await inquirer.prompt([
     {
@@ -60,7 +62,11 @@ export async function deployForDebug() {
     await dockerBuild({
       tag: imageTag,
     });
-    await pushDockerImage({ tag: imageTag });
+    await pushDockerImage({
+      tag: imageTag,
+      dockerhubAccessToken,
+      dockerhubUsername,
+    });
   } catch (e) {
     console.log(
       chalk.red(

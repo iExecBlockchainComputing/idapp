@@ -1,15 +1,10 @@
-import { exec } from 'child_process';
 import Docker from 'dockerode';
-import inquirer from 'inquirer';
 import ora from 'ora';
 import os from 'os';
-import util from 'util';
 import { askForDockerhubAccessToken } from '../utils/askForDockerhubAccessToken.js';
 import { askForDockerhubUsername } from '../utils/askForDockerhubUsername.js';
-import { IEXEC_WORKER_HEAP_SIZE } from '../config/config.js';
 
 const docker = new Docker();
-const execAsync = util.promisify(exec);
 
 export async function checkDockerDaemon() {
   const checkDockerDaemonSpinner = ora(

@@ -61,7 +61,7 @@ export async function dockerBuild({ tag = undefined, isForTest = false }) {
       const builtImageId = output?.find((row) => row?.aux?.ID)?.aux?.ID;
 
       /**
-       * 3 kind of error possible, we want to catch both:
+       * 3 kind of error possible, we want to catch each of them:
        * - stream error
        * - build error
        * - no image id (should not happen)
@@ -134,10 +134,33 @@ export async function pushDockerImage({
     await new Promise((resolve, reject) => {
       docker.modem.followProgress(imagePushStream, onFinished, onProgress);
 
-      function onFinished(err, _output) {
-        if (err) {
-          console.error('Error in image pushing process:', err);
-          return reject(err);
+      function onFinished(err, output) {
+        /**
+         * 2 kind of error possible, we want to catch each of them:
+         * - stream error
+         * - push error
+         *
+         * expected output format for push error
+         * ```
+         *   {
+         *     errorDetail: {
+         *       message: 'Get "https://registry-1.docker.io/v2/": dial tcp: lookup registry-1.docker.io: Temporary failure in name resolution'
+         *     },
+         *     error: 'Get "https://registry-1.docker.io/v2/": dial tcp: lookup registry-1.docker.io: Temporary failure in name resolution'
+         *   }
+         * ```
+         */
+        const errorOrErrorMessage =
+          err || // stream error
+          output.find((row) => row?.error)?.error; // push error message
+
+        if (errorOrErrorMessage) {
+          const error =
+            errorOrErrorMessage instanceof Error
+              ? errorOrErrorMessage
+              : Error(errorOrErrorMessage);
+          console.error('Error in image pushing process:', error);
+          return reject(error);
         }
         console.log(`Successfully pushed the image to DockerHub => ${tag}`);
         resolve();

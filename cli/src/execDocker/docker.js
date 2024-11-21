@@ -6,6 +6,7 @@ import os from 'os';
 import util from 'util';
 import { askForDockerhubAccessToken } from '../utils/askForDockerhubAccessToken.js';
 import { askForDockerhubUsername } from '../utils/askForDockerhubUsername.js';
+import { IEXEC_WORKER_HEAP_SIZE } from '../config/config.js';
 
 const docker = new Docker();
 const execAsync = util.promisify(exec);
@@ -170,6 +171,7 @@ export async function runDockerContainer({
   cmd,
   volumes = [],
   env = [],
+  memory = undefined,
 }) {
   const runDockerContainerSpinner = ora(
     'Setting up Docker container...'
@@ -182,6 +184,7 @@ export async function runDockerContainer({
       HostConfig: {
         Binds: volumes,
         AutoRemove: true,
+        Memory: memory,
       },
       Env: env,
     });
@@ -197,7 +200,6 @@ export async function runDockerContainer({
           );
           throw err;
         }
-
         stream.pipe(process.stdout); // Pipe container output to stdout
       }
     );
@@ -210,23 +212,19 @@ export async function runDockerContainer({
     await container.wait();
 
     // Check container status after waiting
-    const containerInspect = await container.inspect();
-    if (containerInspect.State.Status !== 'exited') {
+    const { State } = await container.inspect();
+
+    // report status
+    if (State.OOMKilled) {
+      runDockerContainerSpinner.fail(
+        `Docker container ran out of memory, ${Math.floor(memory / (1024 * 1024))}Mb limit exceeded`
+      );
+    } else if (State.ExitCode === 0) {
       runDockerContainerSpinner.succeed('Docker container run successfully.');
     } else {
-      runDockerContainerSpinner.fail('Docker container exited unexpectedly.');
-      throw new Error('Docker container exited unexpectedly.');
-    }
-
-    // Prompt user to view result
-    const continueAnswer = await inquirer.prompt({
-      type: 'confirm',
-      name: 'continue',
-      message: 'Would you like to see the result? (View output/result.txt)',
-    });
-    if (continueAnswer.continue) {
-      const { stdout } = await execAsync('cat output/result.txt');
-      console.log(stdout.toString());
+      runDockerContainerSpinner.fail(
+        `Docker container exited with error (Exit code: ${State.ExitCode})`
+      );
     }
   } catch (error) {
     runDockerContainerSpinner.fail('Failed to run Docker container.');

@@ -10,7 +10,11 @@ import {
   runDockerContainer,
 } from './execDocker/docker.js';
 import { readIDappConfig } from './utils/idappConfigFile.js';
-import { TEST_INPUT_DIR, TEST_OUTPUT_DIR } from './config/config.js';
+import {
+  IEXEC_WORKER_HEAP_SIZE,
+  TEST_INPUT_DIR,
+  TEST_OUTPUT_DIR,
+} from './config/config.js';
 
 const execAsync = util.promisify(exec);
 
@@ -20,6 +24,20 @@ export async function test(argv) {
     await testWithDocker(argv.params);
   } else {
     await testWithoutDocker(argv.params);
+  }
+  await askShowTestOutput();
+}
+
+async function askShowTestOutput() {
+  // Prompt user to view result
+  const continueAnswer = await inquirer.prompt({
+    type: 'confirm',
+    name: 'continue',
+    message: 'Would you like to see the result? (View output/result.txt)',
+  });
+  if (continueAnswer.continue) {
+    const { stdout } = await execAsync('cat output/result.txt');
+    console.log(stdout.toString());
   }
 }
 
@@ -54,16 +72,6 @@ async function testWithoutDocker(arg) {
     const { stdout, stderr } = await execAsync(command);
     spinner.succeed('Run completed.');
     console.log(stderr ? chalk.red(stderr) : chalk.blue(stdout));
-
-    const continueAnswer = await inquirer.prompt({
-      type: 'confirm',
-      name: 'continue',
-      message: 'Would you like to see the result? (`cat output/result.txt`)',
-    });
-    if (continueAnswer.continue) {
-      const { stdout } = await execAsync('cat output/result.txt');
-      console.log(stdout);
-    }
   } catch (err) {
     console.log('err', err);
     spinner.fail('Failed to run iDapp.');
@@ -102,6 +110,7 @@ export async function testWithDocker(arg) {
           ? [`IEXEC_DATASET_FILENAME=protectedData.zip`]
           : []),
       ],
+      memory: IEXEC_WORKER_HEAP_SIZE,
     });
   } catch (error) {
     console.error(chalk.red(`Error: ${error.message}`));

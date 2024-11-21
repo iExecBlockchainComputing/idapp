@@ -1,10 +1,11 @@
 import { z } from 'zod';
+import { ethereumAddressZodSchema } from '../utils/ethereumAddressZodSchema.js';
 import { logger } from '../utils/logger.js';
 import { cleanLocalDocker } from '../utils/saveDockerSpace.js';
 import { sconify } from './sconify.service.js';
 
 const bodySchema = z.object({
-  yourWalletPublicAddress: z.string().min(1, 'A wallet address is required'),
+  yourWalletPublicAddress: ethereumAddressZodSchema,
   dockerhubImageToSconify: z
     .string()
     .min(

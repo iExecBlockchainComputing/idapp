@@ -10,3 +10,4 @@ export const SCONIFY_API_URL =
 export const CONFIG_FILE = 'idapp.config.json';
 export const TEST_INPUT_DIR = 'input';
 export const TEST_OUTPUT_DIR = 'output';
+export const CACHE_DIR = 'cache';

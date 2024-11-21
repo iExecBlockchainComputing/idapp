@@ -52,7 +52,7 @@ export async function init() {
 
   console.log('-----');
   console.log(
-    'ℹ️  LIMITATION: Your JavaScript code will be run in a Node.js v14.4 environment.'
+    'ℹ️  LIMITATION: Your JavaScript code will be run in a Node.js v14.4 environment with npm v6.'
   );
   console.log('-----');
 
@@ -80,7 +80,7 @@ export async function init() {
 ${chalk.bold.underline('Steps to Get Started:')}
 
   Navigate to your project folder:
-  ${chalk.yellow(`$ cd ${folderCreated}`)}
+  ${chalk.yellow(`$ cd ${folderCreated || '.'}`)}
 
   ${chalk.green('Make your changes in the')} ${chalk.cyan('src/app.js')} ${chalk.green('file')}.
 

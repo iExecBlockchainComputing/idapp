@@ -18,9 +18,12 @@ export async function checkDockerDaemon() {
 }
 
 // TODO: fix platform for dockerode
-export async function dockerBuild({ tag = undefined, isForTest = false }) {
+export async function dockerBuild({
+  tag = undefined,
+  isForTest = false,
+  progressCallback = () => {},
+}) {
   const osType = os.type();
-  const buildSpinner = ora('Building Docker image ...').start();
   const buildArgs = {
     context: process.cwd(), // Use current working directory
     src: ['./'],
@@ -87,24 +90,16 @@ export async function dockerBuild({ tag = undefined, isForTest = false }) {
           errorOrErrorMessage instanceof Error
             ? errorOrErrorMessage
             : Error(errorOrErrorMessage);
-        buildSpinner.fail('Failed to build Docker image.');
         reject(error);
       } else {
-        buildSpinner.succeed(
-          `Docker image built (${tag ? tag : builtImageId})`
-        );
         resolve(builtImageId);
       }
     }
 
     function onProgress(event) {
       if (event?.stream) {
-        if (event.stream !== '\n') {
-          console.log(event.stream);
-        }
-        return;
+        progressCallback(event.stream);
       }
-      console.log(event);
     }
   });
 
@@ -116,12 +111,12 @@ export async function pushDockerImage({
   tag,
   dockerhubUsername,
   dockerhubAccessToken,
+  progressCallback = () => {},
 }) {
   try {
     if (!dockerhubUsername || !dockerhubAccessToken) {
       throw new Error('Missing DockerHub credentials.');
     }
-    const dockerPushSpinner = ora('Docker push ...').start();
     const dockerImage = docker.getImage(tag);
 
     const imagePushStream = await dockerImage.push({
@@ -159,25 +154,18 @@ export async function pushDockerImage({
             errorOrErrorMessage instanceof Error
               ? errorOrErrorMessage
               : Error(errorOrErrorMessage);
-          console.error('Error in image pushing process:', error);
           return reject(error);
         }
-        console.log(`Successfully pushed the image to DockerHub => ${tag}`);
-        resolve();
+        resolve(tag);
       }
 
       function onProgress(event) {
-        if (event.error) {
-          console.error('[img.push] onProgress ERROR', event.error);
-        } else {
-          console.log('[img.push] onProgress', event);
+        if (event?.stream) {
+          progressCallback(event.stream);
         }
       }
     });
-
-    dockerPushSpinner.succeed('Docker image pushed.');
   } catch (error) {
-    console.error('Error pushing Docker image:', error);
     throw error; // Re-throwing the error for higher-level handling if needed
   }
 }

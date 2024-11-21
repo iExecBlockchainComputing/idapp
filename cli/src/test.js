@@ -42,7 +42,8 @@ async function askShowTestOutput({ spinner }) {
   if (continueAnswer.continue) {
     // TODO replace with pure nodejs
     const { stdout } = await execAsync('ls output');
-    spinner.info(`output directory content: ${stdout.toString()}`);
+    spinner.info(`output directory content:
+${stdout.toString()}`);
   }
 }
 

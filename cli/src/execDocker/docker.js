@@ -1,5 +1,4 @@
 import Docker from 'dockerode';
-import ora from 'ora';
 import os from 'os';
 
 const docker = new Docker();

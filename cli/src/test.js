@@ -37,7 +37,7 @@ async function askShowTestOutput({ spinner }) {
   const continueAnswer = await inquirer.prompt({
     type: 'confirm',
     name: 'continue',
-    message: 'Would you like to see the result? (View ./output/)',
+    message: `Would you like to see the result? (View ./${TEST_OUTPUT_DIR}/)`,
   });
   if (continueAnswer.continue) {
     // TODO replace with pure nodejs

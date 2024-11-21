@@ -1,3 +1,4 @@
+import { SCONE_NODE_IMAGE } from '../constants/constants.js';
 import { deployAppContractToBellecour } from '../singleFunction/deployAppContractToBellecour.js';
 import { getSconifiedImageFingerprint } from '../singleFunction/getSconifiedImageFingerprint.js';
 import { inspectImage } from '../singleFunction/inspectImage.js';
@@ -60,9 +61,7 @@ export async function sconify({
   // Pull the SCONE image
   // https://gitlab.scontain.com/sconecuratedimages/node/container_registry/20
   logger.info('---------- 3 ---------- Pulling Scone image');
-  const SCONE_IMAGE =
-    'registry.scontain.com/sconecuratedimages/node:14.4.0-alpine3.11';
-  await pullSconeImage(SCONE_IMAGE);
+  await pullSconeImage(SCONE_NODE_IMAGE);
 
   logger.info('---------- 4 ---------- Start sconification...');
   await sconifyImage({

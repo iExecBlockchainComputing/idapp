@@ -44,12 +44,7 @@ async function cleanTestOutput() {
 
 export async function testApp({ args = undefined }) {
   try {
-    const installDepSpinner = ora('Installing dependencies...').start();
-    await execAsync('npm ci');
-    installDepSpinner.succeed('Dependencies installed.');
-
     await checkDockerDaemon();
-
     const idappConfig = await readIDappConfig();
     const { withProtectedData } = idappConfig;
 

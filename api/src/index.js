@@ -40,14 +40,14 @@ app.listen(port, hostname, () => {
 });
 
 process.on('uncaughtException', (err) => {
-  logger.error({ err }, 'Uncaught exception');
+  rootLogger.error({ err }, 'Uncaught exception');
   process.exit(1);
 });
 
 process.on('unhandledRejection', (err) => {
-  logger.error({ err }, 'Unhandled Rejection');
+  rootLogger.error({ err }, 'Unhandled Rejection');
 });
 
 process.on('exit', (exitCode) => {
-  logger.info({ exitCode }, 'Exit');
+  rootLogger.info({ exitCode }, 'Exit');
 });

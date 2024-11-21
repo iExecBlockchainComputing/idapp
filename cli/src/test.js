@@ -20,11 +20,7 @@ const execAsync = util.promisify(exec);
 
 export async function test(argv) {
   await cleanTestOutput();
-  if (argv.docker) {
-    await testWithDocker(argv.params);
-  } else {
-    await testWithoutDocker(argv.params);
-  }
+  await testApp({ args: argv.params });
   await askShowTestOutput();
 }
 
@@ -46,40 +42,7 @@ async function cleanTestOutput() {
   await mkdir(TEST_OUTPUT_DIR);
 }
 
-async function testWithoutDocker(arg) {
-  const spinner = ora('Reading iDapp JSON config file ...').start();
-
-  const { withProtectedData } = await readIDappConfig(spinner);
-  spinner.succeed('Reading idapp JSON config file.');
-
-  try {
-    spinner.start('Installing dependencies...');
-    await execAsync('npm ci');
-    spinner.succeed('Dependencies installed.');
-  } catch (err) {
-    spinner.fail('Failed to install dependencies.');
-    console.error(err);
-    process.exit(1);
-  }
-
-  try {
-    spinner.start('Running iDapp...');
-    let command = `cross-env IEXEC_OUT=${TEST_OUTPUT_DIR} IEXEC_IN=${TEST_INPUT_DIR} node ./src/app.js ${arg}`;
-    if (withProtectedData) {
-      command = `cross-env IEXEC_OUT=${TEST_OUTPUT_DIR} IEXEC_IN=${TEST_INPUT_DIR} IEXEC_DATASET_FILENAME="protectedData.zip" node ./src/app.js ${arg}`;
-    }
-
-    const { stdout, stderr } = await execAsync(command);
-    spinner.succeed('Run completed.');
-    console.log(stderr ? chalk.red(stderr) : chalk.blue(stdout));
-  } catch (err) {
-    console.log('err', err);
-    spinner.fail('Failed to run iDapp.');
-    console.log(chalk.red('Failed to execute app.js file.'));
-  }
-}
-
-export async function testWithDocker(arg) {
+export async function testApp({ args = undefined }) {
   try {
     const installDepSpinner = ora('Installing dependencies...').start();
     await execAsync('npm ci');
@@ -98,7 +61,7 @@ export async function testWithDocker(arg) {
     // run the temp image
     await runDockerContainer({
       image: imageId,
-      cmd: [arg],
+      cmd: [args],
       volumes: [
         `${process.cwd()}/${TEST_INPUT_DIR}:/iexec_in`,
         `${process.cwd()}/${TEST_OUTPUT_DIR}:/iexec_out`,

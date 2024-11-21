@@ -5,15 +5,12 @@ import os from 'os';
 const docker = new Docker();
 
 export async function checkDockerDaemon() {
-  const checkDockerDaemonSpinner = ora(
-    'Checking if docker daemon is running ...'
-  ).start();
   try {
     await docker.ping();
-    checkDockerDaemonSpinner.succeed('Docker daemon is running');
   } catch (e) {
-    checkDockerDaemonSpinner.fail('You docker daemon is not up');
-    process.exit(1);
+    throw Error(
+      'Docker daemon is not accessible, make sure docker is installed and running'
+    );
   }
 }
 

@@ -21,18 +21,18 @@ const execAsync = util.promisify(exec);
 export async function test(argv) {
   const spinner = ora();
   try {
-    await cleanTestOutput();
+    await cleanTestOutput({ spinner });
     await testApp({ args: argv.params, spinner });
     // TODO check output files
     // - output required files
     // - outpout dir size
-    await askShowTestOutput();
+    await askShowTestOutput({ spinner });
   } catch (error) {
     handleCliError({ spinner, error });
   }
 }
 
-async function askShowTestOutput() {
+async function askShowTestOutput({ spinner }) {
   // Prompt user to view result
   const continueAnswer = await inquirer.prompt({
     type: 'confirm',
@@ -40,21 +40,26 @@ async function askShowTestOutput() {
     message: 'Would you like to see the result? (View ./output/)',
   });
   if (continueAnswer.continue) {
+    // TODO replace with pure nodejs
     const { stdout } = await execAsync('ls output');
-    console.log(stdout.toString());
+    spinner.info(`output directory content: ${stdout.toString()}`);
   }
 }
 
-async function cleanTestOutput() {
+async function cleanTestOutput({ spinner }) {
+  // just start the spinner, no need to persist success in terminal
+  spinner.start('Cleaning output directory...');
   await rm(TEST_OUTPUT_DIR, { recursive: true, force: true });
   await mkdir(TEST_OUTPUT_DIR);
 }
 
 export async function testApp({ args = undefined, spinner }) {
-  await checkDockerDaemon();
   const idappConfig = await readIDappConfig();
   const { withProtectedData } = idappConfig;
 
+  // just start the spinner, no need to persist success in terminal
+  spinner.start('Checking docker daemon is running...');
+  await checkDockerDaemon();
   // build a temp image for test
   spinner.start('Building app docker image for test...\n');
   const imageId = await dockerBuild({

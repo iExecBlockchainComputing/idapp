@@ -36,17 +36,20 @@ export async function deploy() {
 
   const imageTag = `${dockerhubUsername}/${iDappName}:${idappVersion}`;
 
-  await checkDockerDaemon();
-
   try {
+    // just start the spinner, no need to persist success in terminal
+    spinner.start('Checking docker daemon is running...');
+    await checkDockerDaemon();
+
     spinner.start('Building docker image...\n');
+    const buildLogs = [];
     const imageId = await dockerBuild({
       tag: imageTag,
-      progressCallback: (message) => {
-        spinner.text = spinner.text + message;
+      progressCallback: (msg) => {
+        buildLogs.push(msg); // do we want to show build logs after build is successful?
+        spinner.text = spinner.text + msg;
       },
     });
-    // spinner.stopAndPersist(); // if we want to keep logs?
     spinner.succeed(`Docker image built (${imageId}) and tagged ${imageTag}`);
 
     spinner.start('Pushing docker image...\n');
@@ -54,8 +57,8 @@ export async function deploy() {
       tag: imageTag,
       dockerhubAccessToken,
       dockerhubUsername,
-      progressCallback: (message) => {
-        spinner.text = spinner.text + message;
+      progressCallback: (msg) => {
+        spinner.text = spinner.text + msg;
       },
     });
     spinner.succeed(`Pushed image ${imageTag} on dockerhub`);

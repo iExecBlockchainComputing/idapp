@@ -1,6 +1,5 @@
 import { rm, mkdir } from 'node:fs/promises';
 import util from 'node:util';
-import chalk from 'chalk';
 import { exec } from 'child_process';
 import inquirer from 'inquirer';
 import ora from 'ora';
@@ -15,13 +14,22 @@ import {
   TEST_INPUT_DIR,
   TEST_OUTPUT_DIR,
 } from './config/config.js';
+import { handleCliError } from './utils/cli-helpers.js';
 
 const execAsync = util.promisify(exec);
 
 export async function test(argv) {
-  await cleanTestOutput();
-  await testApp({ args: argv.params });
-  await askShowTestOutput();
+  const spinner = ora();
+  try {
+    await cleanTestOutput();
+    await testApp({ args: argv.params, spinner });
+    // TODO check output files
+    // - output required files
+    // - outpout dir size
+    await askShowTestOutput();
+  } catch (error) {
+    handleCliError({ spinner, error });
+  }
 }
 
 async function askShowTestOutput() {
@@ -29,10 +37,10 @@ async function askShowTestOutput() {
   const continueAnswer = await inquirer.prompt({
     type: 'confirm',
     name: 'continue',
-    message: 'Would you like to see the result? (View output/result.txt)',
+    message: 'Would you like to see the result? (View ./output/)',
   });
   if (continueAnswer.continue) {
-    const { stdout } = await execAsync('cat output/result.txt');
+    const { stdout } = await execAsync('ls output');
     console.log(stdout.toString());
   }
 }
@@ -42,35 +50,70 @@ async function cleanTestOutput() {
   await mkdir(TEST_OUTPUT_DIR);
 }
 
-export async function testApp({ args = undefined }) {
-  try {
-    await checkDockerDaemon();
-    const idappConfig = await readIDappConfig();
-    const { withProtectedData } = idappConfig;
+export async function testApp({ args = undefined, spinner }) {
+  await checkDockerDaemon();
+  const idappConfig = await readIDappConfig();
+  const { withProtectedData } = idappConfig;
 
-    // build a temp image for test
-    const imageId = await dockerBuild({
-      isForTest: true, // Adjust based on your logic
-    });
+  // build a temp image for test
+  spinner.start('Building app docker image for test...\n');
+  const imageId = await dockerBuild({
+    isForTest: true, // Adjust based on your logic
+    progressCallback: (msg) => {
+      spinner.text = spinner.text + msg;
+    },
+  });
+  spinner.succeed(`App docker image built (${imageId})`);
 
-    // run the temp image
-    await runDockerContainer({
-      image: imageId,
-      cmd: [args],
-      volumes: [
-        `${process.cwd()}/${TEST_INPUT_DIR}:/iexec_in`,
-        `${process.cwd()}/${TEST_OUTPUT_DIR}:/iexec_out`,
-      ],
-      env: [
-        `IEXEC_IN=/iexec_in`,
-        `IEXEC_OUT=/iexec_out`,
-        ...(withProtectedData
-          ? [`IEXEC_DATASET_FILENAME=protectedData.zip`]
-          : []),
-      ],
-      memory: IEXEC_WORKER_HEAP_SIZE,
+  // run the temp image
+  spinner.start('Running app docker image...\n');
+  const appLogs = [];
+  const { exitCode, outOfMemory } = await runDockerContainer({
+    image: imageId,
+    cmd: [args],
+    volumes: [
+      `${process.cwd()}/${TEST_INPUT_DIR}:/iexec_in`,
+      `${process.cwd()}/${TEST_OUTPUT_DIR}:/iexec_out`,
+    ],
+    env: [
+      `IEXEC_IN=/iexec_in`,
+      `IEXEC_OUT=/iexec_out`,
+      ...(withProtectedData
+        ? [`IEXEC_DATASET_FILENAME=protectedData.zip`]
+        : []),
+    ],
+    memory: IEXEC_WORKER_HEAP_SIZE,
+    logsCallback: (msg) => {
+      appLogs.push(msg); // collect logs for future use
+      spinner.text = spinner.text + msg; // and display realtime while app is running
+    },
+  });
+  if (outOfMemory) {
+    spinner.fail(
+      `App docker image container ran out of memory.
+  iExec worker's ${Math.floor(IEXEC_WORKER_HEAP_SIZE / (1024 * 1024))}Mb memory limit exceeded.
+  You must refactor your app to run within the memory limit.`
+    );
+  } else if (exitCode === 0) {
+    spinner.succeed('App docker ran and image exited successfully.');
+  } else {
+    spinner.warn(
+      `App docker image ran but exited with error (Exit code: ${exitCode})
+  You may want to check it was intentional`
+    );
+  }
+  // show app logs
+  if (appLogs.length === 0) {
+    spinner.info("App didn't log anything");
+  } else {
+    const showLogs = await inquirer.prompt({
+      type: 'confirm',
+      name: 'continue',
+      message: `Would you like to see the app logs? (${appLogs.length} lines)`,
     });
-  } catch (error) {
-    console.error(chalk.red(`Error: ${error.message}`));
+    if (showLogs.continue) {
+      spinner.info(`App logs:
+${appLogs.join('')}`);
+    }
   }
 }

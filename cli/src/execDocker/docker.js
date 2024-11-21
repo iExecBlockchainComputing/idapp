@@ -176,64 +176,44 @@ export async function runDockerContainer({
   volumes = [],
   env = [],
   memory = undefined,
+  logsCallback = () => {},
 }) {
-  const runDockerContainerSpinner = ora(
-    'Setting up Docker container...'
-  ).start();
+  const container = await docker.createContainer({
+    Image: image,
+    Cmd: cmd,
+    HostConfig: {
+      Binds: volumes,
+      AutoRemove: true,
+      Memory: memory,
+    },
+    Env: env,
+  });
 
-  try {
-    const container = await docker.createContainer({
-      Image: image,
-      Cmd: cmd,
-      HostConfig: {
-        Binds: volumes,
-        AutoRemove: true,
-        Memory: memory,
-      },
-      Env: env,
-    });
+  // Start the container
+  // TODO we should handle abort signal to stop the container and avoid containers running after command is interrupted
+  await container.start();
 
-    // Attach to container output stream for real-time logging
-    container.attach(
-      { stream: true, stdout: true, stderr: true },
-      function (err, stream) {
-        if (err) {
-          console.error('Error attaching to container:', err);
-          runDockerContainerSpinner.fail(
-            'Failed to attach to Docker container.'
-          );
-          throw err;
-        }
-        stream.pipe(process.stdout); // Pipe container output to stdout
-      }
-    );
+  // get the logs stream
+  const logsStream = await container.logs({
+    follow: true,
+    stdout: true,
+    stderr: true,
+  });
+  logsStream.on('data', (chunk) => {
+    logsCallback(chunk.toString('utf-8'));
+  });
+  logsStream.on('error', (err) => {
+    logsCallback('Error streaming logs:', err.message);
+  });
 
-    // Start the container
-    await container.start();
-    runDockerContainerSpinner.text = 'Running Docker container...';
+  // Wait for the container to finish
+  await container.wait();
 
-    // Wait for the container to finish
-    await container.wait();
+  // Check container status after waiting
+  const { State } = await container.inspect();
 
-    // Check container status after waiting
-    const { State } = await container.inspect();
-
-    // report status
-    if (State.OOMKilled) {
-      runDockerContainerSpinner.fail(
-        `Docker container ran out of memory, ${Math.floor(memory / (1024 * 1024))}Mb limit exceeded`
-      );
-    } else if (State.ExitCode === 0) {
-      runDockerContainerSpinner.succeed('Docker container run successfully.');
-    } else {
-      runDockerContainerSpinner.fail(
-        `Docker container exited with error (Exit code: ${State.ExitCode})`
-      );
-    }
-  } catch (error) {
-    runDockerContainerSpinner.fail('Failed to run Docker container.');
-    throw error;
-  } finally {
-    runDockerContainerSpinner.stop();
-  }
+  return {
+    exitCode: State.ExitCode,
+    outOfMemory: State.OOMKilled,
+  };
 }

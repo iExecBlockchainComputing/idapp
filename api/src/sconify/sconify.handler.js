@@ -54,9 +54,13 @@ export async function sconifyHandler(req, res) {
     cleanLocalDocker({
       dockerhubImageToSconify,
       sconifiedImage,
-    }).then(() => {
-      logger.info('Local docker cleaned');
-    });
+    })
+      .then(() => {
+        logger.info('Local docker cleaned');
+      })
+      .catch((error) => {
+        logger.warn({ error }, 'Failed to clean local docker');
+      });
   } catch (error) {
     logger.error(error);
 
@@ -64,8 +68,12 @@ export async function sconifyHandler(req, res) {
 
     cleanLocalDocker({
       dockerhubImageToSconify,
-    }).then(() => {
-      logger.info('Local docker cleaned');
-    });
+    })
+      .then(() => {
+        logger.info('Local docker cleaned');
+      })
+      .catch((error) => {
+        logger.warn({ error }, 'Failed to clean local docker');
+      });
   }
 }

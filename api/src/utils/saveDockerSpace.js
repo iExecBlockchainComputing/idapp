@@ -16,51 +16,61 @@ export async function cleanLocalDocker({
       });
     logger.info(
       {
-        dockerhubImageToSconify,
+        userBaseImage: dockerhubImageToSconify,
         countImage,
         imageName,
         countContainers,
       },
-      'Origin docker image cleaned successfully'
+      "[docker cleaning] User's base image cleaned successfully"
     );
   } catch (error) {
     logger.error(
       { imageName: dockerhubImageToSconify, error },
-      `Error removing docker image, container and volumes`
+      `[docker cleaning] Error removing user\'s base image`
     );
   }
 
   // Clean sconified image now that it has been pushed to dockerhub
   if (sconifiedImage) {
     try {
-      await removeDockerImageWithVolumes({ imageName: sconifiedImage });
+      const { countImage, imageName, countContainers } =
+        await removeDockerImageWithVolumes({ imageName: sconifiedImage });
       logger.info(
         {
           sconifiedImage,
+          countImage,
+          imageName,
+          countContainers,
         },
-        'Target docker image cleaned successfully'
+        '[docker cleaning] Sconified image cleaned successfully'
       );
     } catch (error) {
       logger.error(
         { imageName: sconifiedImage, error },
-        `Error removing docker image, container and volumes`
+        `[docker cleaning] Error removing sconified image`
       );
     }
   }
 
   // Clean container used to sconify
   try {
-    await removeDockerImageWithVolumes({
+    const { countContainers } = await removeDockerImageWithVolumes({
       imageName: SCONIFY_IMAGE,
       shouldRemoveImage: false,
     });
     logger.info(
       {
-        sconifiedImage,
+        containerForImage: SCONIFY_IMAGE,
+        countContainers,
       },
-      'Sconify docker container cleaned successfully'
+      '[docker cleaning] Sconify container cleaned successfully'
     );
-  } catch (err) {}
+  } catch (error) {
+    logger.error(
+      { containersBasedOnImage: SCONIFY_IMAGE, error },
+      `[docker cleaning] Error removing sconify container`
+    );
+  }
 }
 
 async function removeDockerImageWithVolumes({
@@ -72,12 +82,6 @@ async function removeDockerImageWithVolumes({
     all: true,
     filters: { ancestor: [imageName] },
   });
-  logger.info(
-    {
-      countContainers: containers.length,
-    },
-    'Containers to be cleaned from local docker'
-  );
 
   await removeContainersAndVolumes(containers);
 
@@ -102,7 +106,6 @@ async function removeContainersAndVolumes(containers) {
   const promises = containers.map(async (containerInfo) => {
     const container = docker.getContainer(containerInfo.Id);
     await container.remove({ force: true });
-    console.log(`Removed Docker container: ${containerInfo.Id}`);
 
     // Removing volumes
     const containerInfoFull = await container.inspect();
@@ -110,7 +113,6 @@ async function removeContainersAndVolumes(containers) {
     const volumePromises = volumes.map(async (volumeName) => {
       const volume = docker.getVolume(volumeName);
       await volume.remove();
-      console.log(`Removed Docker volume: ${volumeName}`);
     });
     await Promise.all(volumePromises);
   });

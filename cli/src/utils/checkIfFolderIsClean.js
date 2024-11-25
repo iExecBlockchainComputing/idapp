@@ -8,7 +8,7 @@ export async function checkIfFolderIsClean() {
     return;
   }
 
-  console.error('⚠️ Folder is not empty.');
+  console.error('⚠️ Oops, current folder is not empty.');
   const folderName = 'hello-world';
   const { createHelloWorldFolder } = await inquirer.prompt({
     type: 'confirm',

@@ -7,7 +7,7 @@ async function ensureCacheFileExists(fileName) {
   const cacheFile = `${CACHE_DIR}/${fileName}`;
 
   // Create cache directory if it doesn't exist
-  await mkdir(cacheDir, { recursive: true });
+  await mkdir(CACHE_DIR, { recursive: true });
 
   // Create the specified cache file if it doesn't exist
   if (!(await fileExists(cacheFile))) {

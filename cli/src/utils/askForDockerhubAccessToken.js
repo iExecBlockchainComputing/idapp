@@ -15,7 +15,7 @@ export async function askForDockerhubAccessToken() {
     'Go to your docker hub account: https://hub.docker.com/settings/security'
   );
   console.log('click on "Personal access tokens"');
-  console.log('click on "New Access Token"');
+  console.log('click on "Generate new token"');
   console.log('you can name it "Test iExec iDapp CLI"');
   console.log('and select "Read & Write" Access permissions');
   const { dockerHubAccessTokenAnswer } = await inquirer.prompt({

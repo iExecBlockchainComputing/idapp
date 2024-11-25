@@ -12,4 +12,4 @@ export const TEST_INPUT_DIR = 'input';
 export const TEST_OUTPUT_DIR = 'output';
 export const CACHE_DIR = 'cache';
 
-export const IEXEC_WORKER_HEAP_SIZE = 1024 * 1024 * 1024; // iExec worker memory limit
+export const IEXEC_WORKER_HEAP_SIZE = 1024 * 1024 * 1024; // iExec worker memory limit (1Go)

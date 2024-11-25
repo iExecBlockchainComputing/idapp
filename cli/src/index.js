@@ -32,9 +32,6 @@ yargs(hideBin(process.argv))
   .command(
     'deploy',
     'Transform you app into a TEE app and deploy it on iExec',
-    (yargs) => {
-      return yargs;
-    },
     deploy
   )
 

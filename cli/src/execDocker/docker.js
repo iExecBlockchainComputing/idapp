@@ -13,7 +13,6 @@ export async function checkDockerDaemon() {
   }
 }
 
-// TODO: fix platform for dockerode
 export async function dockerBuild({
   tag = undefined,
   isForTest = false,

@@ -1,5 +1,5 @@
 import 'dotenv/config';
-import { sconify } from '../sconify.js';
+import { sconify } from '../sconify/sconify.js';
 
 /**
  * node src/scripts/testSconify.js

@@ -1,22 +1,20 @@
 import Docker from 'dockerode';
+import { SCONIFY_IMAGE } from '../constants/constants.js';
+import { logger } from '../utils/logger.js';
+import { inspectImage } from './inspectImage.js';
 import { pullSconeImage } from './pullSconeImage.js';
 
 const docker = new Docker();
 
 export async function sconifyImage({ fromImage, toImage, imageName }) {
-  console.log('Running sconify command...');
-  console.log('fromImage', fromImage);
-  console.log('toImage', toImage);
-  console.log('imageName', imageName);
+  logger.info({ fromImage, toImage, imageName }, 'Running sconify command...');
 
-  const sconeImage = 'scone-production/iexec-sconify-image:5.7.6-v15';
-  console.log('\nPulling scone image...', sconeImage);
-  await pullSconeImage(`registry.scontain.com/${sconeImage}`);
-  console.log('Pulled\n');
+  logger.info({ sconeImage: SCONIFY_IMAGE }, 'Pulling scone image...');
+  await pullSconeImage(SCONIFY_IMAGE);
 
   const sconifyContainer = await docker.createContainer({
     // https://gitlab.scontain.com/scone-production/iexec-sconify-image/container_registry/99?after=NTA
-    Image: `registry.scontain.com/${sconeImage}`,
+    Image: SCONIFY_IMAGE,
     Cmd: [
       'sconify_iexec',
       `--name=${imageName}`,
@@ -55,7 +53,7 @@ export async function sconifyImage({ fromImage, toImage, imageName }) {
       // Or 2- Try to detect any 'docker build' error, otherwise log to stdout
       stream.on('data', function (data) {
         const readableData = data.toString('utf8');
-        if (readableData.includes('Error')) {
+        if (readableData.toLowerCase().includes('error')) {
           throw new Error('Failed to sconify image:', readableData);
         }
         console.log(readableData);
@@ -64,5 +62,18 @@ export async function sconifyImage({ fromImage, toImage, imageName }) {
   );
 
   await sconifyContainer.wait();
-  console.log(`Successfully built TEE docker image => ${toImage}`);
+
+  let builtImage;
+  try {
+    builtImage = await inspectImage(toImage);
+    console.log('builtImage', builtImage);
+  } catch (error) {
+    logger.error({ error, expectedImage: toImage }, 'ERROR inspectImage');
+    throw new Error('Error at sconify process');
+  }
+  if (!builtImage) {
+    throw new Error('Error at sconify process');
+  }
+
+  logger.info({ toImage }, 'Successfully built TEE docker image');
 }

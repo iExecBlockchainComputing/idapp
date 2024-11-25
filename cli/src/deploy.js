@@ -27,8 +27,6 @@ export async function deploy() {
     },
   ]);
 
-  // Get wallet from privateKey
-  // TODO We need to find a workaround and stop asking the user their password (sensitive info!)
   const walletAddress = await askForWalletAddress();
 
   const config = await readPackageJonConfig();

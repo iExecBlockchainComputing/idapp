@@ -1,47 +1,121 @@
 import Docker from 'dockerode';
+import { SCONIFY_IMAGE } from '../constants/constants.js';
+import { logger } from './logger.js';
 
 const docker = new Docker();
 
-// Fonction pour supprimer une image Docker avec ses volumes associés
-export const removeDockerImageWithVolumes = async (imageName) => {
+export async function cleanLocalDocker({
+  dockerhubImageToSconify,
+  sconifiedImage,
+}) {
+  // Clean user's docker image
   try {
-    // Récupérer tous les conteneurs qui utilisent cette image
-    const containers = await docker.listContainers({
-      all: true,
-      filters: { ancestor: [imageName] },
-    });
-
-    // Supprimer les conteneurs associés et leurs volumes
-    const removeContainersAndVolumes = async () => {
-      const promises = containers.map(async (containerInfo) => {
-        const container = docker.getContainer(containerInfo.Id);
-        await container.remove({ force: true });
-        console.log(`Removed Docker container: ${containerInfo.Id}`);
-
-        // Supprimer les volumes associés au conteneur
-        const containerInfoFull = await container.inspect();
-        const volumes = containerInfoFull.Mounts.map((mount) => mount.Name);
-        const volumePromises = volumes.map(async (volumeName) => {
-          const volume = docker.getVolume(volumeName);
-          await volume.remove();
-          console.log(`Removed Docker volume: ${volumeName}`);
-        });
-        await Promise.all(volumePromises);
+    const { countImage, imageName, countContainers } =
+      await removeDockerImageWithVolumes({
+        imageName: dockerhubImageToSconify,
       });
-      await Promise.all(promises);
-    };
-
-    // Appeler la suppression des conteneurs et volumes associés
-    await removeContainersAndVolumes();
-
-    // Maintenant supprimer l'image elle-même
-    const image = docker.getImage(imageName);
-    await image.remove({ force: true });
-    console.log(`Removed Docker image: ${imageName}`);
-  } catch (err) {
-    console.error(
-      `Error removing Docker image ${imageName} with volumes:`,
-      err
+    logger.info(
+      {
+        userBaseImage: dockerhubImageToSconify,
+        countImage,
+        imageName,
+        countContainers,
+      },
+      "[docker cleaning] User's base image cleaned successfully"
+    );
+  } catch (error) {
+    logger.error(
+      { imageName: dockerhubImageToSconify, error },
+      `[docker cleaning] Error removing user\'s base image`
     );
   }
-};
+
+  // Clean sconified image now that it has been pushed to dockerhub
+  if (sconifiedImage) {
+    try {
+      const { countImage, imageName, countContainers } =
+        await removeDockerImageWithVolumes({ imageName: sconifiedImage });
+      logger.info(
+        {
+          sconifiedImage,
+          countImage,
+          imageName,
+          countContainers,
+        },
+        '[docker cleaning] Sconified image cleaned successfully'
+      );
+    } catch (error) {
+      logger.error(
+        { imageName: sconifiedImage, error },
+        `[docker cleaning] Error removing sconified image`
+      );
+    }
+  }
+
+  // Clean container used to sconify
+  try {
+    const { countContainers } = await removeDockerImageWithVolumes({
+      imageName: SCONIFY_IMAGE,
+      shouldRemoveImage: false,
+    });
+    logger.info(
+      {
+        containerForImage: SCONIFY_IMAGE,
+        countContainers,
+      },
+      '[docker cleaning] Sconify container cleaned successfully'
+    );
+  } catch (error) {
+    logger.error(
+      { containersBasedOnImage: SCONIFY_IMAGE, error },
+      `[docker cleaning] Error removing sconify container`
+    );
+  }
+}
+
+async function removeDockerImageWithVolumes({
+  imageName,
+  shouldRemoveImage = true,
+}) {
+  // Get all containers based on this image
+  const containers = await docker.listContainers({
+    all: true,
+    filters: { ancestor: [imageName] },
+  });
+
+  await removeContainersAndVolumes(containers);
+
+  if (!shouldRemoveImage) {
+    return {
+      countContainers: containers.length,
+    };
+  }
+
+  // Remove the image itself
+  const image = docker.getImage(imageName);
+  await image.remove({ force: true });
+
+  return {
+    countImage: 1,
+    imageName,
+    countContainers: containers.length,
+  };
+}
+
+async function removeContainersAndVolumes(containers) {
+  const promises = containers.map(async (containerInfo) => {
+    const container = docker.getContainer(containerInfo.Id);
+    await container.remove({ force: true });
+
+    // Removing volumes
+    const containerInfoFull = await container.inspect();
+    const volumes = containerInfoFull.Mounts.map((mount) => mount.Name);
+    const volumePromises = volumes.map(async (volumeName) => {
+      const volume = docker.getVolume(volumeName);
+      await volume.remove();
+    });
+    await Promise.all(volumePromises);
+  });
+
+  await Promise.all(promises);
+}

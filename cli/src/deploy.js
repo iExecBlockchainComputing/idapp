@@ -65,7 +65,7 @@ export async function deploy() {
       'Transforming your image into a TEE image and deploying on iExec, this may take a few minutes ...'
     );
     const { dockerHubUrl } = await sconify({
-      mainSpinner: sconifySpinner,
+      mainSpinner: spinner,
       sconifyForProd: false,
       iDappNameToSconify: imageTag,
       walletAddress,

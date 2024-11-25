@@ -21,7 +21,7 @@ export async function test(argv) {
     await testApp({ args: argv.params, spinner });
     // TODO check output files
     // - output required files
-    // - outpout dir size
+    // - output dir size
     await askShowTestOutput({ spinner });
   } catch (error) {
     handleCliError({ spinner, error });

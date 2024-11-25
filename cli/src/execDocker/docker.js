@@ -108,61 +108,57 @@ export async function pushDockerImage({
   dockerhubAccessToken,
   progressCallback = () => {},
 }) {
-  try {
-    if (!dockerhubUsername || !dockerhubAccessToken) {
-      throw new Error('Missing DockerHub credentials.');
-    }
-    const dockerImage = docker.getImage(tag);
-
-    const imagePushStream = await dockerImage.push({
-      authconfig: {
-        username: dockerhubUsername,
-        password: dockerhubAccessToken,
-      },
-    });
-
-    await new Promise((resolve, reject) => {
-      docker.modem.followProgress(imagePushStream, onFinished, onProgress);
-
-      function onFinished(err, output) {
-        /**
-         * 2 kind of error possible, we want to catch each of them:
-         * - stream error
-         * - push error
-         *
-         * expected output format for push error
-         * ```
-         *   {
-         *     errorDetail: {
-         *       message: 'Get "https://registry-1.docker.io/v2/": dial tcp: lookup registry-1.docker.io: Temporary failure in name resolution'
-         *     },
-         *     error: 'Get "https://registry-1.docker.io/v2/": dial tcp: lookup registry-1.docker.io: Temporary failure in name resolution'
-         *   }
-         * ```
-         */
-        const errorOrErrorMessage =
-          err || // stream error
-          output.find((row) => row?.error)?.error; // push error message
-
-        if (errorOrErrorMessage) {
-          const error =
-            errorOrErrorMessage instanceof Error
-              ? errorOrErrorMessage
-              : Error(errorOrErrorMessage);
-          return reject(error);
-        }
-        resolve(tag);
-      }
-
-      function onProgress(event) {
-        if (event?.stream) {
-          progressCallback(event.stream);
-        }
-      }
-    });
-  } catch (error) {
-    throw error; // Re-throwing the error for higher-level handling if needed
+  if (!dockerhubUsername || !dockerhubAccessToken) {
+    throw new Error('Missing DockerHub credentials.');
   }
+  const dockerImage = docker.getImage(tag);
+
+  const imagePushStream = await dockerImage.push({
+    authconfig: {
+      username: dockerhubUsername,
+      password: dockerhubAccessToken,
+    },
+  });
+
+  await new Promise((resolve, reject) => {
+    docker.modem.followProgress(imagePushStream, onFinished, onProgress);
+
+    function onFinished(err, output) {
+      /**
+       * 2 kind of error possible, we want to catch each of them:
+       * - stream error
+       * - push error
+       *
+       * expected output format for push error
+       * ```
+       *   {
+       *     errorDetail: {
+       *       message: 'Get "https://registry-1.docker.io/v2/": dial tcp: lookup registry-1.docker.io: Temporary failure in name resolution'
+       *     },
+       *     error: 'Get "https://registry-1.docker.io/v2/": dial tcp: lookup registry-1.docker.io: Temporary failure in name resolution'
+       *   }
+       * ```
+       */
+      const errorOrErrorMessage =
+        err || // stream error
+        output.find((row) => row?.error)?.error; // push error message
+
+      if (errorOrErrorMessage) {
+        const error =
+          errorOrErrorMessage instanceof Error
+            ? errorOrErrorMessage
+            : Error(errorOrErrorMessage);
+        return reject(error);
+      }
+      resolve(tag);
+    }
+
+    function onProgress(event) {
+      if (event?.stream) {
+        progressCallback(event.stream);
+      }
+    }
+  });
 }
 
 export async function runDockerContainer({

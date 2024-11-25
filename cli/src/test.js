@@ -64,7 +64,7 @@ export async function testApp({ args = undefined, spinner }) {
   // build a temp image for test
   spinner.start('Building app docker image for test...\n');
   const imageId = await dockerBuild({
-    isForTest: true, // Adjust based on your logic
+    isForTest: true,
     progressCallback: (msg) => {
       spinner.text = spinner.text + msg;
     },

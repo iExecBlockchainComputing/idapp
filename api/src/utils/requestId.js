@@ -9,4 +9,11 @@ export const requestIdMiddleware = (_req, _res, next) => {
   });
 };
 
-export const getRequestId = () => session.get('requestId');
+export const getRequestId = () => {
+  try {
+    // may throw if executed outside of the callback chain
+    return session.get('requestId');
+  } catch (e) {
+    return undefined;
+  }
+};

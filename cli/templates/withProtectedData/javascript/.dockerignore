@@ -4,3 +4,6 @@ node_modules
 # test directories
 input
 output
+
+# cache directory
+cache

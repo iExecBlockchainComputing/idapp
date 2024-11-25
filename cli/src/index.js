@@ -19,17 +19,11 @@ yargs(hideBin(process.argv))
     'test',
     'Test your app',
     (yargs) => {
-      return yargs
-        .option('docker', {
-          describe: 'Test your iDapp in real condition with docker',
-          type: 'boolean',
-          default: false,
-        })
-        .option('params', {
-          describe: 'Parameters that will be accessible into the iDapp',
-          type: 'string',
-          demandOption: false,
-        });
+      return yargs.option('params', {
+        describe: 'Parameters that will be accessible into the iDapp',
+        type: 'string',
+        demandOption: false,
+      });
     },
     test
   )
@@ -37,19 +31,9 @@ yargs(hideBin(process.argv))
   // Build and publish docker image
   .command(
     'deploy',
-    'Deploy your non-tee or tee iDapp',
+    'Transform you app into a TEE app and deploy it on iExec',
     (yargs) => {
-      return yargs
-        .option('prod', {
-          describe: 'Deploy iDapp for production mode',
-          type: 'boolean',
-          default: false,
-        })
-        .option('debug', {
-          describe: 'Deploy iDapp for debug mode',
-          type: 'boolean',
-          default: false,
-        });
+      return yargs;
     },
     deploy
   )

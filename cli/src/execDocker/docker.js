@@ -196,7 +196,9 @@ export async function runDockerContainer({
     stderr: true,
   });
   logsStream.on('data', (chunk) => {
-    logsCallback(chunk.toString('utf-8'));
+    // const streamType = chunk[0]; // 1 = stdout, 2 = stderr
+    const logData = chunk.slice(8).toString('utf-8'); // strip multiplexed stream header
+    logsCallback(logData);
   });
   logsStream.on('error', (err) => {
     logsCallback('Error streaming logs:', err.message);

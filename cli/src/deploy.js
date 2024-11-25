@@ -64,14 +64,14 @@ export async function deploy() {
     spinner.start(
       'Transforming your image into a TEE image and deploying on iExec, this may take a few minutes ...'
     );
-    const { dockerHubUrl } = await sconify({
-      mainSpinner: sconifySpinner,
-      sconifyForProd: false,
+    const { dockerHubUrl, appContractAddress } = await sconify({
       iDappNameToSconify: imageTag,
       walletAddress,
     });
     spinner.succeed(
-      `Deployment of your iDapp completed successfully: ${dockerHubUrl}`
+      `Deployment of your iDapp completed successfully:
+- app contract address: ${appContractAddress}
+- app image: ${dockerHubUrl}`
     );
   } catch (error) {
     handleCliError({ spinner, error });

@@ -1,22 +1,11 @@
-import chalk from 'chalk';
 import { request } from 'undici';
 import { addDeploymentData } from './utils/cacheExecutions.js';
 import { SCONIFY_API_URL } from './config/config.js';
 
-export async function sconify({
-  mainSpinner,
-  sconifyForProd,
-  iDappNameToSconify,
-  walletAddress,
-}) {
-  if (sconifyForProd) {
-    console.log(
-      chalk.red('This feature is not yet implemented. Coming soon ...')
-    );
-    process.exit(0);
-  }
-
+export async function sconify({ iDappNameToSconify, walletAddress }) {
   let teeDockerhubImagePath = '';
+  let sconifiedImage;
+  let appContractAddress;
   try {
     const { body } = await request(`${SCONIFY_API_URL}/sconify`, {
       method: 'POST',
@@ -32,17 +21,8 @@ export async function sconify({
     const json = await body.json();
 
     // Extract necessary information
-    const sconifiedImage = json.sconifiedImage;
-    const appContractAddress = json.appContractAddress;
-
-    // Display the result in a beautiful format
-    mainSpinner.succeed('iDapp sconified successfully.');
-    console.log(` Sconified image: ${sconifiedImage}`);
-
-    mainSpinner.succeed('iDapp deployed');
-    console.log(` iDapp address: ${appContractAddress}`);
-
-    mainSpinner.succeed('iDapp transferred to you');
+    sconifiedImage = json.sconifiedImage;
+    appContractAddress = json.appContractAddress;
 
     // Add deployment data to deployments.json
     teeDockerhubImagePath = json.sconifiedImage.split(':')[0];
@@ -65,11 +45,12 @@ export async function sconify({
         console.log('\nerr', err);
       }
     }
-    mainSpinner.fail('Failed to sconify your iDapp');
     throw err;
   }
 
   return {
+    sconifiedImage,
     dockerHubUrl: `https://hub.docker.com/r/${teeDockerhubImagePath}/tags`,
+    appContractAddress,
   };
 }

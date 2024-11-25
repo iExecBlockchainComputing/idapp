@@ -32,6 +32,7 @@ export async function checkIfFolderIsClean() {
       break;
     }
     projectFolderSuffix++;
+    // eslint-disable-next-line no-constant-condition
   } while (true);
 
   process.chdir(folderToCreate);

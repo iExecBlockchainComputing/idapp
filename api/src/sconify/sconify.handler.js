@@ -56,7 +56,7 @@ export async function sconifyHandler(req, res) {
       sconifiedImage,
     })
       .then(() => {
-        logger.info('Local docker cleaned');
+        logger.info('End of cleanLocalDocker()');
       })
       .catch((error) => {
         logger.warn({ error }, 'Failed to clean local docker');
@@ -70,7 +70,7 @@ export async function sconifyHandler(req, res) {
       dockerhubImageToSconify,
     })
       .then(() => {
-        logger.info('Local docker cleaned');
+        logger.info('End of cleanLocalDocker()');
       })
       .catch((error) => {
         logger.warn({ error }, 'Failed to clean local docker');

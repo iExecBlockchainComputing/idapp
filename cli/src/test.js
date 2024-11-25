@@ -101,7 +101,7 @@ export async function testApp({ args = undefined, spinner }) {
   You must refactor your app to run within the memory limit.`
     );
   } else if (exitCode === 0) {
-    spinner.succeed('App docker ran and image exited successfully.');
+    spinner.succeed('App docker image ran and exited successfully.');
   } else {
     spinner.warn(
       `App docker image ran but exited with error (Exit code: ${exitCode})

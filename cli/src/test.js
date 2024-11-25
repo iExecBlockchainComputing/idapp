@@ -1,6 +1,4 @@
-import { rm, mkdir } from 'node:fs/promises';
-import util from 'node:util';
-import { exec } from 'child_process';
+import { rm, mkdir, readdir } from 'node:fs/promises';
 import inquirer from 'inquirer';
 import ora from 'ora';
 import {
@@ -15,8 +13,6 @@ import {
   TEST_OUTPUT_DIR,
 } from './config/config.js';
 import { handleCliError } from './utils/cli-helpers.js';
-
-const execAsync = util.promisify(exec);
 
 export async function test(argv) {
   const spinner = ora();
@@ -40,10 +36,14 @@ async function askShowTestOutput({ spinner }) {
     message: `Would you like to see the result? (View ./${TEST_OUTPUT_DIR}/)`,
   });
   if (continueAnswer.continue) {
-    // TODO replace with pure nodejs
-    const { stdout } = await execAsync('ls output');
-    spinner.info(`output directory content:
-${stdout.toString()}`);
+    const files = await readdir(TEST_OUTPUT_DIR).catch(() => []);
+    if (files.length === 0) {
+      spinner.warn('output directory is empty');
+    } else {
+      spinner.info(
+        `output directory content:\n${files.map((file) => '  - ' + file).join('\n')}`
+      );
+    }
   }
 }
 

@@ -10,14 +10,14 @@
   "homepage": "https://github.com/iExecBlockchainComputing/idapp/blob/main/cli/README.md",
   "scripts": {
     "start": "./src/index.js --help",
-    "preinstall": "npm i -g cross-env",
     "init": "mkdir -p build && cd build && ../src/index.js init",
     "test-idapp": "cd build && ../src/index.js test",
     "test-idapp:docker": "cd build && ../src/index.js test --docker",
     "deploy": "cd build && ../src/index.js deploy",
     "sconify": "cd build && ../src/index.js sconify",
     "check-format": "prettier --check .",
-    "format": "prettier --write ."
+    "format": "prettier --write .",
+    "lint": "eslint src"
   },
   "repository": {
     "type": "git",
@@ -38,7 +38,10 @@
     "zod-validation-error": "^3.4.0"
   },
   "devDependencies": {
+    "@eslint/js": "^9.15.0",
     "@types/yargs": "^17.0.33",
+    "eslint": "^8.57.1",
+    "globals": "^15.12.0",
     "prettier": "^3.3.3"
   }
 }

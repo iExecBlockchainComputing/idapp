@@ -20,6 +20,7 @@ import {
 } from './config/config.js';
 import { handleCliError } from './utils/cli-helpers.js';
 import { fileExists } from './utils/fileExists.js';
+import { fromError } from 'zod-validation-error';
 
 export async function test({ params }) {
   const spinner = ora();
@@ -47,20 +48,19 @@ async function readComputedJson() {
 }
 
 const computedJsonFileSchema = z.object({
-  [IEXEC_DETERMINISTIC_OUTPUT_PATH_KEY]: z
-    .string({
-      required_error: `Missing "${IEXEC_DETERMINISTIC_OUTPUT_PATH_KEY}" key in ${IEXEC_COMPUTED_JSON}`,
-      invalid_type_error: `Invalid "${IEXEC_DETERMINISTIC_OUTPUT_PATH_KEY}" key in ${IEXEC_COMPUTED_JSON}, must be a string`,
-    })
-    .startsWith(
-      IEXEC_OUT,
-      `Invalid "${IEXEC_DETERMINISTIC_OUTPUT_PATH_KEY}" key in ${IEXEC_COMPUTED_JSON}, must start with "${IEXEC_OUT}"`
-    ),
+  [IEXEC_DETERMINISTIC_OUTPUT_PATH_KEY]: z.string().startsWith(IEXEC_OUT),
 });
 
 async function getDeterministicOutputPath() {
   const computed = await readComputedJson();
-  const computedObj = computedJsonFileSchema.parse(computed);
+  let computedObj;
+  try {
+    computedObj = computedJsonFileSchema.parse(computed);
+  } catch (e) {
+    const validationError = fromError(e);
+    const errorMessage = `Invalid ${IEXEC_COMPUTED_JSON}: ${validationError.toString()}`;
+    throw Error(errorMessage);
+  }
   const deterministicOutputRawPath =
     computedObj[IEXEC_DETERMINISTIC_OUTPUT_PATH_KEY];
   const deterministicOutputLocalPath = join(

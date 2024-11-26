@@ -126,7 +126,7 @@ async function askShowTestOutput({ spinner }) {
   });
   if (continueAnswer.continue) {
     const files = await readdir(TEST_OUTPUT_DIR).catch(() => []);
-    spinner.newline();
+    spinner.newLine();
     if (files.length === 0) {
       spinner.warn('output directory is empty');
     } else {
@@ -136,7 +136,7 @@ async function askShowTestOutput({ spinner }) {
       // best effort display deterministic output file if it's an utf8 encoded file
       await getDeterministicOutputAsText()
         .then(({ text, path }) => {
-          spinner.newline();
+          spinner.newLine();
           spinner.info(`${path}:\n${text}`);
         })
         .catch(() => {});

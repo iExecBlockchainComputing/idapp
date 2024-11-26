@@ -87,8 +87,6 @@ ${chalk.bold.underline('Steps to Get Started:')}
   -1- Test your idapp locally:
   ${chalk.yellow('$ idapp test')}
   ${chalk.yellow('$ idapp test --params your-name')}
-  ${chalk.yellow('$ idapp test --docker')}
-  ${chalk.yellow('$ idapp test --docker --params your-name')}
 
   -2- Deploy your idapp on the iExec protocol:
   ${chalk.yellow('$ idapp deploy')}

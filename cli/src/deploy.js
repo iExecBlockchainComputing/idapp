@@ -1,5 +1,4 @@
 import ora from 'ora';
-import chalk from 'chalk';
 import inquirer from 'inquirer';
 import { sconify } from './sconify.js';
 import {
@@ -10,31 +9,14 @@ import {
 import { askForDockerhubUsername } from './utils/askForDockerhubUsername.js';
 import { askForWalletAddress } from './utils/askForWalletAddress.js';
 import { readPackageJonConfig } from './utils/idappConfigFile.js';
+import { askForDockerhubAccessToken } from './utils/askForDockerhubAccessToken.js';
+import { handleCliError } from './utils/cli-helpers.js';
 
-export async function deploy(argv) {
-  let mode;
-  if (!argv.prod && !argv.debug) {
-    const modeAnswer = await inquirer.prompt([
-      {
-        type: 'list',
-        name: 'mode',
-        message: 'Would you like to build your iDapp for prod or debug?',
-        choices: ['Debug', 'Prod (soon)'],
-        default: 0, // Default to 'Debug'
-      },
-    ]);
-    mode = modeAnswer.mode;
-  }
-  if (argv.debug || mode === 'Debug') {
-    await deployForDebug();
-  } else {
-    deployForProd();
-  }
-  process.exit(0);
-}
+export async function deploy() {
+  const spinner = ora();
 
-export async function deployForDebug() {
   const dockerhubUsername = await askForDockerhubUsername();
+  const dockerhubAccessToken = await askForDockerhubAccessToken();
 
   const { idappVersion } = await inquirer.prompt([
     {
@@ -52,44 +34,46 @@ export async function deployForDebug() {
 
   const imageTag = `${dockerhubUsername}/${iDappName}:${idappVersion}`;
 
-  await checkDockerDaemon();
-
   try {
-    await dockerBuild({
+    // just start the spinner, no need to persist success in terminal
+    spinner.start('Checking docker daemon is running...');
+    await checkDockerDaemon();
+
+    spinner.start('Building docker image...\n');
+    const buildLogs = [];
+    const imageId = await dockerBuild({
       tag: imageTag,
+      progressCallback: (msg) => {
+        buildLogs.push(msg); // do we want to show build logs after build is successful?
+        spinner.text = spinner.text + msg;
+      },
     });
-    await pushDockerImage({ tag: imageTag });
-  } catch (e) {
-    console.log(
-      chalk.red(
-        `\n An error occurred during the deployment of the non-tee image: ${e.message}`
-      )
-    );
-    return;
-  }
+    spinner.succeed(`Docker image built (${imageId}) and tagged ${imageTag}`);
 
-  try {
-    // Sconifying iDapp
-    const sconifySpinner = ora(
-      'Sconifying your iDapp, this may take a few minutes ...'
-    ).start();
+    spinner.start('Pushing docker image...\n');
+    await pushDockerImage({
+      tag: imageTag,
+      dockerhubAccessToken,
+      dockerhubUsername,
+      progressCallback: (msg) => {
+        spinner.text = spinner.text + msg;
+      },
+    });
+    spinner.succeed(`Pushed image ${imageTag} on dockerhub`);
+
+    spinner.start(
+      'Transforming your image into a TEE image and deploying on iExec, this may take a few minutes ...'
+    );
     const { dockerHubUrl } = await sconify({
-      mainSpinner: sconifySpinner,
+      mainSpinner: spinner,
       sconifyForProd: false,
       iDappNameToSconify: imageTag,
       walletAddress,
     });
-
-    sconifySpinner.succeed(
+    spinner.succeed(
       `Deployment of your iDapp completed successfully: ${dockerHubUrl}`
     );
-  } catch (e) {
-    process.exit(1);
+  } catch (error) {
+    handleCliError({ spinner, error });
   }
-}
-
-function deployForProd() {
-  console.log(
-    chalk.red('This feature is not yet implemented. Coming soon ...')
-  );
 }

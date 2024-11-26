@@ -1,31 +1,24 @@
-import { exec } from 'child_process';
 import Docker from 'dockerode';
-import inquirer from 'inquirer';
-import ora from 'ora';
 import os from 'os';
-import util from 'util';
-import { askForDockerhubAccessToken } from '../utils/askForDockerhubAccessToken.js';
-import { askForDockerhubUsername } from '../utils/askForDockerhubUsername.js';
 
 const docker = new Docker();
-const execAsync = util.promisify(exec);
 
 export async function checkDockerDaemon() {
-  const checkDockerDaemonSpinner = ora(
-    'Checking if docker daemon is running ...'
-  ).start();
   try {
     await docker.ping();
-    checkDockerDaemonSpinner.succeed('Docker daemon is running');
   } catch (e) {
-    checkDockerDaemonSpinner.fail('You docker daemon is not up');
-    process.exit(1);
+    throw Error(
+      'Docker daemon is not accessible, make sure docker is installed and running'
+    );
   }
 }
 
-export async function dockerBuild({ tag = undefined, isForTest = false }) {
+export async function dockerBuild({
+  tag = undefined,
+  isForTest = false,
+  progressCallback = () => {},
+}) {
   const osType = os.type();
-  const buildSpinner = ora('Building Docker image ...').start();
   const buildArgs = {
     context: process.cwd(), // Use current working directory
     src: ['./'],
@@ -66,7 +59,7 @@ export async function dockerBuild({ tag = undefined, isForTest = false }) {
       const builtImageId = output?.find((row) => row?.aux?.ID)?.aux?.ID;
 
       /**
-       * 3 kind of error possible, we want to catch both:
+       * 3 kind of error possible, we want to catch each of them:
        * - stream error
        * - build error
        * - no image id (should not happen)
@@ -92,24 +85,16 @@ export async function dockerBuild({ tag = undefined, isForTest = false }) {
           errorOrErrorMessage instanceof Error
             ? errorOrErrorMessage
             : Error(errorOrErrorMessage);
-        buildSpinner.fail('Failed to build Docker image.');
         reject(error);
       } else {
-        buildSpinner.succeed(
-          `Docker image built (${tag ? tag : builtImageId})`
-        );
         resolve(builtImageId);
       }
     }
 
     function onProgress(event) {
       if (event?.stream) {
-        if (event.stream !== '\n') {
-          console.log(event.stream);
-        }
-        return;
+        progressCallback(event.stream);
       }
-      console.log(event);
     }
   });
 
@@ -117,51 +102,63 @@ export async function dockerBuild({ tag = undefined, isForTest = false }) {
 }
 
 // Function to push a Docker image
-export async function pushDockerImage({ tag }) {
-  // TODO We need to handle this push without asking the user their password (sensitive info!)
-  try {
-    const dockerHubUsername = await askForDockerhubUsername();
-    const dockerHubAccessToken = await askForDockerhubAccessToken();
-
-    if (!dockerHubUsername || !dockerHubAccessToken) {
-      throw new Error('DockerHub credentials not found.');
-    }
-    const dockerPushSpinner = ora('Docker push ...').start();
-    const dockerImage = docker.getImage(tag);
-
-    const imagePushStream = await dockerImage.push({
-      authconfig: {
-        username: dockerHubUsername,
-        password: dockerHubAccessToken,
-      },
-    });
-
-    await new Promise((resolve, reject) => {
-      docker.modem.followProgress(imagePushStream, onFinished, onProgress);
-
-      function onFinished(err, _output) {
-        if (err) {
-          console.error('Error in image pushing process:', err);
-          return reject(err);
-        }
-        console.log(`Successfully pushed the image to DockerHub => ${tag}`);
-        resolve();
-      }
-
-      function onProgress(event) {
-        if (event.error) {
-          console.error('[img.push] onProgress ERROR', event.error);
-        } else {
-          console.log('[img.push] onProgress', event);
-        }
-      }
-    });
-
-    dockerPushSpinner.succeed('Docker image pushed.');
-  } catch (error) {
-    console.error('Error pushing Docker image:', error);
-    throw error; // Re-throwing the error for higher-level handling if needed
+export async function pushDockerImage({
+  tag,
+  dockerhubUsername,
+  dockerhubAccessToken,
+  progressCallback = () => {},
+}) {
+  if (!dockerhubUsername || !dockerhubAccessToken) {
+    throw new Error('Missing DockerHub credentials.');
   }
+  const dockerImage = docker.getImage(tag);
+
+  const imagePushStream = await dockerImage.push({
+    authconfig: {
+      username: dockerhubUsername,
+      password: dockerhubAccessToken,
+    },
+  });
+
+  await new Promise((resolve, reject) => {
+    docker.modem.followProgress(imagePushStream, onFinished, onProgress);
+
+    function onFinished(err, output) {
+      /**
+       * 2 kind of error possible, we want to catch each of them:
+       * - stream error
+       * - push error
+       *
+       * expected output format for push error
+       * ```
+       *   {
+       *     errorDetail: {
+       *       message: 'Get "https://registry-1.docker.io/v2/": dial tcp: lookup registry-1.docker.io: Temporary failure in name resolution'
+       *     },
+       *     error: 'Get "https://registry-1.docker.io/v2/": dial tcp: lookup registry-1.docker.io: Temporary failure in name resolution'
+       *   }
+       * ```
+       */
+      const errorOrErrorMessage =
+        err || // stream error
+        output.find((row) => row?.error)?.error; // push error message
+
+      if (errorOrErrorMessage) {
+        const error =
+          errorOrErrorMessage instanceof Error
+            ? errorOrErrorMessage
+            : Error(errorOrErrorMessage);
+        return reject(error);
+      }
+      resolve(tag);
+    }
+
+    function onProgress(event) {
+      if (event?.stream) {
+        progressCallback(event.stream);
+      }
+    }
+  });
 }
 
 export async function runDockerContainer({
@@ -169,68 +166,47 @@ export async function runDockerContainer({
   cmd,
   volumes = [],
   env = [],
+  memory = undefined,
+  logsCallback = () => {},
 }) {
-  const runDockerContainerSpinner = ora(
-    'Setting up Docker container...'
-  ).start();
+  const container = await docker.createContainer({
+    Image: image,
+    Cmd: cmd,
+    HostConfig: {
+      Binds: volumes,
+      AutoRemove: true,
+      Memory: memory,
+    },
+    Env: env,
+  });
 
-  try {
-    const container = await docker.createContainer({
-      Image: image,
-      Cmd: cmd,
-      HostConfig: {
-        Binds: volumes,
-        AutoRemove: true,
-      },
-      Env: env,
-    });
+  // Start the container
+  // TODO we should handle abort signal to stop the container and avoid containers running after command is interrupted
+  await container.start();
 
-    // Attach to container output stream for real-time logging
-    container.attach(
-      { stream: true, stdout: true, stderr: true },
-      function (err, stream) {
-        if (err) {
-          console.error('Error attaching to container:', err);
-          runDockerContainerSpinner.fail(
-            'Failed to attach to Docker container.'
-          );
-          throw err;
-        }
+  // get the logs stream
+  const logsStream = await container.logs({
+    follow: true,
+    stdout: true,
+    stderr: true,
+  });
+  logsStream.on('data', (chunk) => {
+    // const streamType = chunk[0]; // 1 = stdout, 2 = stderr
+    const logData = chunk.slice(8).toString('utf-8'); // strip multiplexed stream header
+    logsCallback(logData);
+  });
+  logsStream.on('error', (err) => {
+    logsCallback('Error streaming logs:', err.message);
+  });
 
-        stream.pipe(process.stdout); // Pipe container output to stdout
-      }
-    );
+  // Wait for the container to finish
+  await container.wait();
 
-    // Start the container
-    await container.start();
-    runDockerContainerSpinner.text = 'Running Docker container...';
+  // Check container status after waiting
+  const { State } = await container.inspect();
 
-    // Wait for the container to finish
-    await container.wait();
-
-    // Check container status after waiting
-    const containerInspect = await container.inspect();
-    if (containerInspect.State.Status !== 'exited') {
-      runDockerContainerSpinner.succeed('Docker container run successfully.');
-    } else {
-      runDockerContainerSpinner.fail('Docker container exited unexpectedly.');
-      throw new Error('Docker container exited unexpectedly.');
-    }
-
-    // Prompt user to view result
-    const continueAnswer = await inquirer.prompt({
-      type: 'confirm',
-      name: 'continue',
-      message: 'Would you like to see the result? (View output/result.txt)',
-    });
-    if (continueAnswer.continue) {
-      const { stdout } = await execAsync('cat output/result.txt');
-      console.log(stdout.toString());
-    }
-  } catch (error) {
-    runDockerContainerSpinner.fail('Failed to run Docker container.');
-    throw error;
-  } finally {
-    runDockerContainerSpinner.stop();
-  }
+  return {
+    exitCode: State.ExitCode,
+    outOfMemory: State.OOMKilled,
+  };
 }

@@ -1,4 +1,6 @@
-import { rm, mkdir, readdir } from 'node:fs/promises';
+import { rm, mkdir, readdir, readFile, stat } from 'node:fs/promises';
+import { join } from 'node:path';
+import Buffer from 'node:buffer';
 import inquirer from 'inquirer';
 import ora from 'ora';
 import {
@@ -8,24 +10,108 @@ import {
 } from './execDocker/docker.js';
 import { readIDappConfig } from './utils/idappConfigFile.js';
 import {
+  IEXEC_COMPUTED_JSON,
+  IEXEC_DETERMINISTIC_OUTPUT_PATH_KEY,
+  IEXEC_OUT,
   IEXEC_WORKER_HEAP_SIZE,
   TEST_INPUT_DIR,
   TEST_OUTPUT_DIR,
 } from './config/config.js';
 import { handleCliError } from './utils/cli-helpers.js';
+import { z } from 'zod';
+import { fileExists } from './utils/fileExists.js';
 
 export async function test(argv) {
   const spinner = ora();
   try {
     await cleanTestOutput({ spinner });
     await testApp({ args: argv.params, spinner });
-    // TODO check output files
-    // - output required files
-    // - output dir size
+    await checkTestOutput({ spinner });
     await askShowTestOutput({ spinner });
   } catch (error) {
     handleCliError({ spinner, error });
   }
+}
+
+async function readComputedJson() {
+  const content = await readFile(
+    join(TEST_OUTPUT_DIR, IEXEC_COMPUTED_JSON)
+  ).catch(() => {
+    throw Error(`Failed to read ${IEXEC_COMPUTED_JSON}: missing file`);
+  });
+  try {
+    return JSON.parse(content);
+  } catch {
+    throw Error(`Failed to read ${IEXEC_COMPUTED_JSON}: invalid JSON`);
+  }
+}
+
+const computedJsonFileSchema = z.object({
+  [IEXEC_DETERMINISTIC_OUTPUT_PATH_KEY]: z
+    .string({
+      required_error: `Missing "${IEXEC_DETERMINISTIC_OUTPUT_PATH_KEY}" key in ${IEXEC_COMPUTED_JSON}`,
+      invalid_type_error: `Invalid "${IEXEC_DETERMINISTIC_OUTPUT_PATH_KEY}" key in ${IEXEC_COMPUTED_JSON}, must be a string`,
+    })
+    .startsWith(
+      IEXEC_OUT,
+      `Invalid "${IEXEC_DETERMINISTIC_OUTPUT_PATH_KEY}" key in ${IEXEC_COMPUTED_JSON}, must start with "${IEXEC_OUT}"`
+    ),
+});
+
+async function getDeterministicOutputPath() {
+  const computed = await readComputedJson();
+  const computedObj = computedJsonFileSchema.parse(computed);
+  const deterministicOutputRawPath =
+    computedObj[IEXEC_DETERMINISTIC_OUTPUT_PATH_KEY];
+  const deterministicOutputLocalPath = join(
+    TEST_OUTPUT_DIR,
+    deterministicOutputRawPath.substring(IEXEC_OUT.length)
+  );
+  return {
+    deterministicOutputRawPath,
+    deterministicOutputLocalPath,
+  };
+}
+
+async function checkDeterministicOutputExists() {
+  const { deterministicOutputLocalPath } = await getDeterministicOutputPath();
+  const deterministicOutputExists = await fileExists(
+    deterministicOutputLocalPath
+  );
+  if (!deterministicOutputExists) {
+    throw Error(
+      `Invalid "${IEXEC_DETERMINISTIC_OUTPUT_PATH_KEY}" in ${IEXEC_COMPUTED_JSON}, specified file or directory does not exists`
+    );
+  }
+}
+
+async function checkTestOutput({ spinner }) {
+  spinner.start('Checking test output...');
+  const errors = [];
+  await checkDeterministicOutputExists().catch((e) => {
+    errors.push(e);
+  });
+  // TODO check output dir size
+  if (errors.length === 0) {
+    spinner.succeed('Checked app output');
+  } else {
+    errors.forEach((e) => {
+      spinner.fail(e.message);
+    });
+  }
+}
+
+async function getDeterministicOutputAsText() {
+  const { deterministicOutputLocalPath } = await getDeterministicOutputPath();
+  const stats = await stat(deterministicOutputLocalPath);
+  if (!stats.isFile()) {
+    throw Error('Deterministic output is not a file');
+  }
+  const deterministicFileContent = await readFile(deterministicOutputLocalPath);
+  if (!Buffer.isUtf8(deterministicFileContent)) {
+    throw Error('Deterministic output is not a text file');
+  }
+  return deterministicFileContent.toString('utf8');
 }
 
 async function askShowTestOutput({ spinner }) {
@@ -43,6 +129,12 @@ async function askShowTestOutput({ spinner }) {
       spinner.info(
         `output directory content:\n${files.map((file) => '  - ' + file).join('\n')}`
       );
+      // best effort display deterministic output file if it's an utf8 encoded file
+      await getDeterministicOutputAsText()
+        .then((text) => {
+          return spinner.info(`deterministic result:\n${text}`);
+        })
+        .catch(() => {});
     }
   }
 }

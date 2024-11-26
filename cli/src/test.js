@@ -25,7 +25,7 @@ export async function test({ params }) {
   const spinner = ora();
   try {
     await cleanTestOutput({ spinner });
-    await testApp({ args: params, spinner });
+    await testApp({ params, spinner });
     await checkTestOutput({ spinner });
     await askShowTestOutput({ spinner });
   } catch (error) {

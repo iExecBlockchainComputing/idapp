@@ -39,6 +39,7 @@ export async function sconifyImage({ fromImage, toImage, imageName }) {
 
   await sconifyContainer.start();
 
+  let hasError = false;
   sconifyContainer.attach(
     { stream: true, stdout: true, stderr: true },
     function (err, stream) {
@@ -47,21 +48,22 @@ export async function sconifyImage({ fromImage, toImage, imageName }) {
         return;
       }
 
-      // 1- Stream everything to stdout
-      // stream.pipe(process.stdout);
-
-      // Or 2- Try to detect any 'docker build' error, otherwise log to stdout
+      // Try to detect any 'docker build' error, otherwise log to stdout
       stream.on('data', function (data) {
         const readableData = data.toString('utf8');
-        if (readableData.toLowerCase().includes('error')) {
-          throw new Error('Failed to sconify image:', readableData);
-        }
         console.log(readableData);
+        if (readableData.toLowerCase().includes('error')) {
+          logger.error('Sconify docker container error');
+          hasError = true;
+        }
       });
     }
   );
 
   await sconifyContainer.wait();
+  if (hasError) {
+    throw new Error('Error at sconify process');
+  }
 
   let builtImage;
   try {

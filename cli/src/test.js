@@ -3,6 +3,7 @@ import { join } from 'node:path';
 import Buffer from 'node:buffer';
 import inquirer from 'inquirer';
 import ora from 'ora';
+import { z } from 'zod';
 import {
   checkDockerDaemon,
   dockerBuild,
@@ -18,7 +19,6 @@ import {
   TEST_OUTPUT_DIR,
 } from './config/config.js';
 import { handleCliError } from './utils/cli-helpers.js';
-import { z } from 'zod';
 import { fileExists } from './utils/fileExists.js';
 
 export async function test({ params }) {

@@ -2,7 +2,6 @@ import { rm, mkdir, readdir, readFile, stat } from 'node:fs/promises';
 import { join } from 'node:path';
 import Buffer from 'node:buffer';
 import inquirer from 'inquirer';
-import ora from 'ora';
 import { z } from 'zod';
 import {
   checkDockerDaemon,
@@ -21,9 +20,10 @@ import {
 import { handleCliError } from './utils/cli-helpers.js';
 import { fileExists } from './utils/fileExists.js';
 import { fromError } from 'zod-validation-error';
+import { getSpinner } from './utils/spinner.js';
 
 export async function test({ params }) {
-  const spinner = ora();
+  const spinner = getSpinner();
   try {
     await cleanTestOutput({ spinner });
     await testApp({ params, spinner });
@@ -111,7 +111,10 @@ async function getDeterministicOutputAsText() {
   if (!Buffer.isUtf8(deterministicFileContent)) {
     throw Error('Deterministic output is not a text file');
   }
-  return deterministicFileContent.toString('utf8');
+  return {
+    text: deterministicFileContent.toString('utf8'),
+    path: deterministicOutputLocalPath,
+  };
 }
 
 async function askShowTestOutput({ spinner }) {
@@ -123,6 +126,7 @@ async function askShowTestOutput({ spinner }) {
   });
   if (continueAnswer.continue) {
     const files = await readdir(TEST_OUTPUT_DIR).catch(() => []);
+    spinner.newline();
     if (files.length === 0) {
       spinner.warn('output directory is empty');
     } else {
@@ -131,8 +135,9 @@ async function askShowTestOutput({ spinner }) {
       );
       // best effort display deterministic output file if it's an utf8 encoded file
       await getDeterministicOutputAsText()
-        .then((text) => {
-          return spinner.info(`deterministic result:\n${text}`);
+        .then(({ text, path }) => {
+          spinner.newline();
+          spinner.info(`${path}:\n${text}`);
         })
         .catch(() => {});
     }

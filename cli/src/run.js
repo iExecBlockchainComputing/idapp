@@ -164,9 +164,11 @@ export async function runInDebug(argv) {
     workerpoolmaxprice: workerpoolorder.workerpoolprice,
     tag: SCONE_TAG,
     workerpool: workerpoolorder.workerpool,
-    // params: {
-    //   iexec_args: vArgs,
-    // },
+    ...(argv.params && {
+      params: {
+        iexec_args: argv.params,
+      },
+    }),
   });
   const requestorder = await iexec.order.signRequestorder(requestorderToSign);
   spinner.succeed('RequestOrder created and published');

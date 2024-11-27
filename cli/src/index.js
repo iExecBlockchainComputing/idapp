@@ -59,6 +59,12 @@ yargs(hideBin(process.argv))
           describe: 'Specify the protected data address',
           type: 'string',
           default: null, // Set default to null or undefined to make it optional
+        })
+        .option('params', {
+          describe:
+            'Specify the public parameters you want to pass on to your iDapp',
+          type: 'string',
+          default: null, // Set default to null or undefined to make it optional
         });
     },
     run

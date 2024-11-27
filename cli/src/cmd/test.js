@@ -1,7 +1,6 @@
 import { rm, mkdir, readdir, readFile, stat } from 'node:fs/promises';
 import { join } from 'node:path';
 import Buffer from 'node:buffer';
-import inquirer from 'inquirer';
 import { z } from 'zod';
 import { fromError } from 'zod-validation-error';
 import {
@@ -99,7 +98,7 @@ export async function testApp({ params = undefined, spinner }) {
   if (appLogs.length === 0) {
     spinner.info("App didn't log anything");
   } else {
-    const showLogs = await inquirer.prompt({
+    const showLogs = await spinner.prompt({
       type: 'confirm',
       name: 'continue',
       message: `Would you like to see the app logs? (${appLogs.length} lines)`,
@@ -196,7 +195,7 @@ async function getDeterministicOutputAsText() {
 
 async function askShowTestOutput({ spinner }) {
   // Prompt user to view result
-  const continueAnswer = await inquirer.prompt({
+  const continueAnswer = await spinner.prompt({
     type: 'confirm',
     name: 'continue',
     message: `Would you like to see the result? (View ./${TEST_OUTPUT_DIR}/)`,

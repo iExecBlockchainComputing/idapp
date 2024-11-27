@@ -45,16 +45,6 @@ yargs(hideBin(process.argv))
           describe: 'The iDapp address to run',
           type: 'string',
         })
-        .option('prod', {
-          describe: 'Run iDapp in production mode (soon)',
-          type: 'boolean',
-          default: false,
-        })
-        .option('debug', {
-          describe: 'Run iDapp in debug mode',
-          type: 'boolean',
-          default: false,
-        })
         .option('protectedData', {
           describe: 'Specify the protected data address',
           type: 'string',

@@ -7,6 +7,26 @@ import { deploy } from './cmd/deploy.js';
 import { run } from './cmd/run.js';
 import { test } from './cmd/test.js';
 
+// define common options
+const options = {
+  args: [
+    'args',
+    {
+      describe: 'Arguments that will be accessible into the iDapp',
+      type: 'string',
+      demandOption: false,
+    },
+  ],
+  protectedData: [
+    'protectedData',
+    {
+      describe: 'Specify the protected data address',
+      type: 'string',
+      default: null, // Set default to null or undefined to make it optional
+    },
+  ],
+};
+
 yargs(hideBin(process.argv))
   .scriptName('idapp')
   .usage('$0 <cmd> [args]')
@@ -19,11 +39,7 @@ yargs(hideBin(process.argv))
     'test',
     'Test your app',
     (yargs) => {
-      return yargs.option('params', {
-        describe: 'Parameters that will be accessible into the iDapp',
-        type: 'string',
-        demandOption: false,
-      });
+      return yargs.option(...options.args);
     },
     test
   )
@@ -45,17 +61,8 @@ yargs(hideBin(process.argv))
           describe: 'The iDapp address to run',
           type: 'string',
         })
-        .option('protectedData', {
-          describe: 'Specify the protected data address',
-          type: 'string',
-          default: null, // Set default to null or undefined to make it optional
-        })
-        .option('params', {
-          describe:
-            'Specify the public parameters you want to pass on to your iDapp',
-          type: 'string',
-          default: null, // Set default to null or undefined to make it optional
-        });
+        .option(...options.args)
+        .option(...options.protectedData);
     },
     run
   )

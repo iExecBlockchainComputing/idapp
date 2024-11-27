@@ -21,11 +21,11 @@ import { fileExists } from '../utils/fileExists.js';
 import { getSpinner } from '../cli-helpers/spinner.js';
 import { handleCliError } from '../cli-helpers/handleCliError.js';
 
-export async function test({ params }) {
+export async function test({ args }) {
   const spinner = getSpinner();
   try {
     await cleanTestOutput({ spinner });
-    await testApp({ params, spinner });
+    await testApp({ args, spinner });
     await checkTestOutput({ spinner });
     await askShowTestOutput({ spinner });
   } catch (error) {
@@ -40,7 +40,7 @@ async function cleanTestOutput({ spinner }) {
   await mkdir(TEST_OUTPUT_DIR);
 }
 
-export async function testApp({ params = undefined, spinner }) {
+export async function testApp({ args = undefined, spinner }) {
   const idappConfig = await readIDappConfig();
   const { withProtectedData } = idappConfig;
 
@@ -62,7 +62,7 @@ export async function testApp({ params = undefined, spinner }) {
   const appLogs = [];
   const { exitCode, outOfMemory } = await runDockerContainer({
     image: imageId,
-    cmd: [params],
+    cmd: [args],
     volumes: [
       `${process.cwd()}/${TEST_INPUT_DIR}:/iexec_in`,
       `${process.cwd()}/${TEST_OUTPUT_DIR}:/iexec_out`,

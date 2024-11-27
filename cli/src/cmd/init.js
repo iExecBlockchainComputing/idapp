@@ -93,7 +93,7 @@ export async function init() {
   
     -1- Test your idapp locally:
     ${chalk.yellow('$ idapp test')}
-    ${chalk.yellow('$ idapp test --params your-name')}
+    ${chalk.yellow('$ idapp test --args your-name')}
   
     -2- Deploy your idapp on the iExec protocol:
     ${chalk.yellow('$ idapp deploy')}

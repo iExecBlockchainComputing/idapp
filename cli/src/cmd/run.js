@@ -1,39 +1,42 @@
-import ora from 'ora';
 import chalk from 'chalk';
-import inquirer from 'inquirer';
 import { ethers } from 'ethers';
 import { IExec, utils } from 'iexec';
-import { askForWalletPrivateKey } from './utils/askForWalletPrivateKey.js';
-import { SCONE_TAG, WORKERPOOL_DEBUG } from './config/config.js';
-import { addRunData } from './utils/cacheExecutions.js';
+import { askForWalletPrivateKey } from '../cli-helpers/askForWalletPrivateKey.js';
+import { SCONE_TAG, WORKERPOOL_DEBUG } from '../config/config.js';
+import { addRunData } from '../utils/cacheExecutions.js';
+import { getSpinner } from '../cli-helpers/spinner.js';
+import { handleCliError } from '../cli-helpers/handleCliError.js';
 
-export async function run(argv) {
-  let mode;
-  if (!argv.prod && !argv.debug) {
-    const modeAnswer = await inquirer.prompt([
-      {
-        type: 'list',
-        name: 'mode',
-        message: 'Would you like to run your idapp for prod or debug?',
-        choices: ['Debug', 'Prod (soon)'],
-        default: 0, // Default to 'Debug'
-      },
-    ]);
-    mode = modeAnswer.mode;
-  }
-  if (argv.debug || mode === 'Debug') {
-    await runInDebug(argv);
-  } else {
-    runInProd(argv);
+export async function run({ iDappAddress, protectedData, prod, debug }) {
+  const spinner = getSpinner();
+  try {
+    let mode;
+    if (!prod && !debug) {
+      const modeAnswer = await spinner.prompt([
+        {
+          type: 'list',
+          name: 'mode',
+          message: 'Would you like to run your idapp for prod or debug?',
+          choices: ['Debug', 'Prod (soon)'],
+          default: 0, // Default to 'Debug'
+        },
+      ]);
+      mode = modeAnswer.mode;
+    }
+    if (debug || mode === 'Debug') {
+      await runInDebug({ iDappAddress, protectedData, spinner });
+    } else {
+      runInProd();
+    }
+  } catch (error) {
+    handleCliError({ spinner, error });
   }
 }
 
-export async function runInDebug(argv) {
-  const iDappAddress = argv.iDappAddress;
-
+export async function runInDebug({ iDappAddress, protectedData, spinner }) {
   // Is valid iDapp Address
   if (!ethers.isAddress(iDappAddress)) {
-    console.log(
+    spinner.log(
       chalk.red(
         'The iDapp address is invalid. Be careful ENS name is not implemented yet ...'
       )
@@ -41,12 +44,10 @@ export async function runInDebug(argv) {
     return;
   }
 
-  let protectedDataAddress;
-  if (argv.protectedData) {
-    protectedDataAddress = argv.protectedData;
+  if (protectedData) {
     // Is valid ProtectedData Address
-    if (!ethers.isAddress(protectedDataAddress)) {
-      console.log(
+    if (!ethers.isAddress(protectedData)) {
+      spinner.log(
         chalk.red(
           'The protectedData address is invalid. Be careful ENS name is not implemented yet ...'
         )
@@ -56,7 +57,7 @@ export async function runInDebug(argv) {
   }
 
   // Get wallet from privateKey
-  const walletPrivateKey = await askForWalletPrivateKey();
+  const walletPrivateKey = await askForWalletPrivateKey({ spinner });
   const wallet = new ethers.Wallet(walletPrivateKey);
 
   const iexec = new IExec(
@@ -72,18 +73,18 @@ export async function runInDebug(argv) {
   );
 
   // Make some ProtectedData preflight check
-  if (protectedDataAddress) {
+  if (protectedData) {
     try {
       // Check the protectedData has its privateKey registered into the debug sms
       const isSecretSet = await iexec.dataset.checkDatasetSecretExists(
-        protectedDataAddress,
+        protectedData,
         {
           teeFramework: 'scone',
         }
       );
 
       if (!isSecretSet) {
-        console.log(
+        spinner.log(
           chalk.red(
             `Your protectedData secret key is not registered in the debug secret management service (SMS) of iexec protocol`
           )
@@ -91,7 +92,7 @@ export async function runInDebug(argv) {
         return;
       }
     } catch (e) {
-      console.log(
+      spinner.log(
         chalk.red(
           `Error while running your iDapp with your protectedData: ${e.message}`
         )
@@ -100,24 +101,24 @@ export async function runInDebug(argv) {
   }
 
   // Workerpool Order
-  let spinner = ora('Fetching workerpool order...').start();
+  spinner.start('Fetching workerpool order...');
   const workerpoolOrderbook = await iexec.orderbook.fetchWorkerpoolOrderbook({
     workerpool: WORKERPOOL_DEBUG,
     app: iDappAddress,
-    dataset: protectedDataAddress || ethers.ZeroAddress,
+    dataset: protectedData || ethers.ZeroAddress,
     minTag: SCONE_TAG,
     maxTag: SCONE_TAG,
   });
   const workerpoolorder = workerpoolOrderbook.orders[0]?.order;
   if (!workerpoolorder) {
     spinner.fail('No WorkerpoolOrder found');
-    console.log(chalk.red('Wait until some workerpoolOrder come back'));
+    spinner.log(chalk.red('Wait until some workerpoolOrder come back'));
     return;
   }
   spinner.succeed('Workerpool order fetched');
 
   // App Order
-  spinner = ora('Creating and publishing app order...').start();
+  spinner.start('Creating and publishing app order...');
   const apporderTemplate = await iexec.order.createApporder({
     app: iDappAddress,
     requesterrestrict: wallet.address,
@@ -129,10 +130,10 @@ export async function runInDebug(argv) {
 
   // Dataset Order
   let datasetorder;
-  if (protectedDataAddress) {
-    spinner = ora('Fetching protectedData access...').start();
+  if (protectedData) {
+    spinner.start('Fetching protectedData access...');
     const datasetOrderbook = await iexec.orderbook.fetchDatasetOrderbook(
-      protectedDataAddress,
+      protectedData,
       {
         app: iDappAddress,
         workerpool: workerpoolorder.workerpool,
@@ -144,7 +145,7 @@ export async function runInDebug(argv) {
     datasetorder = datasetOrderbook.orders[0]?.order;
     if (!datasetorder) {
       spinner.fail('No matching ProtectedData access found');
-      console.log(
+      spinner.log(
         chalk.red(
           'It seems the protectedData is not allow to be consume by your iDapp, please grantAccess to it'
         )
@@ -154,11 +155,11 @@ export async function runInDebug(argv) {
     spinner.succeed('ProtectedData access found');
   }
 
-  spinner = ora('Creating and publishing request order...').start();
+  spinner.start('Creating and publishing request order...');
   const requestorderToSign = await iexec.order.createRequestorder({
     app: iDappAddress,
     category: workerpoolorder.category,
-    dataset: protectedDataAddress || ethers.ZeroAddress,
+    dataset: protectedData || ethers.ZeroAddress,
     appmaxprice: apporder.appprice,
     datasetmaxprice: datasetorder?.datasetprice || 0,
     workerpoolmaxprice: workerpoolorder.workerpoolprice,
@@ -171,10 +172,10 @@ export async function runInDebug(argv) {
   const requestorder = await iexec.order.signRequestorder(requestorderToSign);
   spinner.succeed('RequestOrder created and published');
 
-  spinner = ora('Matching orders...').start();
+  spinner.start('Matching orders...');
   const { dealid, txHash } = await iexec.order.matchOrders({
     apporder,
-    datasetorder: protectedDataAddress ? datasetorder : undefined,
+    datasetorder: protectedData ? datasetorder : undefined,
     workerpoolorder,
     requestorder,
   });
@@ -183,7 +184,7 @@ export async function runInDebug(argv) {
     `Deal created successfully, this is your deal ID: https://explorer.iex.ec/bellecour/deal/${dealid}`
   );
 
-  spinner = ora('Observing task...').start();
+  spinner.start('Observing task...');
   const taskId = await iexec.deal.computeTaskId(dealid, 0);
   const taskObservable = await iexec.task.obsTask(taskId, { dealid: dealid });
   await new Promise((resolve, reject) => {
@@ -200,7 +201,7 @@ export async function runInDebug(argv) {
   spinner.stop();
 
   const task = await iexec.task.show(taskId);
-  console.log(
+  spinner.log(
     chalk.green(
       `You can download the result of your task here: https://ipfs-gateway.v8-bellecour.iex.ec${task?.results?.location}`
     )
@@ -208,8 +209,6 @@ export async function runInDebug(argv) {
 }
 
 // TODO: Implement
-async function runInProd(argv) {
-  console.log(
-    chalk.red('This feature is not yet implemented. Coming soon ...')
-  );
+async function runInProd() {
+  throw Error('This feature is not yet implemented.');
 }

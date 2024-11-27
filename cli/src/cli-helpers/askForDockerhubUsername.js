@@ -1,20 +1,19 @@
 import chalk from 'chalk';
-import inquirer from 'inquirer';
-import { readIDappConfig, writeIDappConfig } from './idappConfigFile.js';
+import { readIDappConfig, writeIDappConfig } from '../utils/idappConfigFile.js';
 import { CONFIG_FILE } from '../config/config.js';
 
-export async function askForDockerhubUsername() {
+export async function askForDockerhubUsername({ spinner }) {
   const config = await readIDappConfig();
 
   const dockerhubUsername = config.dockerhubUsername || '';
   if (dockerhubUsername) {
-    console.log(
+    spinner.log(
       `Using saved dockerhubUsername (from "${CONFIG_FILE}") -> ${dockerhubUsername}`
     );
     return dockerhubUsername;
   }
 
-  const { dockerHubUserNameAnswer } = await inquirer.prompt({
+  const { dockerHubUserNameAnswer } = await spinner.prompt({
     type: 'input',
     name: 'dockerHubUserNameAnswer',
     message:
@@ -22,7 +21,7 @@ export async function askForDockerhubUsername() {
   });
 
   if (!/[a-zA-Z0-9-]+/.test(dockerHubUserNameAnswer)) {
-    console.log(
+    spinner.log(
       chalk.red(
         'Invalid Docker Hub username. Login to https://hub.docker.com/repositories, your username is what gets added to this URL.'
       )
@@ -33,7 +32,7 @@ export async function askForDockerhubUsername() {
   // Save it into JSON config file
   config.dockerhubUsername = dockerHubUserNameAnswer;
   await writeIDappConfig(config);
-  console.log(`dockerhubUsername saved to "${CONFIG_FILE}"`);
+  spinner.log(`dockerhubUsername saved to "${CONFIG_FILE}"`);
 
   return dockerHubUserNameAnswer;
 }

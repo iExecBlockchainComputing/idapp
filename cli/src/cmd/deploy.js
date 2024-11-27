@@ -1,24 +1,23 @@
-import ora from 'ora';
-import inquirer from 'inquirer';
-import { sconify } from './sconify.js';
 import {
   dockerBuild,
   pushDockerImage,
   checkDockerDaemon,
-} from './execDocker/docker.js';
-import { askForDockerhubUsername } from './utils/askForDockerhubUsername.js';
-import { askForWalletAddress } from './utils/askForWalletAddress.js';
-import { readPackageJonConfig } from './utils/idappConfigFile.js';
-import { askForDockerhubAccessToken } from './utils/askForDockerhubAccessToken.js';
-import { handleCliError } from './utils/cli-helpers.js';
+} from '../execDocker/docker.js';
+import { sconify } from '../utils/sconify.js';
+import { askForDockerhubUsername } from '../cli-helpers/askForDockerhubUsername.js';
+import { askForWalletAddress } from '../cli-helpers/askForWalletAddress.js';
+import { readPackageJonConfig } from '../utils/idappConfigFile.js';
+import { askForDockerhubAccessToken } from '../cli-helpers/askForDockerhubAccessToken.js';
+import { handleCliError } from '../cli-helpers/handleCliError.js';
+import { getSpinner } from '../cli-helpers/spinner.js';
 
 export async function deploy() {
-  const spinner = ora();
+  const spinner = getSpinner();
 
-  const dockerhubUsername = await askForDockerhubUsername();
-  const dockerhubAccessToken = await askForDockerhubAccessToken();
+  const dockerhubUsername = await askForDockerhubUsername({ spinner });
+  const dockerhubAccessToken = await askForDockerhubAccessToken({ spinner });
 
-  const { idappVersion } = await inquirer.prompt([
+  const { idappVersion } = await spinner.prompt([
     {
       type: 'input',
       name: 'idappVersion',
@@ -27,7 +26,7 @@ export async function deploy() {
     },
   ]);
 
-  const walletAddress = await askForWalletAddress();
+  const walletAddress = await askForWalletAddress({ spinner });
 
   const config = await readPackageJonConfig();
   const iDappName = config.name.toLowerCase();
@@ -62,16 +61,17 @@ export async function deploy() {
     spinner.succeed(`Pushed image ${imageTag} on dockerhub`);
 
     spinner.start(
-      'Transforming your image into a TEE image and deploying on iExec, this may take a few minutes ...'
+      'Transforming your image into a TEE image and deploying on iExec, this may take a few minutes...'
     );
-    const { dockerHubUrl } = await sconify({
-      mainSpinner: spinner,
+    const { sconifiedImage, dockerHubUrl, appContractAddress } = await sconify({
       sconifyForProd: false,
       iDappNameToSconify: imageTag,
       walletAddress,
     });
     spinner.succeed(
-      `Deployment of your iDapp completed successfully: ${dockerHubUrl}`
+      `Deployment of your iDapp completed successfully:
+  - image: ${sconifiedImage} (${dockerHubUrl})
+  - app contract: ${appContractAddress}`
     );
   } catch (error) {
     handleCliError({ spinner, error });

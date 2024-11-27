@@ -1,24 +1,23 @@
-import inquirer from 'inquirer';
-import { readIDappConfig, writeIDappConfig } from './idappConfigFile.js';
+import { readIDappConfig, writeIDappConfig } from '../utils/idappConfigFile.js';
 import { CONFIG_FILE } from '../config/config.js';
 
-export async function askForDockerhubAccessToken() {
+export async function askForDockerhubAccessToken({ spinner }) {
   const config = await readIDappConfig();
 
   const dockerhubAccessToken = config.dockerhubAccessToken || '';
   if (dockerhubAccessToken) {
-    console.log(`Using saved dockerhubAccessToken (from "${CONFIG_FILE}")`);
+    spinner.log(`Using saved dockerhubAccessToken (from "${CONFIG_FILE}")`);
     return dockerhubAccessToken;
   }
 
-  console.info(
+  spinner.log(
     'Go to your docker hub account: https://hub.docker.com/settings/security'
   );
-  console.log('click on "Personal access tokens"');
-  console.log('click on "Generate new token"');
-  console.log('you can name it "Test iExec iDapp CLI"');
-  console.log('and select "Read & Write" Access permissions');
-  const { dockerHubAccessTokenAnswer } = await inquirer.prompt({
+  spinner.log('click on "Personal access tokens"');
+  spinner.log('click on "Generate new token"');
+  spinner.log('you can name it "Test iExec iDapp CLI"');
+  spinner.log('and select "Read & Write" Access permissions');
+  const { dockerHubAccessTokenAnswer } = await spinner.prompt({
     type: 'password',
     name: 'dockerHubAccessTokenAnswer',
     message:
@@ -29,7 +28,7 @@ export async function askForDockerhubAccessToken() {
   // Save it into JSON config file
   config.dockerhubAccessToken = dockerHubAccessTokenAnswer;
   await writeIDappConfig(config);
-  console.log(`dockerhubAccessToken saved to "${CONFIG_FILE}"`);
+  spinner.log(`dockerhubAccessToken saved to "${CONFIG_FILE}"`);
 
   return dockerHubAccessTokenAnswer;
 }

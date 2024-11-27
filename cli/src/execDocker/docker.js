@@ -6,7 +6,7 @@ const docker = new Docker();
 export async function checkDockerDaemon() {
   try {
     await docker.ping();
-  } catch (e) {
+  } catch {
     throw Error(
       'Docker daemon is not accessible, make sure docker is installed and running'
     );

@@ -2,10 +2,10 @@
 
 import yargs from 'yargs';
 import { hideBin } from 'yargs/helpers';
-import { init } from './init.js';
-import { deploy } from './deploy.js';
-import { run } from './run.js';
-import { test } from './test.js';
+import { init } from './cmd/init.js';
+import { deploy } from './cmd/deploy.js';
+import { run } from './cmd/run.js';
+import { test } from './cmd/test.js';
 
 yargs(hideBin(process.argv))
   .scriptName('idapp')

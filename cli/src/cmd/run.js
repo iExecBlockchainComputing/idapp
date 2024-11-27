@@ -7,33 +7,10 @@ import { addRunData } from '../utils/cacheExecutions.js';
 import { getSpinner } from '../cli-helpers/spinner.js';
 import { handleCliError } from '../cli-helpers/handleCliError.js';
 
-export async function run({
-  iDappAddress,
-  protectedData,
-  params,
-  prod,
-  debug,
-}) {
+export async function run({ iDappAddress, protectedData, params }) {
   const spinner = getSpinner();
   try {
-    let mode;
-    if (!prod && !debug) {
-      const modeAnswer = await spinner.prompt([
-        {
-          type: 'list',
-          name: 'mode',
-          message: 'Would you like to run your idapp for prod or debug?',
-          choices: ['Debug', 'Prod (soon)'],
-          default: 0, // Default to 'Debug'
-        },
-      ]);
-      mode = modeAnswer.mode;
-    }
-    if (debug || mode === 'Debug') {
-      await runInDebug({ iDappAddress, protectedData, params, spinner });
-    } else {
-      runInProd();
-    }
+    await runInDebug({ iDappAddress, protectedData, params, spinner });
   } catch (error) {
     handleCliError({ spinner, error });
   }
@@ -217,9 +194,4 @@ export async function runInDebug({
       `You can download the result of your task here: https://ipfs-gateway.v8-bellecour.iex.ec${task?.results?.location}`
     )
   );
-}
-
-// TODO: Implement
-async function runInProd() {
-  throw Error('This feature is not yet implemented.');
 }

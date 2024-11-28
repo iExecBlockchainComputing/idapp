@@ -8,6 +8,7 @@ import {
   TEST_OUTPUT_DIR,
   CACHE_DIR,
 } from '../config/config.js';
+import { debug } from '../utils/debug.js';
 
 export async function initHelloWorldApp({
   projectName,
@@ -32,7 +33,7 @@ export async function initHelloWorldApp({
     await createConfigurationFiles({ projectName, hasProtectedData });
     await createProjectDirectories();
   } catch (err) {
-    console.log('Error during project initialization:', err);
+    debug('Error during project initialization:', err);
     throw err;
   }
 }

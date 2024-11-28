@@ -1,17 +1,16 @@
-import inquirer from 'inquirer';
-import { readIDappConfig, writeIDappConfig } from './idappConfigFile.js';
+import { readIDappConfig, writeIDappConfig } from '../utils/idappConfigFile.js';
 import { CONFIG_FILE } from '../config/config.js';
 
-export async function askForWalletPrivateKey() {
+export async function askForWalletPrivateKey({ spinner }) {
   const config = await readIDappConfig();
 
   const walletPrivateKey = config.walletPrivateKey || '';
   if (walletPrivateKey) {
-    console.log(`Using saved walletPrivateKey (from "${CONFIG_FILE}")`);
+    spinner.log(`Using saved walletPrivateKey (from "${CONFIG_FILE}")`);
     return walletPrivateKey;
   }
 
-  const { walletPrivateKeyAnswer } = await inquirer.prompt({
+  const { walletPrivateKeyAnswer } = await spinner.prompt({
     type: 'password',
     name: 'walletPrivateKeyAnswer',
     message:
@@ -19,7 +18,7 @@ export async function askForWalletPrivateKey() {
     mask: '*',
   });
 
-  const { savePrivateKeyAnswer } = await inquirer.prompt([
+  const { savePrivateKeyAnswer } = await spinner.prompt([
     {
       type: 'confirm',
       name: 'savePrivateKeyAnswer',
@@ -34,7 +33,7 @@ export async function askForWalletPrivateKey() {
 
   config.walletPrivateKey = walletPrivateKeyAnswer;
   await writeIDappConfig(config);
-  console.log(`walletPrivateKey saved to "${CONFIG_FILE}"`);
+  spinner.log(`walletPrivateKey saved to "${CONFIG_FILE}"`);
 
   return walletPrivateKeyAnswer;
 }

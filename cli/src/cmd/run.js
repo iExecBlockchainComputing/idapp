@@ -7,7 +7,13 @@ import { addRunData } from '../utils/cacheExecutions.js';
 import { getSpinner } from '../cli-helpers/spinner.js';
 import { handleCliError } from '../cli-helpers/handleCliError.js';
 
-export async function run({ iDappAddress, protectedData, prod, debug }) {
+export async function run({
+  iDappAddress,
+  protectedData,
+  params,
+  prod,
+  debug,
+}) {
   const spinner = getSpinner();
   try {
     let mode;
@@ -24,7 +30,7 @@ export async function run({ iDappAddress, protectedData, prod, debug }) {
       mode = modeAnswer.mode;
     }
     if (debug || mode === 'Debug') {
-      await runInDebug({ iDappAddress, protectedData, spinner });
+      await runInDebug({ iDappAddress, protectedData, params, spinner });
     } else {
       runInProd();
     }
@@ -33,7 +39,12 @@ export async function run({ iDappAddress, protectedData, prod, debug }) {
   }
 }
 
-export async function runInDebug({ iDappAddress, protectedData, spinner }) {
+export async function runInDebug({
+  iDappAddress,
+  protectedData,
+  params,
+  spinner,
+}) {
   // Is valid iDapp Address
   if (!ethers.isAddress(iDappAddress)) {
     spinner.log(
@@ -165,9 +176,9 @@ export async function runInDebug({ iDappAddress, protectedData, spinner }) {
     workerpoolmaxprice: workerpoolorder.workerpoolprice,
     tag: SCONE_TAG,
     workerpool: workerpoolorder.workerpool,
-    // params: {
-    //   iexec_args: vArgs,
-    // },
+    params: {
+      iexec_args: params,
+    },
   });
   const requestorder = await iexec.order.signRequestorder(requestorderToSign);
   spinner.succeed('RequestOrder created and published');

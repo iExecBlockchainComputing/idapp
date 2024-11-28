@@ -7,7 +7,7 @@ This CLI provides an interface to guide you through different steps:
 - Test it locally, with or without Docker,
 - Deploy and sconified your iDapp on the iexec protocol.
 
-# Use it (Globally)
+## Use it (Globally)
 
 Ensure the following prerequisites are met before proceeding:
 
@@ -15,12 +15,13 @@ Ensure the following prerequisites are met before proceeding:
 - You have a directory where you want to use this setup. If not, create a new
   folder.
 
-### Install
+## Install
 
 ```sh
 cd idapp/cli
 npm ci
-npm i -g .  (don't forget the final '.')
+# (don't forget the final '.')
+npm i -g .
 ```
 
 ## Commands
@@ -55,12 +56,11 @@ iexec decentralized application.
 Command:
 
 ```bash
-idapp test [--docker] [--params <input>]
+idapp test [--args <input>]
 ```
 
-Description: Test your iDapp locally. Use the `--docker` option to simulate the
-workerpool environment closely. Optionally, use `--params` to provide input
-parameter to your iDapp during testing.
+Description: Test your iDapp locally. Optionally, use `--args` to provide input
+arguments to your iDapp during testing.
 
 ---
 
@@ -69,12 +69,10 @@ parameter to your iDapp during testing.
 Command:
 
 ```bash
-idapp deploy [--debug | --prod]
+idapp deploy
 ```
 
-Description: Deploy your iDapp on the iexec protocol. Choose between deploying
-in debug mode or production mode (`--debug` or `--prod`). Note that the
-production mode option (`--prod`) will be available soon.
+Description: Deploy your iDapp on the iexec protocol in debug mode.
 
 ---
 
@@ -83,15 +81,16 @@ production mode option (`--prod`) will be available soon.
 Command:
 
 ```bash
-idapp run <my-idapp-address> [--protectedData <protectedData-address>] [--debug | --prod]
+idapp run <my-idapp-address> [--protectedData <protectedData-address>] [--args <input>]
 ```
 
 Description: Run your deployed iDapp. Provide the address of your iDapp
-(`<my-idapp-address>`). Optionally, if your iDapp processes protected data,
+(`<my-idapp-address>`). Optionally use `--args` to provide input arguments to
+your iDapp during run. Optionally, if your iDapp processes protected data,
 include the `--protectedData` option followed by the address of the protected
 data.
 
-### What's next?
+## What's next?
 
 To get logs about your running task:
 

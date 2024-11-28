@@ -1,3 +1,4 @@
+import chalk from 'chalk';
 import { readIDappConfig, writeIDappConfig } from '../utils/idappConfigFile.js';
 import { CONFIG_FILE } from '../config/config.js';
 
@@ -21,9 +22,15 @@ export async function askForDockerhubAccessToken({ spinner }) {
     type: 'password',
     name: 'dockerHubAccessTokenAnswer',
     message:
-      'What is your Docker Hub access token? (It will be used to push the docker image to your account)',
+      'What is your DockerHub access token? (It will be used to push the docker image to your account)',
     mask: '*',
   });
+
+  // TODO check token against API
+  if (!/[a-zA-Z0-9-]+/.test(dockerHubAccessTokenAnswer)) {
+    spinner.log(chalk.red('Invalid DockerHub access token.'));
+    return askForDockerhubAccessToken({ spinner });
+  }
 
   // Save it into JSON config file
   config.dockerhubAccessToken = dockerHubAccessTokenAnswer;

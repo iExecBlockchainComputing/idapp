@@ -17,16 +17,17 @@ export async function askForDockerhubUsername({ spinner }) {
     type: 'input',
     name: 'dockerHubUserNameAnswer',
     message:
-      'What is your username on Docker Hub? (It will be used to properly tag the Docker image)',
+      'What is your username on DockerHub? (It will be used to properly tag the Docker image)',
   });
 
+  // TODO check username against API
   if (!/[a-zA-Z0-9-]+/.test(dockerHubUserNameAnswer)) {
     spinner.log(
       chalk.red(
-        'Invalid Docker Hub username. Login to https://hub.docker.com/repositories, your username is what gets added to this URL.'
+        'Invalid DockerHub username. Login to https://hub.docker.com/repositories, your username is what gets added to this URL.'
       )
     );
-    return;
+    return askForDockerhubUsername({ spinner });
   }
 
   // Save it into JSON config file

@@ -1,3 +1,4 @@
+import { Parser } from 'yargs/helpers';
 import { rm, mkdir, readdir, readFile, stat } from 'node:fs/promises';
 import { join } from 'node:path';
 import Buffer from 'node:buffer';
@@ -40,6 +41,26 @@ async function cleanTestOutput({ spinner }) {
   await mkdir(TEST_OUTPUT_DIR);
 }
 
+function parseArgsString(args = '') {
+  // tokenize args with yargs-parser
+  const { _ } = Parser(args, {
+    configuration: {
+      'unknown-options-as-args': true,
+    },
+  });
+  // strip surrounding quotes of tokenized args
+  const stripSurroundingQuotes = (arg) => {
+    if (
+      (arg.startsWith('"') && arg.endsWith('"')) ||
+      (arg.startsWith("'") && arg.endsWith("'"))
+    ) {
+      return arg.substring(1, arg.length - 1);
+    }
+    return arg;
+  };
+  return _.map(stripSurroundingQuotes);
+}
+
 export async function testApp({ args = undefined, spinner }) {
   const idappConfig = await readIDappConfig();
   const { withProtectedData } = idappConfig;
@@ -62,7 +83,7 @@ export async function testApp({ args = undefined, spinner }) {
   const appLogs = [];
   const { exitCode, outOfMemory } = await runDockerContainer({
     image: imageId,
-    cmd: [args],
+    cmd: parseArgsString(args),
     volumes: [
       `${process.cwd()}/${TEST_INPUT_DIR}:/iexec_in`,
       `${process.cwd()}/${TEST_OUTPUT_DIR}:/iexec_out`,

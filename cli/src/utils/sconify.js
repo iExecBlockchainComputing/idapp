@@ -19,6 +19,7 @@ export async function sconify({
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
+        'x-wallet': walletAddress,
       },
       body: JSON.stringify({
         dockerhubImageToSconify: iDappNameToSconify,

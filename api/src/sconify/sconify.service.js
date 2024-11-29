@@ -106,7 +106,6 @@ export async function sconify({
   });
   logger.info('Deployed successfully to bellecour');
 
-  logger.info('All operations completed successfully.');
   return {
     sconifiedImage: targetImagePath,
     appContractAddress,

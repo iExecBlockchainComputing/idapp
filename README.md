@@ -1,9 +1,9 @@
 # Hello World
 
 To get started with the iDapp CLI and create your "Hello World" application,
-follow these steps to understand its usage:
+follow these steps:
 
-[iDapp Cli](./cli/README.md)
+[iDapp CLI README](./cli/README.md)
 
 ## Architecture of the project
 
@@ -11,6 +11,7 @@ This is a monorepo repository
 
 ```
 .
+├── admin
 ├── api
 ├── cli
 ```

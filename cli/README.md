@@ -4,8 +4,8 @@ This CLI provides an interface to guide you through different steps:
 
 - Create a simple JavaScript app with the necessary structure to run on a
   decentralized worker
-- Test it locally, with or without Docker,
-- Deploy and sconified your iDapp on the iexec protocol.
+- Test it locally (with Docker),
+- Deploy and sconify your iDapp on the iexec protocol.
 
 ## Use it (Globally)
 

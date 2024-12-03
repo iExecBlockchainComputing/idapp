@@ -47,7 +47,7 @@ async function createProjectDirectories() {
 }
 
 async function createConfigurationFiles({ projectName, hasProtectedData }) {
-  // Create a simple iDapp configuration file
+  // Create a simple iApp configuration file
   const configContent = {
     projectName: projectName,
     dockerhubUsername: '',

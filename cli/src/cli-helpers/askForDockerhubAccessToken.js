@@ -1,9 +1,9 @@
 import chalk from 'chalk';
-import { readIDappConfig, writeIDappConfig } from '../utils/idappConfigFile.js';
+import { readIAppConfig, writeIAppConfig } from '../utils/iAppConfigFile.js';
 import { CONFIG_FILE } from '../config/config.js';
 
 export async function askForDockerhubAccessToken({ spinner }) {
-  const config = await readIDappConfig();
+  const config = await readIAppConfig();
 
   const dockerhubAccessToken = config.dockerhubAccessToken || '';
   if (dockerhubAccessToken) {
@@ -16,7 +16,7 @@ export async function askForDockerhubAccessToken({ spinner }) {
   );
   spinner.log('click on "Personal access tokens"');
   spinner.log('click on "Generate new token"');
-  spinner.log('you can name it "Test iExec iDapp CLI"');
+  spinner.log('you can name it "Test iExec iApp CLI"');
   spinner.log('and select "Read & Write" Access permissions');
   const { dockerHubAccessTokenAnswer } = await spinner.prompt({
     type: 'password',
@@ -34,7 +34,7 @@ export async function askForDockerhubAccessToken({ spinner }) {
 
   // Save it into JSON config file
   config.dockerhubAccessToken = dockerHubAccessTokenAnswer;
-  await writeIDappConfig(config);
+  await writeIAppConfig(config);
   spinner.log(`dockerhubAccessToken saved to "${CONFIG_FILE}"`);
 
   return dockerHubAccessTokenAnswer;

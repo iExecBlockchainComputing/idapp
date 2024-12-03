@@ -6,7 +6,6 @@ import { pullPublicImage } from '../singleFunction/pullPublicImage.js';
 import { pullSconeImage } from '../singleFunction/pullSconeImage.js';
 import { pushImage } from '../singleFunction/pushImage.js';
 import { sconifyImage } from '../singleFunction/sconifyImage.js';
-import { tagImage } from '../singleFunction/tagImage.js';
 import { parseImagePath } from '../utils/parseImagePath.js';
 import { logger } from '../utils/logger.js';
 
@@ -71,15 +70,7 @@ export async function sconify({
   });
   logger.info('Sconified successfully');
 
-  logger.info('---------- 5 ---------- Tagging image...');
-  await tagImage({
-    targetImagePath,
-    repo: targetImageRepo,
-    tag: targetImageTag,
-  });
-  logger.info('Tagged successfully');
-
-  logger.info('---------- 6 ---------- Pushing image to dockerhub...');
+  logger.info('---------- 5 ---------- Pushing image to dockerhub...');
   const { Digest: pushedDockerImageDigest } = await pushImage({
     targetImagePath,
     targetImageTag,
@@ -90,13 +81,13 @@ export async function sconify({
     'Pushed successfully'
   );
 
-  logger.info('---------- 7 ---------- Getting TEE image fingerprint...');
+  logger.info('---------- 6 ---------- Getting TEE image fingerprint...');
   const fingerprint = await getSconifiedImageFingerprint({
     targetImagePath,
   });
   logger.info({ sconifiedImageFingerprint: fingerprint });
 
-  logger.info('---------- 8 ---------- Deploying app contract...');
+  logger.info('---------- 7 ---------- Deploying app contract...');
   const { appContractAddress } = await deployAppContractToBellecour({
     userWalletPublicAddress,
     appName: `${dockerUserName}-${targetImageName}-${Date.now().toString()}`,

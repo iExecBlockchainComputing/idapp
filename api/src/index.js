@@ -1,4 +1,3 @@
-import 'dotenv/config';
 import express from 'express';
 import { readFile } from 'fs/promises';
 import pino from 'pino';

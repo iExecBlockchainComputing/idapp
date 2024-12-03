@@ -56,11 +56,17 @@ iexec decentralized application.
 Command:
 
 ```bash
-idapp test [--args <input>]
+idapp test [--args <input>] [--inputFile <url..>]
 ```
 
-Description: Test your iDapp locally. Optionally, use `--args` to provide input
-arguments to your iDapp during testing.
+Description: Test your iDapp locally
+
+Options:
+
+- use `--args <args>` to provide input arguments to your iDapp during testing
+  (use quotes to provide multiple args).
+- use `--inputFile <url..>` to provide one or more input files to your iDapp
+  during testing.
 
 ---
 
@@ -81,14 +87,21 @@ Description: Deploy your iDapp on the iexec protocol in debug mode.
 Command:
 
 ```bash
-idapp run <my-idapp-address> [--protectedData <protectedData-address>] [--args <input>]
+idapp run <my-idapp-address> [--args <input>] [--protectedData <protectedData-address>] [--inputFile <url..>]
 ```
 
 Description: Run your deployed iDapp. Provide the address of your iDapp
-(`<my-idapp-address>`). Optionally use `--args` to provide input arguments to
-your iDapp during run. Optionally, if your iDapp processes protected data,
-include the `--protectedData` option followed by the address of the protected
-data.
+(`<my-idapp-address>`).
+
+Options:
+
+- use `--args <args>` to provide input arguments to your iDapp during run (use
+  quotes to provide multiple args).
+- use `--protectedData <address>` if your iDapp processes protected data,
+  include the `--protectedData` option followed by the address of the protected
+  data.
+- use `--inputFile <url..>` to provide one or more input files to your iDapp
+  during run.
 
 ## What's next?
 

@@ -56,7 +56,7 @@ iexec decentralized application.
 Command:
 
 ```bash
-idapp test [--args <input>] [--inputFile <url..>]
+idapp test [--args <input>] [--inputFile <url..>] [--requesterSecret <key=value..>]
 ```
 
 Description: Test your iDapp locally
@@ -67,6 +67,8 @@ Options:
   (use quotes to provide multiple args).
 - use `--inputFile <url..>` to provide one or more input files to your iDapp
   during testing.
+- use `--requesterSecret <key=value..>` to provide one or more requester secrets
+  to your iDapp during testing.
 
 ---
 
@@ -87,7 +89,7 @@ Description: Deploy your iDapp on the iexec protocol in debug mode.
 Command:
 
 ```bash
-idapp run <my-idapp-address> [--args <input>] [--protectedData <protectedData-address>] [--inputFile <url..>]
+idapp run <my-idapp-address> [--args <input>] [--protectedData <protectedData-address>] [--inputFile <url..>] [--requesterSecret <key=value..>]
 ```
 
 Description: Run your deployed iDapp. Provide the address of your iDapp
@@ -102,6 +104,8 @@ Options:
   data.
 - use `--inputFile <url..>` to provide one or more input files to your iDapp
   during run.
+- use `--requesterSecret <key=value..>` to provide one or more requester secrets
+  to your iDapp during run.
 
 ## What's next?
 

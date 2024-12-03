@@ -6,6 +6,7 @@ import { init } from './cmd/init.js';
 import { deploy } from './cmd/deploy.js';
 import { run } from './cmd/run.js';
 import { test } from './cmd/test.js';
+import { mockProtectedData } from './cmd/mock-protected-data.js';
 
 // define common options
 const options = {
@@ -65,6 +66,21 @@ yargs(hideBin(process.argv))
         .option(...options.protectedData);
     },
     run
+  )
+
+  .command(
+    'mock <inputType>',
+    'Create a mocked input for test',
+    (yargs) =>
+      yargs.positional('inputType', {
+        describe: 'Type of input to mock',
+        choices: ['protectedData'],
+      }),
+    ({ inputType, ...argv }) => {
+      if (inputType === 'protectedData') {
+        return mockProtectedData(argv);
+      }
+    }
   )
 
   .help()

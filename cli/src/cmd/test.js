@@ -22,6 +22,7 @@ import { fileExists } from '../utils/fileExists.js';
 import { getSpinner } from '../cli-helpers/spinner.js';
 import { handleCliError } from '../cli-helpers/handleCliError.js';
 import { prepareInputFile } from '../utils/prepareInputFile.js';
+import { askForAppSecret } from '../cli-helpers/askForAppSecret.js';
 
 export async function test({
   args,
@@ -75,6 +76,8 @@ export async function testApp({
   const idappConfig = await readIDappConfig();
   const { withProtectedData } = idappConfig;
 
+  const appSecret = await askForAppSecret({ spinner });
+
   // just start the spinner, no need to persist success in terminal
   spinner.start('Checking docker daemon is running...');
   await checkDockerDaemon();
@@ -127,6 +130,10 @@ export async function testApp({
         ? requesterSecrets.map(
             ({ key, value }) => `IEXEC_REQUESTER_SECRET_${key}=${value}`
           )
+        : []),
+      // app secret https://protocol.docs.iex.ec/for-developers/technical-references/application-io#app-developer-secret
+      ...(appSecret !== null
+        ? [`IEXEC_APP_DEVELOPER_SECRET=${appSecret}`]
         : []),
     ],
     memory: IEXEC_WORKER_HEAP_SIZE,

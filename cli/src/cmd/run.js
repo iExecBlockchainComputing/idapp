@@ -1,12 +1,12 @@
 import chalk from 'chalk';
 import { v4 as uuidV4 } from 'uuid';
 import { ethers } from 'ethers';
-import { IExec, utils } from 'iexec';
 import { askForWalletPrivateKey } from '../cli-helpers/askForWalletPrivateKey.js';
 import { SCONE_TAG, WORKERPOOL_DEBUG } from '../config/config.js';
 import { addRunData } from '../utils/cacheExecutions.js';
 import { getSpinner } from '../cli-helpers/spinner.js';
 import { handleCliError } from '../cli-helpers/handleCliError.js';
+import { getIExecDebug } from '../utils/iexec.js';
 
 export async function run({
   iDappAddress,
@@ -64,17 +64,7 @@ export async function runInDebug({
   const walletPrivateKey = await askForWalletPrivateKey({ spinner });
   const wallet = new ethers.Wallet(walletPrivateKey);
 
-  const iexec = new IExec(
-    {
-      ethProvider: utils.getSignerFromPrivateKey(
-        'bellecour',
-        wallet.privateKey
-      ),
-    },
-    {
-      smsURL: 'https://sms.scone-debug.v8-bellecour.iex.ec',
-    }
-  );
+  const iexec = getIExecDebug(walletPrivateKey);
 
   // Make some ProtectedData preflight check
   if (protectedData) {

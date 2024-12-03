@@ -1,4 +1,5 @@
 import chalk from 'chalk';
+import { v4 as uuidV4 } from 'uuid';
 import { ethers } from 'ethers';
 import { IExec, utils } from 'iexec';
 import { askForWalletPrivateKey } from '../cli-helpers/askForWalletPrivateKey.js';
@@ -12,6 +13,7 @@ export async function run({
   args,
   protectedData,
   inputFile: inputFiles = [], // rename variable (its an array)
+  requesterSecret: requesterSecrets = [], // rename variable (its an array)
 }) {
   const spinner = getSpinner();
   try {
@@ -20,6 +22,7 @@ export async function run({
       args,
       protectedData,
       inputFiles,
+      requesterSecrets,
       spinner,
     });
   } catch (error) {
@@ -32,6 +35,7 @@ export async function runInDebug({
   args,
   protectedData,
   inputFiles = [],
+  requesterSecrets = [],
   spinner,
 }) {
   // Is valid iDapp Address
@@ -100,6 +104,20 @@ export async function runInDebug({
     }
   }
 
+  // Requester secrets
+  let iexec_secrets;
+  if (requesterSecrets.length > 0) {
+    spinner.start('Provisioning requester secrets...');
+    iexec_secrets = Object.fromEntries(
+      await Promise.all(
+        requesterSecrets.map(async ({ key, value }) => {
+          const name = await pushRequesterSecret({ iexec, value });
+          return [key, name];
+        })
+      )
+    );
+    spinner.succeed('Requester secrets provisioned');
+  }
   // Workerpool Order
   spinner.start('Fetching workerpool order...');
   const workerpoolOrderbook = await iexec.orderbook.fetchWorkerpoolOrderbook({
@@ -168,6 +186,7 @@ export async function runInDebug({
     params: {
       iexec_args: args,
       iexec_input_files: inputFiles.length > 0 ? inputFiles : undefined,
+      iexec_secrets,
     },
   });
   const requestorder = await iexec.order.signRequestorder(requestorderToSign);
@@ -207,4 +226,17 @@ export async function runInDebug({
       `You can download the result of your task here: https://ipfs-gateway.v8-bellecour.iex.ec${task?.results?.location}`
     )
   );
+}
+
+/**
+ * push a requester secret with a random uuid
+ * @param {Object} params
+ * @param {IExec} params.iexec
+ * @param {string} params.value
+ * @returns {string} secretName
+ */
+async function pushRequesterSecret({ iexec, value }) {
+  const secretName = uuidV4();
+  await iexec.secrets.pushRequesterSecret(secretName, value);
+  return secretName;
 }

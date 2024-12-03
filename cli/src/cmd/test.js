@@ -26,11 +26,12 @@ import { prepareInputFile } from '../utils/prepareInputFile.js';
 export async function test({
   args,
   inputFile: inputFiles = [], // rename variable (its an array)
+  requesterSecret: requesterSecrets = [], // rename variable (its an array)
 }) {
   const spinner = getSpinner();
   try {
     await cleanTestOutput({ spinner });
-    await testApp({ args, inputFiles, spinner });
+    await testApp({ args, inputFiles, requesterSecrets, spinner });
     await checkTestOutput({ spinner });
     await askShowTestOutput({ spinner });
   } catch (error) {
@@ -65,7 +66,12 @@ function parseArgsString(args = '') {
   return _.map(stripSurroundingQuotes);
 }
 
-export async function testApp({ args = undefined, inputFiles = [], spinner }) {
+export async function testApp({
+  args = undefined,
+  inputFiles = [],
+  requesterSecrets = [],
+  spinner,
+}) {
   const idappConfig = await readIDappConfig();
   const { withProtectedData } = idappConfig;
 
@@ -114,6 +120,12 @@ export async function testApp({ args = undefined, inputFiles = [], spinner }) {
         ? inputFilesPath.map(
             (inputFilePath, index) =>
               `IEXEC_INPUT_FILE_NAME_${index + 1}=${inputFilePath}`
+          )
+        : []),
+      // requester secrets https://protocol.docs.iex.ec/for-developers/technical-references/application-io#requester-secrets
+      ...(requesterSecrets?.length > 0
+        ? requesterSecrets.map(
+            ({ key, value }) => `IEXEC_REQUESTER_SECRET_${key}=${value}`
           )
         : []),
     ],

@@ -10,8 +10,8 @@ This CLI provides an interface to guide you through different steps:
 ## Prerequisites
 
 - Node.js v18 or higher
-- A directory where you want to init your iApp. If not, create a new
-  folder. (`iaapp init` will also propose you to do so)
+- A directory where you want to init your iApp. If not, create a new folder.
+  (`iapp init` will also propose you to do so)
 - Docker
 
 ## Install
@@ -33,9 +33,9 @@ Command:
 iapp --help
 ```
 
-Description: Display help information about the `iapp` CLI and its
-available commands and options. This option provides a quick reference guide for
-users to understand how to use each command effectively.
+Description: Display help information about the `iapp` CLI and its available
+commands and options. This option provides a quick reference guide for users to
+understand how to use each command effectively.
 
 ### `init`
 
@@ -84,10 +84,9 @@ iapp run <iapp-address> [--protectedData <protectedData-address>] [--args <input
 ```
 
 Description: Run your deployed iApp. Provide the address of your iApp
-(`<iapp-address>`). Optionally use `--args` to provide input arguments to
-your iApp. Optionally, if your iApp is meant to process protected data,
-include the `--protectedData` option followed by the address of the protected
-data.
+(`<iapp-address>`). Optionally use `--args` to provide input arguments to your
+iApp. Optionally, if your iApp is meant to process protected data, include the
+`--protectedData` option followed by the address of the protected data.
 
 ## What's next?
 

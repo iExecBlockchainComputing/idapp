@@ -6,7 +6,7 @@ import {
 import { sconify } from '../utils/sconify.js';
 import { askForDockerhubUsername } from '../cli-helpers/askForDockerhubUsername.js';
 import { askForWalletAddress } from '../cli-helpers/askForWalletAddress.js';
-import { readPackageJonConfig } from '../utils/idappConfigFile.js';
+import { readPackageJonConfig } from '../utils/iAppConfigFile.js';
 import { askForDockerhubAccessToken } from '../cli-helpers/askForDockerhubAccessToken.js';
 import { handleCliError } from '../cli-helpers/handleCliError.js';
 import { getSpinner } from '../cli-helpers/spinner.js';
@@ -21,14 +21,15 @@ export async function deploy() {
     const dockerhubUsername = await askForDockerhubUsername({ spinner });
     const dockerhubAccessToken = await askForDockerhubAccessToken({ spinner });
 
-    const { idappVersion } = await spinner.prompt([
+    const { iAppVersion } = await spinner.prompt([
       {
         type: 'input',
-        name: 'idappVersion',
-        message: 'What is the version of your iDapp?',
+        name: 'iAppVersion',
+        message: 'What is the version of your iApp?',
         default: '0.1.0',
       },
     ]);
+
     const appSecret = await askForAppSecret({ spinner });
 
     const walletAddress = await askForWalletAddress({ spinner });
@@ -46,9 +47,9 @@ export async function deploy() {
     }
 
     const config = await readPackageJonConfig();
-    const iDappName = config.name.toLowerCase();
+    const iAppName = config.name.toLowerCase();
 
-    const imageTag = `${dockerhubUsername}/${iDappName}:${idappVersion}`;
+    const imageTag = `${dockerhubUsername}/${iAppName}:${iAppVersion}`;
 
     // just start the spinner, no need to persist success in terminal
     spinner.start('Checking docker daemon is running...');
@@ -81,7 +82,7 @@ export async function deploy() {
     );
     const { sconifiedImage, dockerHubUrl, appContractAddress } = await sconify({
       sconifyForProd: false,
-      iDappNameToSconify: imageTag,
+      iAppNameToSconify: imageTag,
       walletAddress,
     });
     spinner.succeed('TEE app deployed');
@@ -91,9 +92,9 @@ export async function deploy() {
       spinner.succeed('App secret attached to the app');
     }
     spinner.succeed(
-      `Deployment of your iDapp completed successfully:
-  - image: ${sconifiedImage} (${dockerHubUrl})
-  - app contract: ${appContractAddress}`
+      `Deployment of your iApp completed successfully:
+  - Docker image: ${sconifiedImage} (${dockerHubUrl})
+  - iApp address: ${appContractAddress}`
     );
   } catch (error) {
     handleCliError({ spinner, error });

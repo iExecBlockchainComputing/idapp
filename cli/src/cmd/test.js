@@ -9,7 +9,7 @@ import {
   dockerBuild,
   runDockerContainer,
 } from '../execDocker/docker.js';
-import { readIDappConfig } from '../utils/idappConfigFile.js';
+import { readIAppConfig } from '../utils/iAppConfigFile.js';
 import {
   IEXEC_COMPUTED_JSON,
   IEXEC_DETERMINISTIC_OUTPUT_PATH_KEY,
@@ -73,8 +73,8 @@ export async function testApp({
   requesterSecrets = [],
   spinner,
 }) {
-  const idappConfig = await readIDappConfig();
-  const { withProtectedData } = idappConfig;
+  const iAppConfig = await readIAppConfig();
+  const { withProtectedData } = iAppConfig;
 
   const appSecret = await askForAppSecret({ spinner });
 

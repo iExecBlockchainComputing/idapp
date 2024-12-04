@@ -31,7 +31,7 @@ app.get('/health', (req, res) => {
 });
 
 app.get('/', (req, res) => {
-  res.status(200).send('Hello from idapp-sconifier-api 👋');
+  res.status(200).send('Hello from iapp-sconifier-api 👋');
 });
 
 app.listen(port, hostname, () => {

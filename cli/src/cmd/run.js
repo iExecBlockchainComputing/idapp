@@ -7,33 +7,33 @@ import { addRunData } from '../utils/cacheExecutions.js';
 import { getSpinner } from '../cli-helpers/spinner.js';
 import { handleCliError } from '../cli-helpers/handleCliError.js';
 
-export async function run({ iDappAddress, args, protectedData }) {
+export async function run({ iAppAddress, args, protectedData }) {
   const spinner = getSpinner();
   try {
-    await runInDebug({ iDappAddress, args, protectedData, spinner });
+    await runInDebug({ iAppAddress, args, protectedData, spinner });
   } catch (error) {
     handleCliError({ spinner, error });
   }
 }
 
 export async function runInDebug({
-  iDappAddress,
+  iAppAddress,
   args,
   protectedData,
   spinner,
 }) {
-  // Is valid iDapp Address
-  if (!ethers.isAddress(iDappAddress)) {
+  // Is valid iApp address
+  if (!ethers.isAddress(iAppAddress)) {
     spinner.log(
       chalk.red(
-        'The iDapp address is invalid. Be careful ENS name is not implemented yet ...'
+        'The iApp address is invalid. Be careful ENS name is not implemented yet ...'
       )
     );
     return;
   }
 
   if (protectedData) {
-    // Is valid ProtectedData Address
+    // Is valid protectedData address
     if (!ethers.isAddress(protectedData)) {
       spinner.log(
         chalk.red(
@@ -82,7 +82,7 @@ export async function runInDebug({
     } catch (e) {
       spinner.log(
         chalk.red(
-          `Error while running your iDapp with your protectedData: ${e.message}`
+          `Error while running your iApp with your protectedData: ${e.message}`
         )
       );
     }
@@ -92,7 +92,7 @@ export async function runInDebug({
   spinner.start('Fetching workerpool order...');
   const workerpoolOrderbook = await iexec.orderbook.fetchWorkerpoolOrderbook({
     workerpool: WORKERPOOL_DEBUG,
-    app: iDappAddress,
+    app: iAppAddress,
     dataset: protectedData || ethers.ZeroAddress,
     minTag: SCONE_TAG,
     maxTag: SCONE_TAG,
@@ -108,7 +108,7 @@ export async function runInDebug({
   // App Order
   spinner.start('Creating and publishing app order...');
   const apporderTemplate = await iexec.order.createApporder({
-    app: iDappAddress,
+    app: iAppAddress,
     requesterrestrict: wallet.address,
     tag: SCONE_TAG,
   });
@@ -123,7 +123,7 @@ export async function runInDebug({
     const datasetOrderbook = await iexec.orderbook.fetchDatasetOrderbook(
       protectedData,
       {
-        app: iDappAddress,
+        app: iAppAddress,
         workerpool: workerpoolorder.workerpool,
         requester: wallet.address,
         minTag: SCONE_TAG,
@@ -135,7 +135,7 @@ export async function runInDebug({
       spinner.fail('No matching ProtectedData access found');
       spinner.log(
         chalk.red(
-          'It seems the protectedData is not allow to be consume by your iDapp, please grantAccess to it'
+          'It seems your iApp is not allowed to access the protectedData, please grantAccess to it'
         )
       );
       return;
@@ -145,7 +145,7 @@ export async function runInDebug({
 
   spinner.start('Creating and publishing request order...');
   const requestorderToSign = await iexec.order.createRequestorder({
-    app: iDappAddress,
+    app: iAppAddress,
     category: workerpoolorder.category,
     dataset: protectedData || ethers.ZeroAddress,
     appmaxprice: apporder.appprice,
@@ -167,7 +167,7 @@ export async function runInDebug({
     workerpoolorder,
     requestorder,
   });
-  await addRunData({ iDappAddress, dealid, txHash });
+  await addRunData({ iAppAddress, dealid, txHash });
   spinner.succeed(
     `Deal created successfully, this is your deal ID: https://explorer.iex.ec/bellecour/deal/${dealid}`
   );

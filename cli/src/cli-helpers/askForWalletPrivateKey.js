@@ -1,10 +1,10 @@
 import chalk from 'chalk';
 import { Wallet } from 'ethers';
-import { readIDappConfig, writeIDappConfig } from '../utils/idappConfigFile.js';
+import { readIAppConfig, writeIAppConfig } from '../utils/iAppConfigFile.js';
 import { CONFIG_FILE } from '../config/config.js';
 
 export async function askForWalletPrivateKey({ spinner }) {
-  const config = await readIDappConfig();
+  const config = await readIAppConfig();
 
   const walletPrivateKey = config.walletPrivateKey || '';
   if (walletPrivateKey) {
@@ -41,7 +41,7 @@ export async function askForWalletPrivateKey({ spinner }) {
   }
 
   config.walletPrivateKey = walletPrivateKeyAnswer;
-  await writeIDappConfig(config);
+  await writeIAppConfig(config);
   spinner.log(`walletPrivateKey saved to "${CONFIG_FILE}"`);
 
   return walletPrivateKeyAnswer;

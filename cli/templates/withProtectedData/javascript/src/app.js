@@ -18,9 +18,9 @@ const main = async () => {
       const deserializer = new IExecDataProtectorDeserializer();
       // The protected data created for the purpose of this Hello World journey
       // contains a string with the key "name"
-      // 1- "idapp test": The protected data is simply a zip file in the /input folder
-      // 2- "idapp run": Pass it a real protected data address:
-      //    `idapp run <your idapp address> --protectedData 0x3FFb9D62b527b32230DFf094D24A661495aDb0B4`
+      // 1- "iapp test": The protected data is simply a zip file in the /input folder
+      // 2- "iapp run": Pass it a real protected data address:
+      //    `iapp run <iapp-address> --protectedData 0x3FFb9D62b527b32230DFf094D24A661495aDb0B4`
       protectedName = await deserializer.getValue('name', 'string');
     } catch (e) {
       protectedName = 'World';

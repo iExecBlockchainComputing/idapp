@@ -1,3 +1,3 @@
 import Debug from 'debug';
 
-export const debug = Debug('idapp');
+export const debug = Debug('iapp');

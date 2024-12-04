@@ -1,11 +1,11 @@
-import { readIDappConfig, writeIDappConfig } from '../utils/idappConfigFile.js';
+import { readIAppConfig, writeIAppConfig } from '../utils/iAppConfigFile.js';
 import { CONFIG_FILE } from '../config/config.js';
 
 /**
  * @returns {Promise<string | null>}
  */
 export async function askForAppSecret({ spinner }) {
-  const config = await readIDappConfig();
+  const config = await readIAppConfig();
   const { appSecret: savedAppSecret } = config;
 
   if (savedAppSecret === null) {
@@ -20,7 +20,7 @@ export async function askForAppSecret({ spinner }) {
   const { useAppSecret } = await spinner.prompt({
     type: 'confirm',
     name: 'useAppSecret',
-    message: `Do you want to attach an app secret to your app`,
+    message: `Do you want to attach an app secret to your iApp`,
     default: false,
   });
 
@@ -36,7 +36,7 @@ export async function askForAppSecret({ spinner }) {
     ]);
     if (saveNull) {
       config.appSecret = null;
-      await writeIDappConfig(config);
+      await writeIAppConfig(config);
       spinner.log(`appSecret disabled saved to "${CONFIG_FILE}"`);
     }
     return null;
@@ -60,7 +60,7 @@ export async function askForAppSecret({ spinner }) {
 
   if (saveAppSecret) {
     config.appSecret = appSecret;
-    await writeIDappConfig(config);
+    await writeIAppConfig(config);
     spinner.log(`appSecret saved to "${CONFIG_FILE}"`);
   }
 

@@ -16,7 +16,7 @@ export async function init() {
     spinner.start('Configuring project...');
     spinner.log(
       chalk.magenta(
-        figlet.textSync('IDAPP', {
+        figlet.textSync('IAPP', {
           font: 'Standard',
           horizontalLayout: 'default',
           verticalLayout: 'default',
@@ -63,7 +63,7 @@ export async function init() {
     const { hasProtectedData } = await spinner.prompt({
       type: 'confirm',
       name: 'hasProtectedData',
-      message: 'Would you like to access a protected data inside your iDapp?',
+      message: 'Would you like to access a protected data inside your iApp?',
       default: false,
     });
 
@@ -91,15 +91,15 @@ export async function init() {
   
     ${chalk.green('Make your changes in the')} ${chalk.cyan('src/app.js')} ${chalk.green('file')}.
   
-    -1- Test your idapp locally:
-    ${chalk.yellow('$ idapp test')}
-    ${chalk.yellow('$ idapp test --args your-name')}
+    -1- Test your iApp locally:
+    ${chalk.yellow('$ iapp test')}
+    ${chalk.yellow('$ iapp test --args your-name')}
   
-    -2- Deploy your idapp on the iExec protocol:
-    ${chalk.yellow('$ idapp deploy')}
+    -2- Deploy your iApp on the iExec protocol:
+    ${chalk.yellow('$ iapp deploy')}
   
-    -3- Ask an iExec worker to run your confidential idapp:
-    ${chalk.yellow('$ idapp run <my-idapp-address>')}
+    -3- Ask an iExec worker to run your confidential iApp:
+    ${chalk.yellow('$ iapp run <iapp-address>')}
   `;
 
     spinner.log(

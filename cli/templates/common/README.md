@@ -1,17 +1,17 @@
-# idapp hello-world
+# iApp hello-world
 
-This project is an iExec decentralized application scaffolded with `idapp init`
+This project is an iExec decentralized application scaffolded with `iapp init`
 
 ## Prerequisites
 
-- `idapp` CLI installed locally
+- `iapp` CLI installed locally
 - `docker` installed locally
 - [dockerhub](https://hub.docker.com/) account
 - ethereum wallet
 
 ## Project overview
 
-- [idapp.config.json](./idapp.config.json) configuration file for the `idapp`
+- [iapp.config.json](./iapp.config.json) configuration file for the `iapp`
   commands
 - [src/](./src/) where your code lives when you [develop](#develop)
   your app
@@ -30,7 +30,7 @@ Start hacking in [./src](./src/)
 Use the `test` command to run your app locally
 
 ```sh
-idapp test
+iapp test
 ```
 
 Check the test output in the [output](./output/) directory
@@ -40,7 +40,7 @@ Check the test output in the [output](./output/) directory
 Use the `deploy` command to transform your app into a TEE  app and deploy it on the iExec decentralized platform
 
 ```sh
-idapp deploy
+iapp deploy
 ```
 
 ### Run on iExec
@@ -48,5 +48,5 @@ idapp deploy
 Use the `run` command to run a deployed app on the iExec decentralized platform
 
 ```sh
-idapp run <app-address>
+iapp run <iapp-address>
 ```

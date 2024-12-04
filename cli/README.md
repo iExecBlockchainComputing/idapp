@@ -55,11 +55,19 @@ iexec decentralized application.
 Command:
 
 ```bash
-iapp test [--args <input>]
+iapp test [--args <input>] [--inputFile <url..>] [--requesterSecret <key=value..>]
 ```
 
-Description: Test your iApp locally. Optionally, use `--args` to provide input
-arguments to your iApp during testing.
+Description: Test your iApp locally
+
+Options:
+
+- use `--args <args>` to provide input arguments to your iApp during testing
+  (use quotes to provide multiple args).
+- use `--inputFile <url..>` to provide one or more input files to your iApp
+  during testing.
+- use `--requesterSecret <key=value..>` to provide one or more requester secrets
+  to your iApp during testing.
 
 ---
 
@@ -80,33 +88,52 @@ Description: Deploy your iApp on the iExec protocol in debug mode.
 Command:
 
 ```bash
-iapp run <iapp-address> [--protectedData <protectedData-address>] [--args <input>]
+iapp run <my-iApp-address> [--args <input>] [--protectedData <protectedData-address>] [--inputFile <url..>]
 ```
 
 Description: Run your deployed iApp. Provide the address of your iApp
-(`<iapp-address>`). Optionally use `--args` to provide input arguments to your
-iApp. Optionally, if your iApp is meant to process protected data, include the
-`--protectedData` option followed by the address of the protected data.
+(`<my-iApp-address>`).
+
+Options:
+
+- use `--args <args>` to provide input arguments to your iApp during run (use
+  quotes to provide multiple args).
+- use `--protectedData <address>` if your iApp processes protected data, include
+  the `--protectedData` option followed by the address of the protected data.
+- use `--inputFile <url..>` to provide one or more input files to your iApp
+  during run.
+- use `--requesterSecret <key=value..>` to provide one or more requester secrets
+  to your iApp during run.
 
 ## What's next?
 
 To get logs about your running task:
 
 ```
+
 iexec task debug <taskId> --logs --chain bellecour
 
-Example:
-iexec task debug 0x62ed16ebc52c9437af45f57dc30819254ce391633c090e125253726eb76e07b1 --logs --chain bellecour
+Example: iexec task debug
+0x62ed16ebc52c9437af45f57dc30819254ce391633c090e125253726eb76e07b1 --logs
+--chain bellecour
+
 ```
 
 To get the output of your task:
 
 ```
+
 iexec task show <taskId> --download task-result.zip
 
-Example:
-iexec task show 0x62ed16ebc52c9437af45f57dc30819254ce391633c090e125253726eb76e07b1 --download task-result.zip
+Example: iexec task show
+0x62ed16ebc52c9437af45f57dc30819254ce391633c090e125253726eb76e07b1 --download
+task-result.zip
+
 ```
 
 Unzip the downloaded file and you will find the output of your task in a
 `result.txt` file.
+
+```
+
+```

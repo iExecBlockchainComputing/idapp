@@ -1,9 +1,9 @@
 import chalk from 'chalk';
-import { readIDappConfig, writeIDappConfig } from '../utils/idappConfigFile.js';
+import { readIAppConfig, writeIAppConfig } from '../utils/iAppConfigFile.js';
 import { CONFIG_FILE } from '../config/config.js';
 
 export async function askForDockerhubUsername({ spinner }) {
-  const config = await readIDappConfig();
+  const config = await readIAppConfig();
 
   const dockerhubUsername = config.dockerhubUsername || '';
   if (dockerhubUsername) {
@@ -32,7 +32,7 @@ export async function askForDockerhubUsername({ spinner }) {
 
   // Save it into JSON config file
   config.dockerhubUsername = dockerHubUserNameAnswer;
-  await writeIDappConfig(config);
+  await writeIAppConfig(config);
   spinner.log(`dockerhubUsername saved to "${CONFIG_FILE}"`);
 
   return dockerHubUserNameAnswer;

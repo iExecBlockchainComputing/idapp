@@ -12,7 +12,7 @@ const options = {
   args: [
     'args',
     {
-      describe: 'Arguments that will be accessible into the iDapp',
+      describe: 'Arguments that will be accessible into the iApp',
       type: 'string',
       demandOption: false,
     },
@@ -65,7 +65,7 @@ const options = {
 };
 
 yargs(hideBin(process.argv))
-  .scriptName('idapp')
+  .scriptName('iapp')
   .usage('$0 <cmd> [args]')
 
   // Initialize command
@@ -95,12 +95,12 @@ yargs(hideBin(process.argv))
 
   // Run a published docker image
   .command(
-    'run <iDappAddress>', // Define <iDappAddress> as a require positional argument
-    'Run your iDapp',
+    'run <iAppAddress>',
+    'Run your iApp',
     (yargs) => {
       return yargs
-        .positional('iDappAddress', {
-          describe: 'The iDapp address to run',
+        .positional('iAppAddress', {
+          describe: 'The iApp address to run',
           type: 'string',
         })
         .option(...options.args)

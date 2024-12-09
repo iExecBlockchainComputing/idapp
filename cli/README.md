@@ -17,7 +17,6 @@ This CLI provides an interface to guide you through different steps:
 ## Install
 
 ```sh
-cd idapp/cli
 npm ci
 # (don't forget the final '.')
 npm i -g .

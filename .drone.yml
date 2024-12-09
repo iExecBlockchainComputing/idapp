@@ -36,7 +36,7 @@ steps:
         from_secret: nexus-password
     settings:
       host:
-        from_secret: production-host
+        from_secret: production-iapp-api-host
       username:
         from_secret: ssh-iapp-api-user
       key:

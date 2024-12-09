@@ -2,10 +2,12 @@ import chalk from 'chalk';
 import { ethers } from 'ethers';
 import { IExec, utils } from 'iexec';
 import { askForWalletPrivateKey } from '../cli-helpers/askForWalletPrivateKey.js';
-import { SCONE_TAG, WORKERPOOL_DEBUG } from '../config/config.js';
+import { CACHE_DIR, SCONE_TAG, WORKERPOOL_DEBUG } from '../config/config.js';
 import { addRunData } from '../utils/cacheExecutions.js';
 import { getSpinner } from '../cli-helpers/spinner.js';
 import { handleCliError } from '../cli-helpers/handleCliError.js';
+import { getDeterministicOutputAsText } from '../utils/deterministicOutput.js';
+import { extractZipToFolder } from '../utils/extractZipToFolder.js';
 
 export async function run({ iAppAddress, args, protectedData }) {
   const spinner = getSpinner();
@@ -186,7 +188,6 @@ export async function runInDebug({
   });
 
   spinner.succeed('Task finalized');
-  spinner.stop();
 
   const task = await iexec.task.show(taskId);
   spinner.log(
@@ -194,4 +195,42 @@ export async function runInDebug({
       `You can download the result of your task here: https://ipfs-gateway.v8-bellecour.iex.ec${task?.results?.location}`
     )
   );
+
+  const downloadAnswer = await spinner.prompt({
+    type: 'confirm',
+    name: 'continue',
+    message: 'Would you like to download the result?',
+  });
+  if (!downloadAnswer.continue) {
+    spinner.stop();
+    process.exit(1);
+  }
+
+  spinner.start('Downloading result...');
+
+  const taskResult = await iexec.task.fetchResults(taskId);
+  const resultBuffer = await taskResult.arrayBuffer();
+
+  const outputFolder = CACHE_DIR + '/result';
+  await extractZipToFolder(resultBuffer, outputFolder);
+
+  spinner.succeed(`Result downloaded to ${outputFolder}`);
+
+  const seeResultTxtAnswer = await spinner.prompt({
+    type: 'confirm',
+    name: 'continue',
+    message: 'Would you like to see result.txt?',
+  });
+  if (!seeResultTxtAnswer.continue) {
+    spinner.stop();
+    process.exit(1);
+  }
+
+  spinner.start('Extract text result...');
+
+  const { text, path } = await getDeterministicOutputAsText({
+    outputPath: outputFolder,
+  });
+  spinner.newLine();
+  spinner.info(`${path}:\n${text}`);
 }

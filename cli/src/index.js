@@ -25,6 +25,14 @@ const options = {
       default: null, // Set default to null or undefined to make it optional
     },
   ],
+  inputFile: [
+    'inputFile',
+    {
+      describe: 'Specify one or multiple input files to use (download URL)',
+      type: 'string',
+      requiresArg: true, // must be invoked with a value
+    },
+  ],
 };
 
 yargs(hideBin(process.argv))
@@ -39,7 +47,10 @@ yargs(hideBin(process.argv))
     'test',
     'Test your app',
     (yargs) => {
-      return yargs.option(...options.args);
+      return yargs
+        .option(...options.args)
+        .option(...options.inputFile)
+        .array(options.inputFile[0]);
     },
     test
   )
@@ -62,7 +73,9 @@ yargs(hideBin(process.argv))
           type: 'string',
         })
         .option(...options.args)
-        .option(...options.protectedData);
+        .option(...options.protectedData)
+        .option(...options.inputFile)
+        .array(options.inputFile[0]);
     },
     run
   )

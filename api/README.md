@@ -1,4 +1,4 @@
-# iapp-sconifier > API
+# iExec iApp > API
 
 This API is a Node.js server that will be running on a Linux VM.
 

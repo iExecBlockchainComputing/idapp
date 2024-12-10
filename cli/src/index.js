@@ -38,7 +38,7 @@ const options = {
     'requesterSecret',
     {
       describe:
-        'Specify one or multiple key-value requester secrets to use (syntax secretIndex=value)\n`secretIndex` must be strictly positive integer',
+        'Specify one or multiple key-value requester secrets. Use syntax `secretIndex=value`, `secretIndex` is a public strictly positive integer, `value` is a secret only available in the iApp (Ex: `--requesterSecret 1=foo 42=bar` will set the following environment variables in iApp `IEXEC_REQUESTER_SECRET_1=foo` and `IEXEC_REQUESTER_SECRET_42=bar`).',
       type: 'string',
       requiresArg: true, // must be invoked with a value
       coerce: (values) => {

@@ -26,8 +26,8 @@ import { askForAppSecret } from '../cli-helpers/askForAppSecret.js';
 
 export async function test({
   args,
-  inputFile: inputFiles = [], // rename variable (its an array)
-  requesterSecret: requesterSecrets = [], // rename variable (its an array)
+  inputFile: inputFiles = [], // rename variable (it's an array)
+  requesterSecret: requesterSecrets = [], // rename variable (it's an array)
 }) {
   const spinner = getSpinner();
   try {

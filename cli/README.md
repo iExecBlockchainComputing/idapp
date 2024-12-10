@@ -90,7 +90,7 @@ iapp run <my-iApp-address> [--args <input>] [--protectedData <protectedData-addr
 ```
 
 Description: Run your deployed iApp. Provide the address of your iApp
-(`<my-iApp-address>`).
+(`<iApp-address>`).
 
 Options:
 

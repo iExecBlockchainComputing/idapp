@@ -65,8 +65,8 @@ Options:
   (use quotes to provide multiple args).
 - use `--inputFile <url...>` to provide one or more input files to your iApp
   during testing.
-- use `--requesterSecret <key=value..>` to provide one or more requester secrets
-  to your iApp during testing.
+- use `--requesterSecret <key=value...>` to provide one or more requester
+  secrets to your iApp during testing.
 
 ---
 
@@ -101,8 +101,8 @@ Options:
   the `--protectedData` option followed by the address of the protected data.
 - use `--inputFile <url...>` to provide one or more input files to your iApp
   during run.
-- use `--requesterSecret <key=value..>` to provide one or more requester secrets
-  to your iApp during run.
+- use `--requesterSecret <key=value...>` to provide one or more requester
+  secrets to your iApp during run.
 
 ## What's next?
 

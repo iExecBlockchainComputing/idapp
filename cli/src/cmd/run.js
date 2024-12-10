@@ -1,12 +1,16 @@
 import chalk from 'chalk';
 import { v4 as uuidV4 } from 'uuid';
 import { ethers } from 'ethers';
+import { mkdir, rm } from 'node:fs/promises';
 import { askForWalletPrivateKey } from '../cli-helpers/askForWalletPrivateKey.js';
-import { SCONE_TAG, WORKERPOOL_DEBUG } from '../config/config.js';
+import { CACHE_DIR, SCONE_TAG, WORKERPOOL_DEBUG } from '../config/config.js';
 import { addRunData } from '../utils/cacheExecutions.js';
 import { getSpinner } from '../cli-helpers/spinner.js';
 import { handleCliError } from '../cli-helpers/handleCliError.js';
 import { getIExecDebug } from '../utils/iexec.js';
+import { extractZipToFolder } from '../utils/extractZipToFolder.js';
+import { askShowResult } from '../cli-helpers/askShowResult.js';
+import { isFolderEmpty } from '../utils/isFolderEmpty.js';
 
 export async function run({
   iAppAddress,
@@ -208,7 +212,6 @@ export async function runInDebug({
   });
 
   spinner.succeed('Task finalized');
-  spinner.stop();
 
   const task = await iexec.task.show(taskId);
   spinner.log(
@@ -216,6 +219,33 @@ export async function runInDebug({
       `You can download the result of your task here: https://ipfs-gateway.v8-bellecour.iex.ec${task?.results?.location}`
     )
   );
+
+  const downloadAnswer = await spinner.prompt({
+    type: 'confirm',
+    name: 'continue',
+    message: 'Would you like to download the result?',
+  });
+  if (!downloadAnswer.continue) {
+    spinner.stop();
+    process.exit(1);
+  }
+
+  spinner.start('Downloading result...');
+
+  const taskResult = await iexec.task.fetchResults(taskId);
+  const resultBuffer = await taskResult.arrayBuffer();
+
+  const outputFolder = CACHE_DIR + '/result';
+  // Clean any previous results
+  if (!(await isFolderEmpty(outputFolder))) {
+    await rm(outputFolder, { recursive: true, force: true });
+    await mkdir(outputFolder);
+  }
+  await extractZipToFolder(resultBuffer, outputFolder);
+
+  spinner.succeed(`Result downloaded to ${outputFolder}`);
+
+  await askShowResult({ spinner, outputPath: outputFolder });
 }
 
 /**

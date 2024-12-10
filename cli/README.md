@@ -86,7 +86,7 @@ Description: Deploy your iApp on the iExec protocol in debug mode.
 Command:
 
 ```bash
-iapp run <my-iApp-address> [--args <input>] [--protectedData <protectedData-address>] [--inputFile <url..>]
+iapp run <iApp-address> [--args <input>] [--protectedData <protectedData-address>] [--inputFile <url..>]
 ```
 
 Description: Run your deployed iApp. Provide the address of your iApp

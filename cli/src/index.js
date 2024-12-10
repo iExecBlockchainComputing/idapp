@@ -36,7 +36,9 @@ const options = {
   ],
 };
 
-yargs(hideBin(process.argv))
+const yargsInstance = yargs(hideBin(process.argv));
+
+yargsInstance
   .scriptName('iapp')
   .usage('$0 <cmd> [args]')
 
@@ -84,4 +86,5 @@ yargs(hideBin(process.argv))
   .help()
   .alias('help', 'h')
   .alias('version', 'v')
+  .wrap(yargsInstance.terminalWidth()) // use full terminal size rather than default 80
   .parse();

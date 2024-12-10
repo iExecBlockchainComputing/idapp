@@ -17,7 +17,6 @@ This CLI provides an interface to guide you through different steps:
 ## Install
 
 ```sh
-cd idapp/cli
 npm ci
 # (don't forget the final '.')
 npm i -g .
@@ -29,7 +28,7 @@ npm i -g .
 
 Command:
 
-```bash
+```sh
 iapp --help
 ```
 
@@ -41,7 +40,7 @@ understand how to use each command effectively.
 
 Command:
 
-```bash
+```sh
 iapp init
 ```
 
@@ -54,8 +53,8 @@ iexec decentralized application.
 
 Command:
 
-```bash
-iapp test [--args <input>] [--inputFile <url..>] [--requesterSecret <key=value..>]
+```sh
+iapp test [--args <input>] [--inputFile <url...>] [--requesterSecret <key=value...>]
 ```
 
 Description: Test your iApp locally
@@ -64,7 +63,7 @@ Options:
 
 - use `--args <args>` to provide input arguments to your iApp during testing
   (use quotes to provide multiple args).
-- use `--inputFile <url..>` to provide one or more input files to your iApp
+- use `--inputFile <url...>` to provide one or more input files to your iApp
   during testing.
 - use `--requesterSecret <key=value..>` to provide one or more requester secrets
   to your iApp during testing.
@@ -75,7 +74,7 @@ Options:
 
 Command:
 
-```bash
+```sh
 iapp deploy
 ```
 
@@ -87,12 +86,12 @@ Description: Deploy your iApp on the iExec protocol in debug mode.
 
 Command:
 
-```bash
-iapp run <my-iApp-address> [--args <input>] [--protectedData <protectedData-address>] [--inputFile <url..>]
+```sh
+iapp run <iApp-address> [--args <input>] [--protectedData <protectedData-address>] [--inputFile <url...>]
 ```
 
 Description: Run your deployed iApp. Provide the address of your iApp
-(`<my-iApp-address>`).
+(`<iApp-address>`).
 
 Options:
 
@@ -100,7 +99,7 @@ Options:
   quotes to provide multiple args).
 - use `--protectedData <address>` if your iApp processes protected data, include
   the `--protectedData` option followed by the address of the protected data.
-- use `--inputFile <url..>` to provide one or more input files to your iApp
+- use `--inputFile <url...>` to provide one or more input files to your iApp
   during run.
 - use `--requesterSecret <key=value..>` to provide one or more requester secrets
   to your iApp during run.
@@ -109,31 +108,27 @@ Options:
 
 To get logs about your running task:
 
+```sh
+iexec task debug <taskId> --logs --chain bellecour
 ```
 
-iexec task debug <taskId> --logs --chain bellecour
+Example:
 
-Example: iexec task debug
-0x62ed16ebc52c9437af45f57dc30819254ce391633c090e125253726eb76e07b1 --logs
---chain bellecour
-
+```sh
+iexec task debug 0x62ed16ebc52c9437af45f57dc30819254ce391633c090e125253726eb76e07b1 --logs
 ```
 
 To get the output of your task:
 
+```sh
+iexec task show <taskId> --download task-result.zip
 ```
 
-iexec task show <taskId> --download task-result.zip
+Example:
 
-Example: iexec task show
-0x62ed16ebc52c9437af45f57dc30819254ce391633c090e125253726eb76e07b1 --download
-task-result.zip
-
+```sh
+iexec task show 0x62ed16ebc52c9437af45f57dc30819254ce391633c090e125253726eb76e07b1 --download task-result.zip
 ```
 
 Unzip the downloaded file and you will find the output of your task in a
 `result.txt` file.
-
-```
-
-```

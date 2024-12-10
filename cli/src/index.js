@@ -12,7 +12,7 @@ const options = {
   args: [
     'args',
     {
-      describe: 'Arguments that will be accessible into the iApp',
+      describe: `Arguments that will be accessible into the iApp. Spaces separates arguments, use quotes to group arguments (Ex: \`--args '"foo bar" baz'\` will interpret "foo bar" as first arg, "bar" as second arg)`,
       type: 'string',
       demandOption: false,
     },
@@ -25,9 +25,21 @@ const options = {
       default: null, // Set default to null or undefined to make it optional
     },
   ],
+  inputFile: [
+    'inputFile',
+    {
+      describe:
+        'Specify one or multiple input files (publicly-accessible URLs). Input files are accessible to the iApp as local files using path specified in environment variables (Ex: `--inputFile https://foo.com/fileA.txt https://bar.io/fileB.json` will download the file at "https://foo.com/fileA.txt" and make it available for the iApp at `$IEXEC_IN/$IEXEC_INPUT_FILE_NAME_1`, same for "https://bar.io/fileB.json" at `$IEXEC_IN/$IEXEC_INPUT_FILE_NAME_2`)',
+      type: 'string',
+      requiresArg: true, // must be invoked with a value
+    },
+  ],
 };
 
-yargs(hideBin(process.argv))
+const yargsInstance = yargs(hideBin(process.argv));
+
+yargsInstance
+  .locale('en') // set local to American English (no i18n)
   .scriptName('iapp')
   .usage('$0 <cmd> [args]')
 
@@ -39,7 +51,10 @@ yargs(hideBin(process.argv))
     'test',
     'Test your app',
     (yargs) => {
-      return yargs.option(...options.args);
+      return yargs
+        .option(...options.args)
+        .option(...options.inputFile)
+        .array(options.inputFile[0]);
     },
     test
   )
@@ -62,7 +77,9 @@ yargs(hideBin(process.argv))
           type: 'string',
         })
         .option(...options.args)
-        .option(...options.protectedData);
+        .option(...options.protectedData)
+        .option(...options.inputFile)
+        .array(options.inputFile[0]);
     },
     run
   )
@@ -70,4 +87,5 @@ yargs(hideBin(process.argv))
   .help()
   .alias('help', 'h')
   .alias('version', 'v')
+  .wrap(yargsInstance.terminalWidth()) // use full terminal size rather than default 80
   .parse();

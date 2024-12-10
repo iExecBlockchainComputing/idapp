@@ -12,7 +12,7 @@ const options = {
   args: [
     'args',
     {
-      describe: `Arguments that will be accessible into the iApp. Spaces separates arguments, use quotes to group arguments (Ex: --args '"foo bar" baz' will interpret "foo bar" as first arg, "bar" as second arg)`,
+      describe: `Arguments that will be accessible into the iApp. Spaces separates arguments, use quotes to group arguments (Ex: \`--args '"foo bar" baz'\` will interpret "foo bar" as first arg, "bar" as second arg)`,
       type: 'string',
       demandOption: false,
     },
@@ -28,7 +28,8 @@ const options = {
   inputFile: [
     'inputFile',
     {
-      describe: 'Specify one or multiple input files (publicly-accessible URLs)',
+      describe:
+        'Specify one or multiple input files (publicly-accessible URLs). Input files are accessible to the iApp as local files using path specified in environment variables (Ex: `--inputFile https://foo.com/fileA.txt https://bar.io/fileB.json` will download the file at "https://foo.com/fileA.txt" and make it available for the iApp at `$IEXEC_IN/$IEXEC_INPUT_FILE_NAME_1`, same for "https://bar.io/fileB.json" at `$IEXEC_IN/$IEXEC_INPUT_FILE_NAME_2`)',
       type: 'string',
       requiresArg: true, // must be invoked with a value
     },

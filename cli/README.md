@@ -55,7 +55,7 @@ iexec decentralized application.
 Command:
 
 ```sh
-iapp test [--args <input>] [--inputFile <url..>]
+iapp test [--args <input>] [--inputFile <url...>]
 ```
 
 Description: Test your iApp locally
@@ -64,7 +64,7 @@ Options:
 
 - use `--args <args>` to provide input arguments to your iApp during testing
   (use quotes to provide multiple args).
-- use `--inputFile <url..>` to provide one or more input files to your iApp
+- use `--inputFile <url...>` to provide one or more input files to your iApp
   during testing.
 
 ---
@@ -86,7 +86,7 @@ Description: Deploy your iApp on the iExec protocol in debug mode.
 Command:
 
 ```sh
-iapp run <iApp-address> [--args <input>] [--protectedData <protectedData-address>] [--inputFile <url..>]
+iapp run <iApp-address> [--args <input>] [--protectedData <protectedData-address>] [--inputFile <url...>]
 ```
 
 Description: Run your deployed iApp. Provide the address of your iApp
@@ -98,7 +98,7 @@ Options:
   quotes to provide multiple args).
 - use `--protectedData <address>` if your iApp processes protected data, include
   the `--protectedData` option followed by the address of the protected data.
-- use `--inputFile <url..>` to provide one or more input files to your iApp
+- use `--inputFile <url...>` to provide one or more input files to your iApp
   during run.
 
 ## What's next?

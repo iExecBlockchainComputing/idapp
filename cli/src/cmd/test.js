@@ -1,27 +1,21 @@
 import { Parser } from 'yargs/helpers';
-import { rm, mkdir, readdir, readFile, stat } from 'node:fs/promises';
-import { join } from 'node:path';
-import Buffer from 'node:buffer';
-import { z } from 'zod';
-import { fromError } from 'zod-validation-error';
+import { rm, mkdir } from 'node:fs/promises';
 import {
   checkDockerDaemon,
   dockerBuild,
   runDockerContainer,
 } from '../execDocker/docker.js';
+import { checkDeterministicOutputExists } from '../utils/deterministicOutput.js';
 import { readIAppConfig } from '../utils/iAppConfigFile.js';
 import {
-  IEXEC_COMPUTED_JSON,
-  IEXEC_DETERMINISTIC_OUTPUT_PATH_KEY,
-  IEXEC_OUT,
   IEXEC_WORKER_HEAP_SIZE,
   TEST_INPUT_DIR,
   TEST_OUTPUT_DIR,
 } from '../config/config.js';
-import { fileExists } from '../utils/fileExists.js';
 import { getSpinner } from '../cli-helpers/spinner.js';
 import { handleCliError } from '../cli-helpers/handleCliError.js';
 import { prepareInputFile } from '../utils/prepareInputFile.js';
+import { askShowResult } from '../cli-helpers/askShowResult.js';
 
 export async function test({
   args,
@@ -32,7 +26,7 @@ export async function test({
     await cleanTestOutput({ spinner });
     await testApp({ args, inputFiles, spinner });
     await checkTestOutput({ spinner });
-    await askShowTestOutput({ spinner });
+    await askShowResult({ spinner, outputPath: TEST_OUTPUT_DIR });
   } catch (error) {
     handleCliError({ spinner, error });
   }
@@ -153,63 +147,14 @@ ${appLogs.join('')}`);
   }
 }
 
-async function readComputedJson() {
-  const content = await readFile(
-    join(TEST_OUTPUT_DIR, IEXEC_COMPUTED_JSON)
-  ).catch(() => {
-    throw Error(`Failed to read ${IEXEC_COMPUTED_JSON}: missing file`);
-  });
-  try {
-    return JSON.parse(content);
-  } catch {
-    throw Error(`Failed to read ${IEXEC_COMPUTED_JSON}: invalid JSON`);
-  }
-}
-
-const computedJsonFileSchema = z.object({
-  [IEXEC_DETERMINISTIC_OUTPUT_PATH_KEY]: z.string().startsWith(IEXEC_OUT),
-});
-
-async function getDeterministicOutputPath() {
-  const computed = await readComputedJson();
-  let computedObj;
-  try {
-    computedObj = computedJsonFileSchema.parse(computed);
-  } catch (e) {
-    const validationError = fromError(e);
-    const errorMessage = `Invalid ${IEXEC_COMPUTED_JSON}: ${validationError.toString()}`;
-    throw Error(errorMessage);
-  }
-  const deterministicOutputRawPath =
-    computedObj[IEXEC_DETERMINISTIC_OUTPUT_PATH_KEY];
-  const deterministicOutputLocalPath = join(
-    TEST_OUTPUT_DIR,
-    deterministicOutputRawPath.substring(IEXEC_OUT.length)
-  );
-  return {
-    deterministicOutputRawPath,
-    deterministicOutputLocalPath,
-  };
-}
-
-async function checkDeterministicOutputExists() {
-  const { deterministicOutputLocalPath } = await getDeterministicOutputPath();
-  const deterministicOutputExists = await fileExists(
-    deterministicOutputLocalPath
-  );
-  if (!deterministicOutputExists) {
-    throw Error(
-      `Invalid "${IEXEC_DETERMINISTIC_OUTPUT_PATH_KEY}" in ${IEXEC_COMPUTED_JSON}, specified file or directory does not exists`
-    );
-  }
-}
-
 async function checkTestOutput({ spinner }) {
   spinner.start('Checking test output...');
   const errors = [];
-  await checkDeterministicOutputExists().catch((e) => {
-    errors.push(e);
-  });
+  await checkDeterministicOutputExists({ outputPath: TEST_OUTPUT_DIR }).catch(
+    (e) => {
+      errors.push(e);
+    }
+  );
   // TODO check output dir size
   if (errors.length === 0) {
     spinner.succeed('Checked app output');
@@ -217,48 +162,5 @@ async function checkTestOutput({ spinner }) {
     errors.forEach((e) => {
       spinner.fail(e.message);
     });
-  }
-}
-
-async function getDeterministicOutputAsText() {
-  const { deterministicOutputLocalPath } = await getDeterministicOutputPath();
-  const stats = await stat(deterministicOutputLocalPath);
-  if (!stats.isFile()) {
-    throw Error('Deterministic output is not a file');
-  }
-  const deterministicFileContent = await readFile(deterministicOutputLocalPath);
-  if (!Buffer.isUtf8(deterministicFileContent)) {
-    throw Error('Deterministic output is not a text file');
-  }
-  return {
-    text: deterministicFileContent.toString('utf8'),
-    path: deterministicOutputLocalPath,
-  };
-}
-
-async function askShowTestOutput({ spinner }) {
-  // Prompt user to view result
-  const continueAnswer = await spinner.prompt({
-    type: 'confirm',
-    name: 'continue',
-    message: `Would you like to see the result? (View ./${TEST_OUTPUT_DIR}/)`,
-  });
-  if (continueAnswer.continue) {
-    const files = await readdir(TEST_OUTPUT_DIR).catch(() => []);
-    spinner.newLine();
-    if (files.length === 0) {
-      spinner.warn('output directory is empty');
-    } else {
-      spinner.info(
-        `output directory content:\n${files.map((file) => '  - ' + file).join('\n')}`
-      );
-      // best effort display deterministic output file if it's an utf8 encoded file
-      await getDeterministicOutputAsText()
-        .then(({ text, path }) => {
-          spinner.newLine();
-          spinner.info(`${path}:\n${text}`);
-        })
-        .catch(() => {});
-    }
   }
 }

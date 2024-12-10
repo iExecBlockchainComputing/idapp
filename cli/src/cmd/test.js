@@ -1,14 +1,11 @@
 import { Parser } from 'yargs/helpers';
-import { rm, mkdir, readdir, readFile, stat } from 'node:fs/promises';
+import { rm, mkdir } from 'node:fs/promises';
 import {
   checkDockerDaemon,
   dockerBuild,
   runDockerContainer,
 } from '../execDocker/docker.js';
-import {
-  checkDeterministicOutputExists,
-  getDeterministicOutputAsText,
-} from '../utils/deterministicOutput.js';
+import { checkDeterministicOutputExists } from '../utils/deterministicOutput.js';
 import { readIAppConfig } from '../utils/iAppConfigFile.js';
 import {
   IEXEC_WORKER_HEAP_SIZE,
@@ -18,6 +15,7 @@ import {
 import { getSpinner } from '../cli-helpers/spinner.js';
 import { handleCliError } from '../cli-helpers/handleCliError.js';
 import { prepareInputFile } from '../utils/prepareInputFile.js';
+import { askShowResult } from '../cli-helpers/askShowResult.js';
 
 export async function test({
   args,
@@ -28,7 +26,7 @@ export async function test({
     await cleanTestOutput({ spinner });
     await testApp({ args, inputFiles, spinner });
     await checkTestOutput({ spinner });
-    await askShowTestOutput({ spinner });
+    await askShowResult({ spinner, outputPath: TEST_OUTPUT_DIR });
   } catch (error) {
     handleCliError({ spinner, error });
   }
@@ -152,9 +150,11 @@ ${appLogs.join('')}`);
 async function checkTestOutput({ spinner }) {
   spinner.start('Checking test output...');
   const errors = [];
-  await checkDeterministicOutputExists().catch((e) => {
-    errors.push(e);
-  });
+  await checkDeterministicOutputExists({ outputPath: TEST_OUTPUT_DIR }).catch(
+    (e) => {
+      errors.push(e);
+    }
+  );
   // TODO check output dir size
   if (errors.length === 0) {
     spinner.succeed('Checked app output');
@@ -162,32 +162,5 @@ async function checkTestOutput({ spinner }) {
     errors.forEach((e) => {
       spinner.fail(e.message);
     });
-  }
-}
-
-async function askShowTestOutput({ spinner }) {
-  // Prompt user to view result
-  const continueAnswer = await spinner.prompt({
-    type: 'confirm',
-    name: 'continue',
-    message: `Would you like to see the result? (View ./${TEST_OUTPUT_DIR}/)`,
-  });
-  if (continueAnswer.continue) {
-    const files = await readdir(TEST_OUTPUT_DIR).catch(() => []);
-    spinner.newLine();
-    if (files.length === 0) {
-      spinner.warn('output directory is empty');
-    } else {
-      spinner.info(
-        `output directory content:\n${files.map((file) => '  - ' + file).join('\n')}`
-      );
-      // best effort display deterministic output file if it's an utf8 encoded file
-      await getDeterministicOutputAsText()
-        .then(({ text, path }) => {
-          spinner.newLine();
-          spinner.info(`${path}:\n${text}`);
-        })
-        .catch(() => {});
-    }
   }
 }

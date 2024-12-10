@@ -6,8 +6,8 @@ import { CACHE_DIR, SCONE_TAG, WORKERPOOL_DEBUG } from '../config/config.js';
 import { addRunData } from '../utils/cacheExecutions.js';
 import { getSpinner } from '../cli-helpers/spinner.js';
 import { handleCliError } from '../cli-helpers/handleCliError.js';
-import { getDeterministicOutputAsText } from '../utils/deterministicOutput.js';
 import { extractZipToFolder } from '../utils/extractZipToFolder.js';
+import { askShowResult } from '../cli-helpers/askShowResult.js';
 
 export async function run({
   iAppAddress,
@@ -229,21 +229,5 @@ export async function runInDebug({
 
   spinner.succeed(`Result downloaded to ${outputFolder}`);
 
-  const seeResultTxtAnswer = await spinner.prompt({
-    type: 'confirm',
-    name: 'continue',
-    message: 'Would you like to see result.txt?',
-  });
-  if (!seeResultTxtAnswer.continue) {
-    spinner.stop();
-    process.exit(1);
-  }
-
-  spinner.start('Extract text result...');
-
-  const { text, path } = await getDeterministicOutputAsText({
-    outputPath: outputFolder,
-  });
-  spinner.newLine();
-  spinner.info(`${path}:\n${text}`);
+  await askShowResult({ spinner, outputPath: outputFolder });
 }

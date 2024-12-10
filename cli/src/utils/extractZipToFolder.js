@@ -1,6 +1,7 @@
 import path from 'node:path';
 import fs from 'node:fs/promises';
 import JSZip from 'jszip';
+import { fileExists } from './fileExists.js';
 
 export async function extractZipToFolder(resultBuffer, outputFolder) {
   const zip = await JSZip().loadAsync(resultBuffer);
@@ -24,14 +25,5 @@ export async function extractZipToFolder(resultBuffer, outputFolder) {
 
       await fs.writeFile(outputPath, content);
     }
-  }
-}
-
-async function fileExists(path) {
-  try {
-    await fs.access(path);
-    return true;
-  } catch {
-    return false;
   }
 }

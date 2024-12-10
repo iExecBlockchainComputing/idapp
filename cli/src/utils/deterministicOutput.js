@@ -15,8 +15,10 @@ const computedJsonFileSchema = z.object({
   [IEXEC_DETERMINISTIC_OUTPUT_PATH_KEY]: z.string().startsWith(IEXEC_OUT),
 });
 
-export async function checkDeterministicOutputExists() {
-  const { deterministicOutputLocalPath } = await getDeterministicOutputPath();
+export async function checkDeterministicOutputExists({ outputPath }) {
+  const { deterministicOutputLocalPath } = await getDeterministicOutputPath({
+    outputPath,
+  });
   const deterministicOutputExists = await fileExists(
     deterministicOutputLocalPath
   );
@@ -27,7 +29,7 @@ export async function checkDeterministicOutputExists() {
   }
 }
 
-export async function getDeterministicOutputAsText({ outputPath } = {}) {
+export async function getDeterministicOutputAsText({ outputPath }) {
   const { deterministicOutputLocalPath } = await getDeterministicOutputPath({
     outputPath,
   });
@@ -45,7 +47,7 @@ export async function getDeterministicOutputAsText({ outputPath } = {}) {
   };
 }
 
-async function getDeterministicOutputPath({ outputPath } = {}) {
+async function getDeterministicOutputPath({ outputPath }) {
   const computed = await readComputedJson({ outputPath });
   let computedObj;
   try {

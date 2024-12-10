@@ -12,7 +12,7 @@ const options = {
   args: [
     'args',
     {
-      describe: 'Arguments that will be accessible into the iApp',
+      describe: `Arguments that will be accessible into the iApp. Spaces separates arguments, use quotes to group arguments (Ex: --args '"foo bar" baz' will interpret "foo bar" as first arg, "bar" as second arg)`,
       type: 'string',
       demandOption: false,
     },

@@ -29,7 +29,7 @@ npm i -g .
 
 Command:
 
-```bash
+```sh
 iapp --help
 ```
 
@@ -41,7 +41,7 @@ understand how to use each command effectively.
 
 Command:
 
-```bash
+```sh
 iapp init
 ```
 
@@ -54,7 +54,7 @@ iexec decentralized application.
 
 Command:
 
-```bash
+```sh
 iapp test [--args <input>] [--inputFile <url..>]
 ```
 
@@ -73,7 +73,7 @@ Options:
 
 Command:
 
-```bash
+```sh
 iapp deploy
 ```
 
@@ -85,7 +85,7 @@ Description: Deploy your iApp on the iExec protocol in debug mode.
 
 Command:
 
-```bash
+```sh
 iapp run <iApp-address> [--args <input>] [--protectedData <protectedData-address>] [--inputFile <url..>]
 ```
 
@@ -105,31 +105,23 @@ Options:
 
 To get logs about your running task:
 
-```
-
+```sh
 iexec task debug <taskId> --logs --chain bellecour
 
 Example: iexec task debug
 0x62ed16ebc52c9437af45f57dc30819254ce391633c090e125253726eb76e07b1 --logs
 --chain bellecour
-
 ```
 
 To get the output of your task:
 
-```
-
+```sh
 iexec task show <taskId> --download task-result.zip
 
 Example: iexec task show
 0x62ed16ebc52c9437af45f57dc30819254ce391633c090e125253726eb76e07b1 --download
 task-result.zip
-
 ```
 
 Unzip the downloaded file and you will find the output of your task in a
 `result.txt` file.
-
-```
-
-```

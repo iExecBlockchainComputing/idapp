@@ -28,7 +28,7 @@ const options = {
   inputFile: [
     'inputFile',
     {
-      describe: 'Specify one or multiple input files to use (download URL)',
+      describe: 'Specify one or multiple input files (publicly-accessible URLs)',
       type: 'string',
       requiresArg: true, // must be invoked with a value
     },

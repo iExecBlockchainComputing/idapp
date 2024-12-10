@@ -107,20 +107,24 @@ To get logs about your running task:
 
 ```sh
 iexec task debug <taskId> --logs --chain bellecour
+```
 
-Example: iexec task debug
-0x62ed16ebc52c9437af45f57dc30819254ce391633c090e125253726eb76e07b1 --logs
---chain bellecour
+Example:
+
+```sh
+iexec task debug 0x62ed16ebc52c9437af45f57dc30819254ce391633c090e125253726eb76e07b1 --logs
 ```
 
 To get the output of your task:
 
 ```sh
 iexec task show <taskId> --download task-result.zip
+```
 
-Example: iexec task show
-0x62ed16ebc52c9437af45f57dc30819254ce391633c090e125253726eb76e07b1 --download
-task-result.zip
+Example:
+
+```sh
+iexec task show 0x62ed16ebc52c9437af45f57dc30819254ce391633c090e125253726eb76e07b1 --download task-result.zip
 ```
 
 Unzip the downloaded file and you will find the output of your task in a

@@ -21,12 +21,16 @@ import {
 import { fileExists } from '../utils/fileExists.js';
 import { getSpinner } from '../cli-helpers/spinner.js';
 import { handleCliError } from '../cli-helpers/handleCliError.js';
+import { prepareInputFile } from '../utils/prepareInputFile.js';
 
-export async function test({ args }) {
+export async function test({
+  args,
+  inputFile: inputFiles = [], // rename variable (it's an array)
+}) {
   const spinner = getSpinner();
   try {
     await cleanTestOutput({ spinner });
-    await testApp({ args, spinner });
+    await testApp({ args, inputFiles, spinner });
     await checkTestOutput({ spinner });
     await askShowTestOutput({ spinner });
   } catch (error) {
@@ -61,7 +65,7 @@ function parseArgsString(args = '') {
   return _.map(stripSurroundingQuotes);
 }
 
-export async function testApp({ args = undefined, spinner }) {
+export async function testApp({ args = undefined, inputFiles = [], spinner }) {
   const iAppConfig = await readIAppConfig();
   const { withProtectedData } = iAppConfig;
 
@@ -78,12 +82,21 @@ export async function testApp({ args = undefined, spinner }) {
   });
   spinner.succeed(`App docker image built (${imageId})`);
 
+  let inputFilesPath;
+  if (inputFiles.length > 0) {
+    spinner.start('Preparing input files...\n');
+    inputFilesPath = await Promise.all(
+      inputFiles.map((url) => prepareInputFile(url))
+    );
+    spinner.succeed('Input files prepared for test');
+  }
+
   // run the temp image
   spinner.start('Running app docker image...\n');
   const appLogs = [];
   const { exitCode, outOfMemory } = await runDockerContainer({
     image: imageId,
-    cmd: parseArgsString(args),
+    cmd: parseArgsString(args), // args https://protocol.docs.iex.ec/for-developers/technical-references/application-io#args
     volumes: [
       `${process.cwd()}/${TEST_INPUT_DIR}:/iexec_in`,
       `${process.cwd()}/${TEST_OUTPUT_DIR}:/iexec_out`,
@@ -91,8 +104,17 @@ export async function testApp({ args = undefined, spinner }) {
     env: [
       `IEXEC_IN=/iexec_in`,
       `IEXEC_OUT=/iexec_out`,
+      // dataset env https://protocol.docs.iex.ec/for-developers/technical-references/application-io#dataset
       ...(withProtectedData
         ? [`IEXEC_DATASET_FILENAME=protectedData.zip`]
+        : []),
+      // input files env https://protocol.docs.iex.ec/for-developers/technical-references/application-io#input-files
+      `IEXEC_INPUT_FILES_NUMBER=${inputFilesPath?.length || 0}`,
+      ...(inputFilesPath?.length > 0
+        ? inputFilesPath.map(
+            (inputFilePath, index) =>
+              `IEXEC_INPUT_FILE_NAME_${index + 1}=${inputFilePath}`
+          )
         : []),
     ],
     memory: IEXEC_WORKER_HEAP_SIZE,

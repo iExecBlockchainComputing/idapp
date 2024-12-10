@@ -7,10 +7,21 @@ import { addRunData } from '../utils/cacheExecutions.js';
 import { getSpinner } from '../cli-helpers/spinner.js';
 import { handleCliError } from '../cli-helpers/handleCliError.js';
 
-export async function run({ iAppAddress, args, protectedData }) {
+export async function run({
+  iAppAddress,
+  args,
+  protectedData,
+  inputFile: inputFiles = [], // rename variable (it's an array)
+}) {
   const spinner = getSpinner();
   try {
-    await runInDebug({ iAppAddress, args, protectedData, spinner });
+    await runInDebug({
+      iAppAddress,
+      args,
+      protectedData,
+      inputFiles,
+      spinner,
+    });
   } catch (error) {
     handleCliError({ spinner, error });
   }
@@ -20,6 +31,7 @@ export async function runInDebug({
   iAppAddress,
   args,
   protectedData,
+  inputFiles = [],
   spinner,
 }) {
   // Is valid iApp address
@@ -155,6 +167,7 @@ export async function runInDebug({
     workerpool: workerpoolorder.workerpool,
     params: {
       iexec_args: args,
+      iexec_input_files: inputFiles.length > 0 ? inputFiles : undefined,
     },
   });
   const requestorder = await iexec.order.signRequestorder(requestorderToSign);

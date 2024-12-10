@@ -39,6 +39,7 @@ const options = {
 const yargsInstance = yargs(hideBin(process.argv));
 
 yargsInstance
+  .locale('en') // set local to American English (no i18n)
   .scriptName('iapp')
   .usage('$0 <cmd> [args]')
 

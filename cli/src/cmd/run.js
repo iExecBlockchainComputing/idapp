@@ -11,7 +11,7 @@ export async function run({
   iAppAddress,
   args,
   protectedData,
-  inputFile: inputFiles = [], // rename variable (its an array)
+  inputFile: inputFiles = [], // rename variable (it's an array)
 }) {
   const spinner = getSpinner();
   try {

@@ -1,5 +1,6 @@
 import { Parser } from 'yargs/helpers';
 import { rm, mkdir } from 'node:fs/promises';
+import { hexlify, randomBytes } from 'ethers';
 import {
   checkDockerDaemon,
   dockerBuild,
@@ -48,6 +49,8 @@ function parseArgsString(args = '') {
       'unknown-options-as-args': true,
     },
   });
+  // avoid numbers
+  const stringify = (arg) => `${arg}`;
   // strip surrounding quotes of tokenized args
   const stripSurroundingQuotes = (arg) => {
     if (
@@ -58,7 +61,7 @@ function parseArgsString(args = '') {
     }
     return arg;
   };
-  return _.map(stripSurroundingQuotes);
+  return _.map(stringify).map(stripSurroundingQuotes);
 }
 
 export async function testApp({
@@ -107,6 +110,8 @@ export async function testApp({
     env: [
       `IEXEC_IN=/iexec_in`,
       `IEXEC_OUT=/iexec_out`,
+      // simulate a task id
+      `IEXEC_TASK_ID=${hexlify(randomBytes(32))}`,
       // dataset env https://protocol.docs.iex.ec/for-developers/technical-references/application-io#dataset
       ...(withProtectedData
         ? [`IEXEC_DATASET_FILENAME=protectedData.zip`]

@@ -16,16 +16,18 @@ import {
 import { getSpinner } from '../cli-helpers/spinner.js';
 import { handleCliError } from '../cli-helpers/handleCliError.js';
 import { prepareInputFile } from '../utils/prepareInputFile.js';
+import { askForAppSecret } from '../cli-helpers/askForAppSecret.js';
 import { askShowResult } from '../cli-helpers/askShowResult.js';
 
 export async function test({
   args,
   inputFile: inputFiles = [], // rename variable (it's an array)
+  requesterSecret: requesterSecrets = [], // rename variable (it's an array)
 }) {
   const spinner = getSpinner();
   try {
     await cleanTestOutput({ spinner });
-    await testApp({ args, inputFiles, spinner });
+    await testApp({ args, inputFiles, requesterSecrets, spinner });
     await checkTestOutput({ spinner });
     await askShowResult({ spinner, outputPath: TEST_OUTPUT_DIR });
   } catch (error) {
@@ -62,9 +64,16 @@ function parseArgsString(args = '') {
   return _.map(stringify).map(stripSurroundingQuotes);
 }
 
-export async function testApp({ args = undefined, inputFiles = [], spinner }) {
+export async function testApp({
+  args = undefined,
+  inputFiles = [],
+  requesterSecrets = [],
+  spinner,
+}) {
   const iAppConfig = await readIAppConfig();
   const { withProtectedData } = iAppConfig;
+
+  const appSecret = await askForAppSecret({ spinner });
 
   // just start the spinner, no need to persist success in terminal
   spinner.start('Checking docker daemon is running...');
@@ -114,6 +123,16 @@ export async function testApp({ args = undefined, inputFiles = [], spinner }) {
             (inputFilePath, index) =>
               `IEXEC_INPUT_FILE_NAME_${index + 1}=${inputFilePath}`
           )
+        : []),
+      // requester secrets https://protocol.docs.iex.ec/for-developers/technical-references/application-io#requester-secrets
+      ...(requesterSecrets?.length > 0
+        ? requesterSecrets.map(
+            ({ key, value }) => `IEXEC_REQUESTER_SECRET_${key}=${value}`
+          )
+        : []),
+      // app secret https://protocol.docs.iex.ec/for-developers/technical-references/application-io#app-developer-secret
+      ...(appSecret !== null
+        ? [`IEXEC_APP_DEVELOPER_SECRET=${appSecret}`]
         : []),
     ],
     memory: IEXEC_WORKER_HEAP_SIZE,

@@ -1,4 +1,5 @@
 import chalk from 'chalk';
+import { v4 as uuidV4 } from 'uuid';
 import { ethers } from 'ethers';
 import { IExec, utils } from 'iexec';
 import { mkdir, rm } from 'node:fs/promises';
@@ -16,6 +17,7 @@ export async function run({
   args,
   protectedData,
   inputFile: inputFiles = [], // rename variable (it's an array)
+  requesterSecret: requesterSecrets = [], // rename variable (it's an array)
 }) {
   const spinner = getSpinner();
   try {
@@ -24,6 +26,7 @@ export async function run({
       args,
       protectedData,
       inputFiles,
+      requesterSecrets,
       spinner,
     });
   } catch (error) {
@@ -36,6 +39,7 @@ export async function runInDebug({
   args,
   protectedData,
   inputFiles = [],
+  requesterSecrets = [],
   spinner,
 }) {
   // Is valid iApp address
@@ -104,6 +108,20 @@ export async function runInDebug({
     }
   }
 
+  // Requester secrets
+  let iexec_secrets;
+  if (requesterSecrets.length > 0) {
+    spinner.start('Provisioning requester secrets...');
+    iexec_secrets = Object.fromEntries(
+      await Promise.all(
+        requesterSecrets.map(async ({ key, value }) => {
+          const name = await pushRequesterSecret({ iexec, value });
+          return [key, name];
+        })
+      )
+    );
+    spinner.succeed('Requester secrets provisioned');
+  }
   // Workerpool Order
   spinner.start('Fetching workerpool order...');
   const workerpoolOrderbook = await iexec.orderbook.fetchWorkerpoolOrderbook({
@@ -172,6 +190,7 @@ export async function runInDebug({
     params: {
       iexec_args: args,
       iexec_input_files: inputFiles.length > 0 ? inputFiles : undefined,
+      iexec_secrets,
     },
   });
   const requestorder = await iexec.order.signRequestorder(requestorderToSign);
@@ -237,4 +256,17 @@ export async function runInDebug({
   spinner.succeed(`Result downloaded to ${outputFolder}`);
 
   await askShowResult({ spinner, outputPath: outputFolder });
+}
+
+/**
+ * push a requester secret with a random uuid
+ * @param {Object} params
+ * @param {IExec} params.iexec
+ * @param {string} params.value
+ * @returns {string} secretName
+ */
+async function pushRequesterSecret({ iexec, value }) {
+  const secretName = uuidV4();
+  await iexec.secrets.pushRequesterSecret(secretName, value);
+  return secretName;
 }

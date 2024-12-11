@@ -60,12 +60,47 @@ export async function init() {
       process.exit(1);
     }
 
-    const { hasProtectedData } = await spinner.prompt({
-      type: 'confirm',
-      name: 'hasProtectedData',
-      message: 'Would you like to access a protected data inside your iApp?',
-      default: false,
-    });
+    const {
+      useProtectedData,
+      useArgs,
+      useInputFile,
+      useRequesterSecret,
+      useAppSecret,
+    } = await spinner.prompt([
+      {
+        type: 'confirm',
+        name: 'useArgs',
+        message: 'Would you like to use positional args inside your iApp?',
+        default: true,
+      },
+      {
+        type: 'confirm',
+        name: 'useProtectedData',
+        message: 'Would you like to access a protected data inside your iApp?',
+        default: false,
+      },
+      {
+        type: 'confirm',
+        name: 'useInputFile',
+        message:
+          'Would you like to use input files inside your iApp? (input files are files downloaded from the internet)',
+        default: false,
+      },
+      {
+        type: 'confirm',
+        name: 'useRequesterSecret',
+        message:
+          'Would you like to use requester secrets inside your iApp? (requester secrets are secrets provisioned by the user)',
+        default: false,
+      },
+      {
+        type: 'confirm',
+        name: 'useAppSecret',
+        message:
+          'Would you like to use an app secret inside your iApp? (app secret is a secret provisioned by the app owner)',
+        default: false,
+      },
+    ]);
 
     spinner.log('-----');
     spinner.log(
@@ -78,8 +113,11 @@ export async function init() {
     spinner.start('Creating "Hello World" JavaScript app...');
     await initHelloWorldApp({
       projectName,
-      hasProtectedData,
-      template: 'javascript',
+      useArgs,
+      useProtectedData,
+      useInputFile,
+      useRequesterSecret,
+      useAppSecret,
     });
     spinner.succeed('JavaScript app setup complete.');
 

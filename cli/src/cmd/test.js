@@ -71,7 +71,7 @@ export async function testApp({
   spinner,
 }) {
   const iAppConfig = await readIAppConfig();
-  const { withProtectedData } = iAppConfig;
+  const { useProtectedData } = iAppConfig;
 
   const appSecret = await askForAppSecret({ spinner });
 
@@ -113,9 +113,7 @@ export async function testApp({
       // simulate a task id
       `IEXEC_TASK_ID=${hexlify(randomBytes(32))}`,
       // dataset env https://protocol.docs.iex.ec/for-developers/technical-references/application-io#dataset
-      ...(withProtectedData
-        ? [`IEXEC_DATASET_FILENAME=protectedData.zip`]
-        : []),
+      ...(useProtectedData ? [`IEXEC_DATASET_FILENAME=protectedData.zip`] : []),
       // input files env https://protocol.docs.iex.ec/for-developers/technical-references/application-io#input-files
       `IEXEC_INPUT_FILES_NUMBER=${inputFilesPath?.length || 0}`,
       ...(inputFilesPath?.length > 0

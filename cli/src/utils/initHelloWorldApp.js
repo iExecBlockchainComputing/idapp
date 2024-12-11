@@ -12,25 +12,26 @@ import { debug } from '../utils/debug.js';
 
 export async function initHelloWorldApp({
   projectName,
-  hasProtectedData,
-  template,
+  useArgs = false,
+  useProtectedData = false,
+  useInputFile = false,
+  useRequesterSecret = false,
+  useAppSecret = false,
 }) {
   try {
     // Copy template
-    if (hasProtectedData) {
-      await copyChosenTemplateFiles({
-        projectName,
-        template: `withProtectedData/${template}`,
-      });
-    } else {
-      await copyChosenTemplateFiles({
-        projectName,
-        template: `withoutProtectedData/${template}`,
-      });
-    }
-
+    await copyChosenTemplateFiles({
+      projectName,
+      template: 'js',
+      srcFile: 'src/app.js',
+      useArgs,
+      useProtectedData,
+      useInputFile,
+      useRequesterSecret,
+      useAppSecret,
+    });
     // Create other files
-    await createConfigurationFiles({ projectName, hasProtectedData });
+    await createConfigurationFiles({ projectName, useProtectedData });
     await createProjectDirectories();
   } catch (err) {
     debug('Error during project initialization:', err);
@@ -46,12 +47,12 @@ async function createProjectDirectories() {
   ]);
 }
 
-async function createConfigurationFiles({ projectName, hasProtectedData }) {
+async function createConfigurationFiles({ projectName, useProtectedData }) {
   // Create a simple iApp configuration file
   const configContent = {
     projectName: projectName,
     dockerhubUsername: '',
-    withProtectedData: hasProtectedData,
+    useProtectedData: useProtectedData,
   };
   await fs.writeFile(
     CONFIG_FILE,
@@ -60,7 +61,16 @@ async function createConfigurationFiles({ projectName, hasProtectedData }) {
   );
 }
 
-async function copyChosenTemplateFiles({ projectName, template }) {
+async function copyChosenTemplateFiles({
+  projectName,
+  template,
+  srcFile,
+  useArgs,
+  useProtectedData,
+  useInputFile,
+  useRequesterSecret,
+  useAppSecret,
+}) {
   const templatesBaseDir = path.resolve(
     fileURLToPath(import.meta.url),
     '../../..',
@@ -81,6 +91,57 @@ async function copyChosenTemplateFiles({ projectName, template }) {
   await Promise.all(
     files.filter((file) => file !== 'package.json').map((file) => write(file))
   );
+
+  // transform template: remove unwanted feature code inside " // <feature> ... // </feature>" tags
+  const code = (await fs.readFile(srcFile)).toString('utf8');
+  let modifiedCode = code;
+  if (!useArgs) {
+    modifiedCode = modifiedCode.replaceAll(
+      / *\/\/ <<args>>\n((.*)\n)*? *\/\/ <<\/args>>\n/g,
+      ''
+    );
+  } else {
+    modifiedCode = modifiedCode.replaceAll(/ *\/\/ <<(\/)?args>>\n/g, '');
+  }
+  if (!useProtectedData) {
+    modifiedCode = modifiedCode.replaceAll(
+      / *\/\/ <<protectedData>>\n((.*)\n)*? *\/\/ <<\/protectedData>>\n/g,
+      ''
+    );
+  } else {
+    modifiedCode = modifiedCode.replaceAll(
+      / *\/\/ <<(\/)?protectedData>>\n/g,
+      ''
+    );
+  }
+  if (!useInputFile) {
+    modifiedCode = modifiedCode.replaceAll(
+      / *\/\/ <<inputFile>>\n((.*)\n)*? *\/\/ <<\/inputFile>>\n/g,
+      ''
+    );
+  } else {
+    modifiedCode = modifiedCode.replaceAll(/ *\/\/ <<(\/)?inputFile>>\n/g, '');
+  }
+  if (!useRequesterSecret) {
+    modifiedCode = modifiedCode.replaceAll(
+      / *\/\/ <<requesterSecret>>\n((.*)\n)*? *\/\/ <<\/requesterSecret>>\n/g,
+      ''
+    );
+  } else {
+    modifiedCode = modifiedCode.replaceAll(
+      / *\/\/ <<(\/)?requesterSecret>>\n/g,
+      ''
+    );
+  }
+  if (!useAppSecret) {
+    modifiedCode = modifiedCode.replaceAll(
+      / *\/\/ <<appSecret>>\n((.*)\n)*? *\/\/ <<\/appSecret>>\n/g,
+      ''
+    );
+  } else {
+    modifiedCode = modifiedCode.replaceAll(/ *\/\/ <<(\/)?appSecret>>\n/g, '');
+  }
+  await fs.writeFile(srcFile, modifiedCode);
 
   // package json special treatment for name
   const pkg = JSON.parse(

@@ -1,5 +1,6 @@
 import { Parser } from 'yargs/helpers';
 import { rm, mkdir } from 'node:fs/promises';
+import { hexlify, randomBytes } from 'ethers';
 import {
   checkDockerDaemon,
   dockerBuild,
@@ -100,6 +101,8 @@ export async function testApp({ args = undefined, inputFiles = [], spinner }) {
     env: [
       `IEXEC_IN=/iexec_in`,
       `IEXEC_OUT=/iexec_out`,
+      // simulate a task id
+      `IEXEC_TASK_ID=${hexlify(randomBytes(32))}`,
       // dataset env https://protocol.docs.iex.ec/for-developers/technical-references/application-io#dataset
       ...(withProtectedData
         ? [`IEXEC_DATASET_FILENAME=protectedData.zip`]

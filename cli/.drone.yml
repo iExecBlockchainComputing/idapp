@@ -1,0 +1,41 @@
+kind: pipeline
+type: docker
+name: iapp-cli-default
+
+trigger:
+  event:
+    - push
+
+steps:
+  - name: install-deps
+    image: node:20
+    pull: always
+    commands:
+      - cd cli
+      - npm ci
+
+  - name: check-format
+    image: node:20
+    commands:
+      - cd cli
+      - npm run check-format
+    depends_on:
+      - install-deps
+
+  - name: lint
+    image: node:20
+    commands:
+      - cd cli
+      - npm run lint
+    depends_on:
+      - install-deps
+
+  - name: test-no-crash
+    image: node:20
+    commands:
+      - cd cli
+      - npm i -g .
+      - cd
+      - iapp -h
+    depends_on:
+      - install-deps

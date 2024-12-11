@@ -13,8 +13,7 @@ This project is an iExec decentralized application scaffolded with `iapp init`
 
 - [iapp.config.json](./iapp.config.json) configuration file for the `iapp`
   commands
-- [src/](./src/) where your code lives when you [develop](#develop)
-  your app
+- [src/](./src/) where your code lives when you [develop](#develop) your app
 - [Dockerfile](./Dockerfile) how to build your app docker image
 - [input/](./input/) input directory for your [local tests](#test-locally)
 - [output/](./output/) output directory for your [local tests](#test-locally)
@@ -37,7 +36,8 @@ Check the test output in the [output](./output/) directory
 
 ### Deploy on iExec
 
-Use the `deploy` command to transform your app into a TEE  app and deploy it on the iExec decentralized platform
+Use the `deploy` command to transform your app into a TEE app and deploy it on
+the iExec decentralized platform
 
 ```sh
 iapp deploy

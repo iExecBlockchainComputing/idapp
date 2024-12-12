@@ -92,7 +92,7 @@ async function copyChosenTemplateFiles({
     files.filter((file) => file !== 'package.json').map((file) => write(file))
   );
 
-  // transform template: remove unwanted feature code inside " // <feature> ... // </feature>" tags
+  // transform template: remove unwanted feature code inside " // <<feature>> ... // <</feature>>" tags
   const code = (await fs.readFile(srcFile)).toString('utf8');
   let modifiedCode = code;
   if (!useArgs) {
@@ -100,17 +100,10 @@ async function copyChosenTemplateFiles({
       / *\/\/ <<args>>\n((.*)\n)*? *\/\/ <<\/args>>\n/g,
       ''
     );
-  } else {
-    modifiedCode = modifiedCode.replaceAll(/ *\/\/ <<(\/)?args>>\n/g, '');
   }
   if (!useProtectedData) {
     modifiedCode = modifiedCode.replaceAll(
       / *\/\/ <<protectedData>>\n((.*)\n)*? *\/\/ <<\/protectedData>>\n/g,
-      ''
-    );
-  } else {
-    modifiedCode = modifiedCode.replaceAll(
-      / *\/\/ <<(\/)?protectedData>>\n/g,
       ''
     );
   }
@@ -119,17 +112,10 @@ async function copyChosenTemplateFiles({
       / *\/\/ <<inputFile>>\n((.*)\n)*? *\/\/ <<\/inputFile>>\n/g,
       ''
     );
-  } else {
-    modifiedCode = modifiedCode.replaceAll(/ *\/\/ <<(\/)?inputFile>>\n/g, '');
   }
   if (!useRequesterSecret) {
     modifiedCode = modifiedCode.replaceAll(
       / *\/\/ <<requesterSecret>>\n((.*)\n)*? *\/\/ <<\/requesterSecret>>\n/g,
-      ''
-    );
-  } else {
-    modifiedCode = modifiedCode.replaceAll(
-      / *\/\/ <<(\/)?requesterSecret>>\n/g,
       ''
     );
   }
@@ -138,9 +124,9 @@ async function copyChosenTemplateFiles({
       / *\/\/ <<appSecret>>\n((.*)\n)*? *\/\/ <<\/appSecret>>\n/g,
       ''
     );
-  } else {
-    modifiedCode = modifiedCode.replaceAll(/ *\/\/ <<(\/)?appSecret>>\n/g, '');
   }
+  // clean remaining <<feature>> tags
+  modifiedCode = modifiedCode.replaceAll(/ *\/\/ <<(\/)?.*>>\n/g, '');
   await fs.writeFile(srcFile, modifiedCode);
 
   // package json special treatment for name

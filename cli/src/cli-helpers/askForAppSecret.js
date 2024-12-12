@@ -37,7 +37,7 @@ export async function askForAppSecret({ spinner }) {
     if (saveNull) {
       config.appSecret = null;
       await writeIAppConfig(config);
-      spinner.log(`appSecret disabled saved to "${CONFIG_FILE}"`);
+      spinner.log(`"No appSecret" choice saved to "${CONFIG_FILE}"`);
     }
     return null;
   }

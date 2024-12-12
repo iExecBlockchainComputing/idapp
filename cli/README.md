@@ -71,6 +71,11 @@ Options:
   [requester secrets](https://protocol.docs.iex.ec/for-developers/technical-references/application-io#requester-secrets)
   to your iApp during testing.
 
+> ℹ️ when you run `iapp test` for the first time you will be asked wether or not
+> you want to attach an
+> [app secret](https://protocol.docs.iex.ec/for-developers/technical-references/application-io#app-developer-secret)
+> to your app.
+
 ---
 
 ### `deploy`

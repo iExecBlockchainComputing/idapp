@@ -54,17 +54,22 @@ iexec decentralized application.
 Command:
 
 ```sh
-iapp test [--args <input>] [--inputFile <url...>]
+iapp test [--args <input>] [--inputFile <url...>] [--requesterSecret <key=value...>]
 ```
 
 Description: Test your iApp locally
 
 Options:
 
-- use `--args <args>` to provide input arguments to your iApp during testing
-  (use quotes to provide multiple args).
-- use `--inputFile <url...>` to provide one or more input files to your iApp
-  during testing.
+- use `--args <args>` to provide input
+  [arguments](https://protocol.docs.iex.ec/for-developers/technical-references/application-io#args)
+  to your iApp during testing (use quotes to provide multiple args).
+- use `--inputFile <url...>` to provide one or more
+  [input files](https://protocol.docs.iex.ec/for-developers/technical-references/application-io#input-files)
+  to your iApp during testing.
+- use `--requesterSecret <key=value...>` to provide one or more
+  [requester secrets](https://protocol.docs.iex.ec/for-developers/technical-references/application-io#requester-secrets)
+  to your iApp during testing.
 
 ---
 
@@ -99,6 +104,8 @@ Options:
   the `--protectedData` option followed by the address of the protected data.
 - use `--inputFile <url...>` to provide one or more input files to your iApp
   during run.
+- use `--requesterSecret <key=value...>` to provide one or more requester
+  secrets to your iApp during run.
 
 ## What's next?
 

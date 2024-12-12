@@ -15,8 +15,7 @@ export async function askForWalletPrivateKey({ spinner }) {
   const { walletPrivateKeyAnswer } = await spinner.prompt({
     type: 'password',
     name: 'walletPrivateKeyAnswer',
-    message:
-      'What is your wallet private key? (It will be used to assert that you are the owner of the app.)',
+    message: 'What is your wallet private key?',
     mask: '*',
   });
 

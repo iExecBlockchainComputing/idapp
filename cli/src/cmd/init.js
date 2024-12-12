@@ -9,6 +9,7 @@ import { initHelloWorldApp } from '../utils/initHelloWorldApp.js';
 import { isValidPackageName } from '../utils/isValidPackageName.js';
 import { getSpinner } from '../cli-helpers/spinner.js';
 import { handleCliError } from '../cli-helpers/handleCliError.js';
+import { generateWallet } from '../utils/generateWallet.js';
 
 export async function init() {
   const spinner = getSpinner();
@@ -82,6 +83,10 @@ export async function init() {
       template: 'javascript',
     });
     spinner.succeed('JavaScript app setup complete.');
+
+    spinner.start('Generating wallet...');
+    const walletAddress = await generateWallet();
+    spinner.succeed(`Generated ethereum wallet (${walletAddress})`);
 
     const output = `
   ${chalk.bold.underline('Steps to Get Started:')}

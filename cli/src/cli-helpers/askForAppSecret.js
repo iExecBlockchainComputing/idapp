@@ -9,7 +9,7 @@ export async function askForAppSecret({ spinner }) {
   const { appSecret: savedAppSecret } = config;
 
   if (savedAppSecret === null) {
-    spinner.log(`App secret is disabled (from "${CONFIG_FILE}")`);
+    spinner.log(`"No app secret" is configured (from "${CONFIG_FILE}")`);
     return savedAppSecret;
   }
   if (savedAppSecret !== undefined) {

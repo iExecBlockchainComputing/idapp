@@ -20,7 +20,7 @@ export async function askForAppSecret({ spinner }) {
   const { useAppSecret } = await spinner.prompt({
     type: 'confirm',
     name: 'useAppSecret',
-    message: `Do you want to attach an app secret to your iApp`,
+    message: 'Do you want to attach an app secret to your iApp?',
     default: false,
   });
 

@@ -1,7 +1,8 @@
 import chalk from 'chalk';
 import boxen from 'boxen';
 import figlet from 'figlet';
-import { createProjectFolder, folderExists } from '../utils/fs.utils.js';
+import { mkdir } from 'node:fs/promises';
+import { folderExists } from '../utils/fs.utils.js';
 import { initHelloWorldApp } from '../utils/initHelloWorldApp.js';
 import { getSpinner } from '../cli-helpers/spinner.js';
 import { handleCliError } from '../cli-helpers/handleCliError.js';
@@ -37,7 +38,8 @@ export async function init() {
       process.exit(1);
     }
 
-    await createProjectFolder(projectName);
+    await mkdir(projectName);
+    process.chdir(projectName);
 
     const { hasProtectedData } = await spinner.prompt({
       type: 'confirm',

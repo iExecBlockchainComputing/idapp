@@ -10,7 +10,7 @@ import { getSpinner } from '../cli-helpers/spinner.js';
 import { handleCliError } from '../cli-helpers/handleCliError.js';
 import { extractZipToFolder } from '../utils/extractZipToFolder.js';
 import { askShowResult } from '../cli-helpers/askShowResult.js';
-import { isFolderEmpty } from '../utils/isFolderEmpty.js';
+import { isFolderEmpty } from '../utils/fs.utils.js';
 
 export async function run({
   iAppAddress,
@@ -234,6 +234,7 @@ export async function runInDebug({
     type: 'confirm',
     name: 'continue',
     message: 'Would you like to download the result?',
+    initial: true,
   });
   if (!downloadAnswer.continue) {
     spinner.stop();

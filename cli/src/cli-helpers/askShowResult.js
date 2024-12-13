@@ -7,6 +7,7 @@ export async function askShowResult({ spinner, outputPath }) {
     type: 'confirm',
     name: 'continue',
     message: `Would you like to see the result? (View ./${outputPath}/)`,
+    initial: true,
   });
   if (continueAnswer.continue) {
     const files = await readdir(outputPath).catch(() => []);

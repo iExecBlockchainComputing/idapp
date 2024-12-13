@@ -22,7 +22,7 @@ export async function deploy() {
       type: 'input',
       name: 'iAppVersion',
       message: 'What is the version of your iApp?',
-      default: '0.1.0',
+      initial: '0.0.1',
     },
   ]);
 

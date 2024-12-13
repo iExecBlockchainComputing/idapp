@@ -158,6 +158,7 @@ export async function testApp({
       type: 'confirm',
       name: 'continue',
       message: `Would you like to see the app logs? (${appLogs.length} lines)`,
+      initial: true,
     });
     if (showLogs.continue) {
       spinner.info(`App logs:

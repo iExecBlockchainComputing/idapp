@@ -10,6 +10,7 @@
   "homepage": "https://github.com/iExecBlockchainComputing/iapp/blob/main/cli/README.md",
   "scripts": {
     "start": "./src/index.js --help",
+    "iapp": "./src/index.js",
     "check-format": "prettier --check .",
     "format": "prettier --write .",
     "lint": "eslint src"
@@ -26,9 +27,9 @@
     "ethers": "^6.13.4",
     "figlet": "^1.8.0",
     "iexec": "^8.9.1",
-    "inquirer": "^9.2.20",
     "jszip": "^3.10.1",
     "ora": "^8.1.1",
+    "prompts": "^2.4.2",
     "undici": "^6.21.0",
     "uuid": "^11.0.3",
     "yargs": "^17.7.2",
@@ -37,6 +38,7 @@
   },
   "devDependencies": {
     "@eslint/js": "^9.15.0",
+    "@types/prompts": "^2.4.9",
     "@types/yargs": "^17.0.33",
     "eslint": "^9.15.0",
     "globals": "^15.12.0",

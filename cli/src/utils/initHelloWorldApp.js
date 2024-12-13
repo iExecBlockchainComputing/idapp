@@ -1,17 +1,18 @@
 import fs from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { copy } from './copy.js';
 import {
   CONFIG_FILE,
   TEST_INPUT_DIR,
   TEST_OUTPUT_DIR,
   CACHE_DIR,
 } from '../config/config.js';
-import { debug } from '../utils/debug.js';
+import { debug } from './debug.js';
+import { copy } from './fs.utils.js';
 
 export async function initHelloWorldApp({
   projectName,
+  packageName,
   hasProtectedData,
   template,
 }) {
@@ -19,12 +20,12 @@ export async function initHelloWorldApp({
     // Copy template
     if (hasProtectedData) {
       await copyChosenTemplateFiles({
-        projectName,
+        packageName,
         template: `withProtectedData/${template}`,
       });
     } else {
       await copyChosenTemplateFiles({
-        projectName,
+        packageName,
         template: `withoutProtectedData/${template}`,
       });
     }
@@ -60,7 +61,7 @@ async function createConfigurationFiles({ projectName, hasProtectedData }) {
   );
 }
 
-async function copyChosenTemplateFiles({ projectName, template }) {
+async function copyChosenTemplateFiles({ packageName, template }) {
   const templatesBaseDir = path.resolve(
     fileURLToPath(import.meta.url),
     '../../..',
@@ -86,7 +87,7 @@ async function copyChosenTemplateFiles({ projectName, template }) {
   const pkg = JSON.parse(
     await fs.readFile(path.join(templateDir, `package.json`), 'utf8')
   );
-  pkg.name = projectName;
+  pkg.name = packageName;
   await write('package.json', JSON.stringify(pkg, null, 2) + '\n');
 
   // copy common README

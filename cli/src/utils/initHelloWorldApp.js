@@ -12,7 +12,6 @@ import { copy } from './fs.utils.js';
 
 export async function initHelloWorldApp({
   projectName,
-  packageName,
   hasProtectedData,
   template,
 }) {
@@ -20,12 +19,10 @@ export async function initHelloWorldApp({
     // Copy template
     if (hasProtectedData) {
       await copyChosenTemplateFiles({
-        packageName,
         template: `withProtectedData/${template}`,
       });
     } else {
       await copyChosenTemplateFiles({
-        packageName,
         template: `withoutProtectedData/${template}`,
       });
     }
@@ -61,7 +58,7 @@ async function createConfigurationFiles({ projectName, hasProtectedData }) {
   );
 }
 
-async function copyChosenTemplateFiles({ packageName, template }) {
+async function copyChosenTemplateFiles({ template }) {
   const templatesBaseDir = path.resolve(
     fileURLToPath(import.meta.url),
     '../../..',
@@ -79,16 +76,7 @@ async function copyChosenTemplateFiles({ packageName, template }) {
   // copy selected template
   const templateDir = path.resolve(templatesBaseDir, template);
   const files = await fs.readdir(templateDir);
-  await Promise.all(
-    files.filter((file) => file !== 'package.json').map((file) => write(file))
-  );
-
-  // package json special treatment for name
-  const pkg = JSON.parse(
-    await fs.readFile(path.join(templateDir, `package.json`), 'utf8')
-  );
-  pkg.name = packageName;
-  await write('package.json', JSON.stringify(pkg, null, 2) + '\n');
+  await Promise.all(files.map((file) => write(file)));
 
   // copy common README
   const readmePath = path.resolve(templatesBaseDir, 'common/README.md');

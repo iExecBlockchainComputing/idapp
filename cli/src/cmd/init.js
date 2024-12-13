@@ -3,7 +3,6 @@ import boxen from 'boxen';
 import figlet from 'figlet';
 import { createProjectFolder, folderExists } from '../utils/fs.utils.js';
 import { initHelloWorldApp } from '../utils/initHelloWorldApp.js';
-import { isValidPackageName } from '../utils/isValidPackageName.js';
 import { getSpinner } from '../cli-helpers/spinner.js';
 import { handleCliError } from '../cli-helpers/handleCliError.js';
 
@@ -40,19 +39,6 @@ export async function init() {
 
     await createProjectFolder(projectName);
 
-    let packageName;
-    if (!isValidPackageName(projectName)) {
-      const packageNameAnswer = await spinner.prompt({
-        type: 'text',
-        name: 'packageName',
-        message: 'Package name:',
-        initial: targetDir,
-      });
-      packageName = packageNameAnswer.packageName;
-    } else {
-      packageName = projectName;
-    }
-
     const { hasProtectedData } = await spinner.prompt({
       type: 'confirm',
       name: 'hasProtectedData',
@@ -71,7 +57,6 @@ export async function init() {
     spinner.start('Creating "Hello World" JavaScript app...');
     await initHelloWorldApp({
       projectName,
-      packageName,
       hasProtectedData,
       template: 'javascript',
     });

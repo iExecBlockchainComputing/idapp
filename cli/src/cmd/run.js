@@ -4,7 +4,11 @@ import { ethers } from 'ethers';
 import { IExec, utils } from 'iexec';
 import { mkdir, rm } from 'node:fs/promises';
 import { askForWalletPrivateKey } from '../cli-helpers/askForWalletPrivateKey.js';
-import { CACHE_DIR, SCONE_TAG, WORKERPOOL_DEBUG } from '../config/config.js';
+import {
+  SCONE_TAG,
+  WORKERPOOL_DEBUG,
+  RUN_OUTPUT_DIR,
+} from '../config/config.js';
 import { addRunData } from '../utils/cacheExecutions.js';
 import { getSpinner } from '../cli-helpers/spinner.js';
 import { handleCliError } from '../cli-helpers/handleCliError.js';
@@ -246,7 +250,7 @@ export async function runInDebug({
   const taskResult = await iexec.task.fetchResults(taskId);
   const resultBuffer = await taskResult.arrayBuffer();
 
-  const outputFolder = CACHE_DIR + '/result';
+  const outputFolder = RUN_OUTPUT_DIR;
   // Clean any previous results
   if (!(await isFolderEmpty(outputFolder))) {
     await rm(outputFolder, { recursive: true, force: true });

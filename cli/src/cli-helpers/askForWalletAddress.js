@@ -12,7 +12,7 @@ export async function askForWalletAddress({ spinner }) {
   }
 
   const { walletAddressAnswer } = await spinner.prompt({
-    type: 'input',
+    type: 'text',
     name: 'walletAddressAnswer',
     message:
       'What is your wallet address? (This wallet will be the owner of the iApp)',

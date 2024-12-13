@@ -66,7 +66,7 @@ export async function init() {
   ${chalk.bold.underline('Steps to Get Started:')}
   
     Navigate to your project folder:
-    ${chalk.yellow(`$ cd ${projectName}`)}
+    ${chalk.yellow(`$ cd ${projectName.split(' ').length > 1 ? `"${projectName}"` : `${projectName}`}`)}
   
     ${chalk.green('Make your changes in the')} ${chalk.cyan('src/app.js')} ${chalk.green('file')}.
   

@@ -23,7 +23,6 @@ export async function askForDockerhubAccessToken({ spinner }) {
     name: 'dockerHubAccessTokenAnswer',
     message:
       'What is your DockerHub access token? (It will be used to push the docker image to your account)',
-    mask: '*',
   });
 
   // TODO check token against API

@@ -25,6 +25,8 @@ export async function test({
 }) {
   const spinner = getSpinner();
   try {
+    // Simply check that an iapp.config.json file exists
+    await readIAppConfig();
     await cleanTestOutput({ spinner });
     await testApp({ args, inputFiles, requesterSecrets, spinner });
     await checkTestOutput({ spinner });

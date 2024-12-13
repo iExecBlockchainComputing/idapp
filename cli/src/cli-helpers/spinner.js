@@ -1,6 +1,5 @@
 import ora from 'ora';
 import prompts from 'prompts';
-import { onCancelPrompt } from '../utils/onCancelPrompt.js';
 
 export const getSpinner = () => {
   const spinner = ora();
@@ -25,7 +24,10 @@ export const getSpinner = () => {
       spinner.stop();
     }
     const res = await prompts(oneQuestion, {
-      onCancel: () => onCancelPrompt(spinner),
+      onCancel: () => {
+        spinner?.fail('Operation cancelled');
+        process.exit(0);
+      },
     });
     if (isSpinning) {
       spinner.start();

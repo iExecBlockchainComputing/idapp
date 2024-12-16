@@ -1,4 +1,3 @@
-import 'dotenv/config';
 import express from 'express';
 import { readFile } from 'fs/promises';
 import pino from 'pino';
@@ -32,7 +31,7 @@ app.get('/health', (req, res) => {
 });
 
 app.get('/', (req, res) => {
-  res.status(200).send('Hello from idapp-sconifier-api 👋');
+  res.status(200).send('Hello from iExec iApp API 👋');
 });
 
 app.listen(port, hostname, () => {

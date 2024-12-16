@@ -174,7 +174,7 @@ export async function runDockerContainer({
     Cmd: cmd,
     HostConfig: {
       Binds: volumes,
-      AutoRemove: true,
+      AutoRemove: false, // do not auto remove, we want to inspect after the container is exited
       Memory: memory,
     },
     Env: env,
@@ -204,6 +204,9 @@ export async function runDockerContainer({
 
   // Check container status after waiting
   const { State } = await container.inspect();
+
+  // Done with the container, remove the container
+  await container.remove();
 
   return {
     exitCode: State.ExitCode,

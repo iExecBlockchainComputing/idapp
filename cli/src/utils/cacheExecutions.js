@@ -1,6 +1,6 @@
 import { mkdir, readFile, writeFile } from 'node:fs/promises';
-import { fileExists } from './fileExists.js';
 import { CACHE_DIR } from '../config/config.js';
+import { fileExists } from './fs.utils.js';
 
 // Utility function to ensure the cache directory and file exist
 async function ensureCacheFileExists(fileName) {
@@ -55,11 +55,11 @@ function getFormattedDateInParis() {
 }
 
 // Function to add run data to runs.json
-export async function addRunData({ iDappAddress, dealid, txHash }) {
+export async function addRunData({ iAppAddress, dealid, txHash }) {
   const formattedDate = getFormattedDateInParis();
   const runData = {
     date: formattedDate,
-    iDappAddress,
+    iAppAddress,
     dealid,
     txHash,
   };

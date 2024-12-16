@@ -4,7 +4,7 @@ import { SCONIFY_API_URL } from '../config/config.js';
 
 export async function sconify({
   sconifyForProd,
-  iDappNameToSconify,
+  iAppNameToSconify,
   walletAddress,
 }) {
   if (sconifyForProd) {
@@ -19,9 +19,10 @@ export async function sconify({
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
+        'x-wallet': walletAddress,
       },
       body: JSON.stringify({
-        dockerhubImageToSconify: iDappNameToSconify,
+        dockerhubImageToSconify: iAppNameToSconify,
         yourWalletPublicAddress: walletAddress,
       }),
       throwOnError: true,

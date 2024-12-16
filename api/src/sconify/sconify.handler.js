@@ -10,7 +10,7 @@ const bodySchema = z.object({
     .string()
     .min(
       1,
-      'A dockerhub image is required. <dockerhubUsername>/<iDappName>:<version>'
+      'A dockerhub image is required. <dockerhubUsername>/<iAppName>:<version>'
     ),
 });
 

@@ -2,3 +2,5 @@
 
 node_modules
 api/.env
+admin/.env
+.tags

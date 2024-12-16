@@ -1,39 +1,63 @@
 import chalk from 'chalk';
+import { v4 as uuidV4 } from 'uuid';
 import { ethers } from 'ethers';
-import { IExec, utils } from 'iexec';
+import { mkdir, rm } from 'node:fs/promises';
 import { askForWalletPrivateKey } from '../cli-helpers/askForWalletPrivateKey.js';
-import { SCONE_TAG, WORKERPOOL_DEBUG } from '../config/config.js';
+import {
+  SCONE_TAG,
+  WORKERPOOL_DEBUG,
+  RUN_OUTPUT_DIR,
+} from '../config/config.js';
 import { addRunData } from '../utils/cacheExecutions.js';
 import { getSpinner } from '../cli-helpers/spinner.js';
 import { handleCliError } from '../cli-helpers/handleCliError.js';
+import { getIExecDebug } from '../utils/iexec.js';
+import { extractZipToFolder } from '../utils/extractZipToFolder.js';
+import { askShowResult } from '../cli-helpers/askShowResult.js';
 
-export async function run({ iDappAddress, args, protectedData }) {
+export async function run({
+  iAppAddress,
+  args,
+  protectedData,
+  inputFile: inputFiles = [], // rename variable (it's an array)
+  requesterSecret: requesterSecrets = [], // rename variable (it's an array)
+}) {
   const spinner = getSpinner();
+  cleanRunOutput({ spinner, outputFolder: RUN_OUTPUT_DIR });
   try {
-    await runInDebug({ iDappAddress, args, protectedData, spinner });
+    await runInDebug({
+      iAppAddress,
+      args,
+      protectedData,
+      inputFiles,
+      requesterSecrets,
+      spinner,
+    });
   } catch (error) {
     handleCliError({ spinner, error });
   }
 }
 
 export async function runInDebug({
-  iDappAddress,
+  iAppAddress,
   args,
   protectedData,
+  inputFiles = [],
+  requesterSecrets = [],
   spinner,
 }) {
-  // Is valid iDapp Address
-  if (!ethers.isAddress(iDappAddress)) {
+  // Is valid iApp address
+  if (!ethers.isAddress(iAppAddress)) {
     spinner.log(
       chalk.red(
-        'The iDapp address is invalid. Be careful ENS name is not implemented yet ...'
+        'The iApp address is invalid. Be careful ENS name is not implemented yet ...'
       )
     );
     return;
   }
 
   if (protectedData) {
-    // Is valid ProtectedData Address
+    // Is valid protectedData address
     if (!ethers.isAddress(protectedData)) {
       spinner.log(
         chalk.red(
@@ -48,17 +72,7 @@ export async function runInDebug({
   const walletPrivateKey = await askForWalletPrivateKey({ spinner });
   const wallet = new ethers.Wallet(walletPrivateKey);
 
-  const iexec = new IExec(
-    {
-      ethProvider: utils.getSignerFromPrivateKey(
-        'bellecour',
-        wallet.privateKey
-      ),
-    },
-    {
-      smsURL: 'https://sms.scone-debug.v8-bellecour.iex.ec',
-    }
-  );
+  const iexec = getIExecDebug(walletPrivateKey);
 
   // Make some ProtectedData preflight check
   if (protectedData) {
@@ -82,17 +96,31 @@ export async function runInDebug({
     } catch (e) {
       spinner.log(
         chalk.red(
-          `Error while running your iDapp with your protectedData: ${e.message}`
+          `Error while running your iApp with your protectedData: ${e.message}`
         )
       );
     }
   }
 
+  // Requester secrets
+  let iexec_secrets;
+  if (requesterSecrets.length > 0) {
+    spinner.start('Provisioning requester secrets...');
+    iexec_secrets = Object.fromEntries(
+      await Promise.all(
+        requesterSecrets.map(async ({ key, value }) => {
+          const name = await pushRequesterSecret({ iexec, value });
+          return [key, name];
+        })
+      )
+    );
+    spinner.succeed('Requester secrets provisioned');
+  }
   // Workerpool Order
   spinner.start('Fetching workerpool order...');
   const workerpoolOrderbook = await iexec.orderbook.fetchWorkerpoolOrderbook({
     workerpool: WORKERPOOL_DEBUG,
-    app: iDappAddress,
+    app: iAppAddress,
     dataset: protectedData || ethers.ZeroAddress,
     minTag: SCONE_TAG,
     maxTag: SCONE_TAG,
@@ -108,7 +136,7 @@ export async function runInDebug({
   // App Order
   spinner.start('Creating and publishing app order...');
   const apporderTemplate = await iexec.order.createApporder({
-    app: iDappAddress,
+    app: iAppAddress,
     requesterrestrict: wallet.address,
     tag: SCONE_TAG,
   });
@@ -123,7 +151,7 @@ export async function runInDebug({
     const datasetOrderbook = await iexec.orderbook.fetchDatasetOrderbook(
       protectedData,
       {
-        app: iDappAddress,
+        app: iAppAddress,
         workerpool: workerpoolorder.workerpool,
         requester: wallet.address,
         minTag: SCONE_TAG,
@@ -135,7 +163,7 @@ export async function runInDebug({
       spinner.fail('No matching ProtectedData access found');
       spinner.log(
         chalk.red(
-          'It seems the protectedData is not allow to be consume by your iDapp, please grantAccess to it'
+          'It seems your iApp is not allowed to access the protectedData, please grantAccess to it'
         )
       );
       return;
@@ -145,7 +173,7 @@ export async function runInDebug({
 
   spinner.start('Creating and publishing request order...');
   const requestorderToSign = await iexec.order.createRequestorder({
-    app: iDappAddress,
+    app: iAppAddress,
     category: workerpoolorder.category,
     dataset: protectedData || ethers.ZeroAddress,
     appmaxprice: apporder.appprice,
@@ -155,6 +183,8 @@ export async function runInDebug({
     workerpool: workerpoolorder.workerpool,
     params: {
       iexec_args: args,
+      iexec_input_files: inputFiles.length > 0 ? inputFiles : undefined,
+      iexec_secrets,
     },
   });
   const requestorder = await iexec.order.signRequestorder(requestorderToSign);
@@ -167,7 +197,7 @@ export async function runInDebug({
     workerpoolorder,
     requestorder,
   });
-  await addRunData({ iDappAddress, dealid, txHash });
+  await addRunData({ iAppAddress, dealid, txHash });
   spinner.succeed(
     `Deal created successfully, this is your deal ID: https://explorer.iex.ec/bellecour/deal/${dealid}`
   );
@@ -186,7 +216,6 @@ export async function runInDebug({
   });
 
   spinner.succeed('Task finalized');
-  spinner.stop();
 
   const task = await iexec.task.show(taskId);
   spinner.log(
@@ -194,4 +223,44 @@ export async function runInDebug({
       `You can download the result of your task here: https://ipfs-gateway.v8-bellecour.iex.ec${task?.results?.location}`
     )
   );
+
+  const downloadAnswer = await spinner.prompt({
+    type: 'confirm',
+    name: 'continue',
+    message: 'Would you like to download the result?',
+    initial: true,
+  });
+  if (!downloadAnswer.continue) {
+    spinner.stop();
+    process.exit(1);
+  }
+
+  spinner.start('Downloading result...');
+  const outputFolder = RUN_OUTPUT_DIR;
+  const taskResult = await iexec.task.fetchResults(taskId);
+  const resultBuffer = await taskResult.arrayBuffer();
+  await extractZipToFolder(resultBuffer, outputFolder);
+  spinner.succeed(`Result downloaded to ${outputFolder}`);
+
+  await askShowResult({ spinner, outputPath: outputFolder });
+}
+
+/**
+ * push a requester secret with a random uuid
+ * @param {Object} params
+ * @param {IExec} params.iexec
+ * @param {string} params.value
+ * @returns {string} secretName
+ */
+async function pushRequesterSecret({ iexec, value }) {
+  const secretName = uuidV4();
+  await iexec.secrets.pushRequesterSecret(secretName, value);
+  return secretName;
+}
+
+async function cleanRunOutput({ spinner, outputFolder }) {
+  // just start the spinner, no need to persist success in terminal
+  spinner.start('Cleaning output directory...');
+  await rm(outputFolder, { recursive: true, force: true });
+  await mkdir(outputFolder);
 }

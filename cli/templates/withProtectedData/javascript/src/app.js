@@ -13,21 +13,25 @@ const main = async () => {
         ? process.argv[2]
         : 'World';
 
-    // Transform input text into an ASCII Art text
-    const asciiArtText = figlet.textSync(`Hello, ${message}!`);
-
-    let file;
+    let protectedName;
     try {
       const deserializer = new IExecDataProtectorDeserializer();
-      file = await deserializer.getValue('email', 'string');
+      // The protected data created for the purpose of this Hello World journey
+      // contains a string with the key "name"
+      // 1- "iapp test": The protected data is simply a zip file in the /input folder
+      // 2- "iapp run": Pass it a real protected data address:
+      //    `iapp run <iapp-address> --protectedData 0x3FFb9D62b527b32230DFf094D24A661495aDb0B4`
+      protectedName = await deserializer.getValue('name', 'string');
     } catch (e) {
-      file = 'Missing protectedData';
+      protectedName = 'World';
       console.log('It seems there is an issue with your protected data:', e);
     }
 
+    // Transform input text into an ASCII Art text
+    const asciiArtText = figlet.textSync(`Hello, ${protectedName}!`);
+
     // Write result to /iexec_out/
-    const combinedContent = `${asciiArtText}\n Your Protected Data content: ${file}`;
-    await writeFile(`${output}/result.txt`, combinedContent);
+    await writeFile(`${output}/result.txt`, asciiArtText);
 
     // Build and save a "computed.json" file
     const computedJsonObj = {

@@ -4,12 +4,12 @@ export const WORKERPOOL_DEBUG = 'debug-v8-learn.main.pools.iexec.eth';
 
 export const WORKERPOOL_PROD = 'prod-v8-learn.main.pools.iexec.eth';
 
-export const SCONIFY_API_URL =
-  'http://idapp-poc.westeurope.cloudapp.azure.com:3000';
+export const SCONIFY_API_URL = 'https://sconifier-service.iex.ec';
 
-export const CONFIG_FILE = 'idapp.config.json';
+export const CONFIG_FILE = 'iapp.config.json';
 export const TEST_INPUT_DIR = 'input';
 export const TEST_OUTPUT_DIR = 'output';
+export const RUN_OUTPUT_DIR = 'output'; // Same as TEST_OUTPUT_DIR
 export const CACHE_DIR = 'cache';
 
 export const IEXEC_OUT = '/iexec_out/';

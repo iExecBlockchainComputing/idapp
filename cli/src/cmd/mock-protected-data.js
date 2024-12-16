@@ -3,7 +3,7 @@ import { join } from 'node:path';
 import { IExecDataProtectorCore } from '@iexec/dataprotector';
 import { AbstractSigner, JsonRpcProvider } from 'ethers';
 import { getSpinner } from '../cli-helpers/spinner.js';
-import { fileExists } from '../utils/fileExists.js';
+import { fileExists } from '../utils/fs.utils.js';
 import { TEST_INPUT_DIR } from '../config/config.js';
 import { handleCliError } from '../cli-helpers/handleCliError.js';
 
@@ -14,7 +14,7 @@ export async function mockProtectedData() {
     async function buildData({ dataState = {}, dataSchema = {} } = {}) {
       // get data fragment key
       const { key } = await spinner.prompt({
-        type: 'input',
+        type: 'text',
         name: 'key',
         message:
           "What key do you want to use to store the piece of data? (use '.' to access nested keys)",
@@ -42,15 +42,15 @@ export async function mockProtectedData() {
         const FILE = 'file';
 
         const { type } = await spinner.prompt({
-          type: 'list',
+          type: 'select',
           name: 'type',
           message: `What kind of data is \`${key}\`?`,
           choices: [
-            BOOLEAN,
-            NUMBER,
-            STRING,
-            FILE,
-            `My bad, I don't want to add data at \`${key}\``,
+            { title: BOOLEAN, value: BOOLEAN },
+            { title: NUMBER, value: NUMBER },
+            { title: STRING, value: STRING },
+            { title: FILE, value: FILE },
+            { title: `My bad, I don't want to add data at \`${key}\`` },
           ],
         });
 
@@ -61,20 +61,23 @@ export async function mockProtectedData() {
             {
               const res = await spinner.prompt([
                 {
-                  type: 'list',
+                  type: 'select',
                   name: 'value',
                   message: `What is the value of \`${key}\`?`,
-                  choices: ['true', 'false'],
+                  choices: [
+                    { title: 'true', value: true },
+                    { title: 'false', value: false },
+                  ],
                 },
               ]);
-              value = Boolean(res.value);
+              value = res.value;
             }
             break;
           case NUMBER:
             {
               const res = await spinner.prompt([
                 {
-                  type: 'number',
+                  type: 'text',
                   name: 'value',
                   message: `What is the value of \`${key}\`? (${NUMBER})`,
                 },
@@ -91,7 +94,7 @@ export async function mockProtectedData() {
             {
               const res = await spinner.prompt([
                 {
-                  type: 'input',
+                  type: 'text',
                   name: 'value',
                   message: `What is the value of \`${key}\`? (${STRING})`,
                 },
@@ -103,7 +106,7 @@ export async function mockProtectedData() {
             {
               const { path } = await spinner.prompt([
                 {
-                  type: 'input',
+                  type: 'text',
                   name: 'path',
                   message: `Where is the file located? (path)`,
                 },

@@ -1,6 +1,6 @@
 {
-  "name": "hello-world",
-  "version": "1.0.0",
+  "name": "iexec-hello-world-iapp",
+  "version": "0.0.1",
   "description": "",
   "main": "src/app.js",
   "type": "module",

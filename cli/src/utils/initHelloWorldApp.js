@@ -1,14 +1,14 @@
 import fs from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { copy } from './copy.js';
 import {
   CONFIG_FILE,
   TEST_INPUT_DIR,
   TEST_OUTPUT_DIR,
   CACHE_DIR,
 } from '../config/config.js';
-import { debug } from '../utils/debug.js';
+import { debug } from './debug.js';
+import { copy } from './fs.utils.js';
 
 export async function initHelloWorldApp({
   projectName,
@@ -19,12 +19,10 @@ export async function initHelloWorldApp({
     // Copy template
     if (hasProtectedData) {
       await copyChosenTemplateFiles({
-        projectName,
         template: `withProtectedData/${template}`,
       });
     } else {
       await copyChosenTemplateFiles({
-        projectName,
         template: `withoutProtectedData/${template}`,
       });
     }
@@ -47,7 +45,7 @@ async function createProjectDirectories() {
 }
 
 async function createConfigurationFiles({ projectName, hasProtectedData }) {
-  // Create a simple iDapp configuration file
+  // Create a simple iApp configuration file
   const configContent = {
     projectName: projectName,
     dockerhubUsername: '',
@@ -60,7 +58,7 @@ async function createConfigurationFiles({ projectName, hasProtectedData }) {
   );
 }
 
-async function copyChosenTemplateFiles({ projectName, template }) {
+async function copyChosenTemplateFiles({ template }) {
   const templatesBaseDir = path.resolve(
     fileURLToPath(import.meta.url),
     '../../..',
@@ -78,16 +76,7 @@ async function copyChosenTemplateFiles({ projectName, template }) {
   // copy selected template
   const templateDir = path.resolve(templatesBaseDir, template);
   const files = await fs.readdir(templateDir);
-  await Promise.all(
-    files.filter((file) => file !== 'package.json').map((file) => write(file))
-  );
-
-  // package json special treatment for name
-  const pkg = JSON.parse(
-    await fs.readFile(path.join(templateDir, `package.json`), 'utf8')
-  );
-  pkg.name = projectName;
-  await write('package.json', JSON.stringify(pkg, null, 2) + '\n');
+  await Promise.all(files.map((file) => write(file)));
 
   // copy common README
   const readmePath = path.resolve(templatesBaseDir, 'common/README.md');

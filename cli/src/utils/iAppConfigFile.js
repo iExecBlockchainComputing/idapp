@@ -10,13 +10,14 @@ const jsonConfigFileSchema = z.object({
   dockerhubAccessToken: z.string().optional(),
   walletAddress: z.string().optional(),
   walletPrivateKey: z.string().optional(),
+  appSecret: z.string().optional().nullable(), // can be null or string (null means do no use secret)
 });
 
 // Read JSON configuration file
-export async function readIDappConfig() {
+export async function readIAppConfig() {
   const configContent = await readFile(CONFIG_FILE, 'utf8').catch(() => {
     throw Error(
-      `Failed to read \`${CONFIG_FILE}\` file. Are you in your idapp project folder?`
+      `Failed to read \`${CONFIG_FILE}\` file. Are you in your iApp project folder?`
     );
   });
 
@@ -47,7 +48,7 @@ export async function readPackageJonConfig() {
   }
 }
 
-// Utility function to write the iDapp JSON configuration file
-export async function writeIDappConfig(config) {
+// Utility function to write the iApp JSON configuration file
+export async function writeIAppConfig(config) {
   await writeFile(CONFIG_FILE, JSON.stringify(config, null, 2));
 }

@@ -14,7 +14,6 @@ import { handleCliError } from '../cli-helpers/handleCliError.js';
 import { getIExecDebug } from '../utils/iexec.js';
 import { extractZipToFolder } from '../utils/extractZipToFolder.js';
 import { askShowResult } from '../cli-helpers/askShowResult.js';
-import { isFolderEmpty } from '../utils/fs.utils.js';
 
 export async function run({
   iAppAddress,
@@ -24,6 +23,7 @@ export async function run({
   requesterSecret: requesterSecrets = [], // rename variable (it's an array)
 }) {
   const spinner = getSpinner();
+  cleanRunOutput({ spinner, outputFolder: RUN_OUTPUT_DIR });
   try {
     await runInDebug({
       iAppAddress,
@@ -236,18 +236,10 @@ export async function runInDebug({
   }
 
   spinner.start('Downloading result...');
-
+  const outputFolder = RUN_OUTPUT_DIR;
   const taskResult = await iexec.task.fetchResults(taskId);
   const resultBuffer = await taskResult.arrayBuffer();
-
-  const outputFolder = RUN_OUTPUT_DIR;
-  // Clean any previous results
-  if (!(await isFolderEmpty(outputFolder))) {
-    await rm(outputFolder, { recursive: true, force: true });
-    await mkdir(outputFolder);
-  }
   await extractZipToFolder(resultBuffer, outputFolder);
-
   spinner.succeed(`Result downloaded to ${outputFolder}`);
 
   await askShowResult({ spinner, outputPath: outputFolder });
@@ -264,4 +256,11 @@ async function pushRequesterSecret({ iexec, value }) {
   const secretName = uuidV4();
   await iexec.secrets.pushRequesterSecret(secretName, value);
   return secretName;
+}
+
+async function cleanRunOutput({ spinner, outputFolder }) {
+  // just start the spinner, no need to persist success in terminal
+  spinner.start('Cleaning output directory...');
+  await rm(outputFolder, { recursive: true, force: true });
+  await mkdir(outputFolder);
 }

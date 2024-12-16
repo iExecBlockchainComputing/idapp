@@ -6,6 +6,7 @@ import {
   TEST_INPUT_DIR,
   TEST_OUTPUT_DIR,
   CACHE_DIR,
+  PROTECTED_DATA_MOCK_DIR,
 } from '../config/config.js';
 import { debug } from './debug.js';
 import { copy } from './fs.utils.js';
@@ -124,8 +125,12 @@ async function copyChosenTemplateFiles({
   modifiedCode = modifiedCode.replaceAll(/ *\/\/ <<(\/)?.*>>\n/g, '');
   await fs.writeFile(srcFile, modifiedCode);
 
-  // copy common README
-  const readmePath = path.resolve(templatesBaseDir, 'common/README.md');
+  // copy common
+  const commonPath = path.resolve(templatesBaseDir, 'common');
+  await copy(commonPath, path.join(process.cwd()));
 
-  await copy(readmePath, path.join(process.cwd(), 'README.md'));
+  if (useProtectedData) {
+    const mockPath = path.resolve(templatesBaseDir, 'mock', 'protectedData');
+    await copy(mockPath, PROTECTED_DATA_MOCK_DIR);
+  }
 }

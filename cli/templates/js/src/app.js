@@ -8,14 +8,14 @@ const main = async () => {
   try {
     const { IEXEC_OUT } = process.env;
 
-    let message = '';
+    let messages = [];
     // <<args>>
 
     // Example of process.argv:
     // [ '/usr/local/bin/node', '/app/src/app.js', 'Bob' ]
     const args = process.argv.slice(2);
     console.log(`Received ${args.length} args`);
-    message += args.join(' ') + '\n';
+    messages.push(args.join(' '));
     // <</args>>
     // <<protectedData>>
 
@@ -28,7 +28,7 @@ const main = async () => {
       //    `iapp run <iapp-address> --protectedData 0x3FFb9D62b527b32230DFf094D24A661495aDb0B4`
       const protectedName = await deserializer.getValue('name', 'string');
       console.log('Found a protected data');
-      message += protectedName;
+      messages.push(protectedName);
     } catch (e) {
       console.log('It seems there is an issue with your protected data:', e);
     }
@@ -78,7 +78,9 @@ const main = async () => {
     // <</requesterSecret>>
 
     // Transform input text into an ASCII Art text
-    const asciiArtText = figlet.textSync(`Hello, ${message || 'World'}!`);
+    const asciiArtText = figlet.textSync(
+      `Hello, ${messages.join(' ') || 'World'}!`
+    );
 
     // Write result to IEXEC_OUT
     await fs.writeFile(`${IEXEC_OUT}/result.txt`, asciiArtText);

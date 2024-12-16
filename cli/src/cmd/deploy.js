@@ -23,7 +23,7 @@ export async function deploy() {
 
     const { iAppVersion } = await spinner.prompt([
       {
-        type: 'input',
+        type: 'text',
         name: 'iAppVersion',
         message: 'What is the version of your iApp?',
         default: '0.1.0',

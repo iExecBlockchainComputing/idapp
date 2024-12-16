@@ -31,7 +31,7 @@ export async function askForWalletPrivateKey({ spinner }) {
       type: 'confirm',
       name: 'savePrivateKeyAnswer',
       message: 'Do you want to save this private key to your config?',
-      default: false,
+      initial: false,
     },
   ]);
 

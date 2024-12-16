@@ -1,6 +1,6 @@
 import { mkdir, readFile, writeFile } from 'node:fs/promises';
-import { fileExists } from './fileExists.js';
 import { CACHE_DIR } from '../config/config.js';
+import { fileExists } from './fs.utils.js';
 
 // Utility function to ensure the cache directory and file exist
 async function ensureCacheFileExists(fileName) {

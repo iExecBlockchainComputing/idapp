@@ -9,6 +9,7 @@ export const SCONIFY_API_URL = 'https://sconifier-service.iex.ec';
 export const CONFIG_FILE = 'iapp.config.json';
 export const TEST_INPUT_DIR = 'input';
 export const TEST_OUTPUT_DIR = 'output';
+export const RUN_OUTPUT_DIR = 'output'; // Same as TEST_OUTPUT_DIR
 export const CACHE_DIR = 'cache';
 
 export const IEXEC_OUT = '/iexec_out/';

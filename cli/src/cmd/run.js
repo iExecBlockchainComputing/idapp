@@ -3,14 +3,18 @@ import { v4 as uuidV4 } from 'uuid';
 import { ethers } from 'ethers';
 import { mkdir, rm } from 'node:fs/promises';
 import { askForWalletPrivateKey } from '../cli-helpers/askForWalletPrivateKey.js';
-import { CACHE_DIR, SCONE_TAG, WORKERPOOL_DEBUG } from '../config/config.js';
+import {
+  SCONE_TAG,
+  WORKERPOOL_DEBUG,
+  RUN_OUTPUT_DIR,
+} from '../config/config.js';
 import { addRunData } from '../utils/cacheExecutions.js';
 import { getSpinner } from '../cli-helpers/spinner.js';
 import { handleCliError } from '../cli-helpers/handleCliError.js';
 import { getIExecDebug } from '../utils/iexec.js';
 import { extractZipToFolder } from '../utils/extractZipToFolder.js';
 import { askShowResult } from '../cli-helpers/askShowResult.js';
-import { isFolderEmpty } from '../utils/isFolderEmpty.js';
+import { isFolderEmpty } from '../utils/fs.utils.js';
 
 export async function run({
   iAppAddress,
@@ -224,6 +228,7 @@ export async function runInDebug({
     type: 'confirm',
     name: 'continue',
     message: 'Would you like to download the result?',
+    initial: true,
   });
   if (!downloadAnswer.continue) {
     spinner.stop();
@@ -235,7 +240,7 @@ export async function runInDebug({
   const taskResult = await iexec.task.fetchResults(taskId);
   const resultBuffer = await taskResult.arrayBuffer();
 
-  const outputFolder = CACHE_DIR + '/result';
+  const outputFolder = RUN_OUTPUT_DIR;
   // Clean any previous results
   if (!(await isFolderEmpty(outputFolder))) {
     await rm(outputFolder, { recursive: true, force: true });

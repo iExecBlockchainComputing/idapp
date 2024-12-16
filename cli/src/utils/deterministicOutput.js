@@ -9,7 +9,7 @@ import {
   IEXEC_OUT,
   TEST_OUTPUT_DIR,
 } from '../config/config.js';
-import { fileExists } from './fileExists.js';
+import { fileExists } from './fs.utils.js';
 
 const computedJsonFileSchema = z.object({
   [IEXEC_DETERMINISTIC_OUTPUT_PATH_KEY]: z.string().startsWith(IEXEC_OUT),

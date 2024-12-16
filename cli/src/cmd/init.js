@@ -1,15 +1,14 @@
 import chalk from 'chalk';
 import boxen from 'boxen';
 import figlet from 'figlet';
-import {
-  checkIfFolderIsClean,
-  createProjectFolder,
-} from '../utils/checkIfFolderIsClean.js';
+import { mkdir } from 'node:fs/promises';
+import { folderExists } from '../utils/fs.utils.js';
 import { initHelloWorldApp } from '../utils/initHelloWorldApp.js';
-import { isValidPackageName } from '../utils/isValidPackageName.js';
 import { getSpinner } from '../cli-helpers/spinner.js';
 import { handleCliError } from '../cli-helpers/handleCliError.js';
 import { generateWallet } from '../utils/generateWallet.js';
+
+const targetDir = 'hello-world';
 
 export async function init() {
   const spinner = getSpinner();
@@ -24,48 +23,30 @@ export async function init() {
         })
       )
     );
-    const continueAnswer = await spinner.prompt({
-      type: 'confirm',
-      name: 'continue',
-      message:
-        'A new project will be created in the current directory. Do you want to continue?',
-    });
-    if (!continueAnswer.continue) {
-      process.exit(1);
-    }
 
-    let folderCreated;
-    if (!(await checkIfFolderIsClean())) {
-      const folderName = 'hello-world';
-      const { createHelloWorldFolder } = await spinner.prompt({
-        type: 'confirm',
-        name: 'createHelloWorldFolder',
-        message: `Want to run "mkdir ${folderName} && cd ${folderName}"?`,
-      });
-      if (!createHelloWorldFolder) {
-        process.exit(1);
-      }
-      folderCreated = await createProjectFolder(folderName);
-    }
-
-    const currentFolderName = process.cwd().split('/').pop();
     const { projectName } = await spinner.prompt({
-      type: 'input',
+      type: 'text',
       name: 'projectName',
-      message: 'What is the name of your project?',
-      default: currentFolderName,
+      message:
+        "What's your project name? (A folder with this name will be created)",
+      initial: targetDir,
     });
 
-    if (!isValidPackageName(projectName)) {
-      spinner.fail('Invalid package.json name');
+    if (await folderExists(projectName)) {
+      spinner.fail(
+        `Target directory "${targetDir}" already exists. Remove it or choose a different name.`
+      );
       process.exit(1);
     }
+
+    await mkdir(projectName);
+    process.chdir(projectName);
 
     const { hasProtectedData } = await spinner.prompt({
       type: 'confirm',
       name: 'hasProtectedData',
       message: 'Would you like to access a protected data inside your iApp?',
-      default: false,
+      initial: false,
     });
 
     spinner.log('-----');
@@ -92,7 +73,7 @@ export async function init() {
   ${chalk.bold.underline('Steps to Get Started:')}
   
     Navigate to your project folder:
-    ${chalk.yellow(`$ cd ${folderCreated || '.'}`)}
+    ${chalk.yellow(`$ cd ${projectName.split(' ').length > 1 ? `"${projectName}"` : `${projectName}`}`)}
   
     ${chalk.green('Make your changes in the')} ${chalk.cyan('src/app.js')} ${chalk.green('file')}.
   

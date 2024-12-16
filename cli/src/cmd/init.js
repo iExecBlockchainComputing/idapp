@@ -34,7 +34,7 @@ export async function init() {
 
     if (await folderExists(projectName)) {
       throw Error(
-        `Target directory "${targetDir}" already exists. Remove it or choose a different name.`
+        `Target directory "${projectName}" already exists. Remove it or choose a different name.`
       );
     }
 

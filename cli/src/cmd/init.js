@@ -38,47 +38,71 @@ export async function init() {
       );
     }
 
+    const INIT_BASIC = 'basic';
+    const INIT_ADVANCED = 'advanced';
+    const { initType } = await spinner.prompt({
+      type: 'select',
+      name: 'initType',
+      message: 'What kind of project do you want to init?',
+      choices: [
+        {
+          title: 'hello-world',
+          value: INIT_BASIC,
+          selected: true,
+          description: 'iapp quick start',
+        },
+        {
+          title: 'advanced',
+          value: INIT_ADVANCED,
+          description: 'more configuration options for advanced users',
+        },
+      ],
+    });
+
     const {
-      useProtectedData,
-      useArgs,
-      useInputFile,
-      useRequesterSecret,
-      useAppSecret,
-    } = await spinner.prompt([
-      {
-        type: 'confirm',
-        name: 'useArgs',
-        message: 'Would you like to use positional args inside your iApp?',
-        default: true,
-      },
-      {
-        type: 'confirm',
-        name: 'useProtectedData',
-        message: 'Would you like to access a protected data inside your iApp?',
-        initial: false,
-      },
-      {
-        type: 'confirm',
-        name: 'useInputFile',
-        message:
-          'Would you like to use input files inside your iApp? (input files are files downloaded from the internet)',
-        initial: false,
-      },
-      {
-        type: 'confirm',
-        name: 'useRequesterSecret',
-        message:
-          'Would you like to use requester secrets inside your iApp? (requester secrets are secrets provisioned by the user)',
-        initial: false,
-      },
-      {
-        type: 'confirm',
-        name: 'useAppSecret',
-        message:
-          'Would you like to use an app secret inside your iApp? (app secret is a secret provisioned by the app owner)',
-        initial: false,
-      },
-    ]);
+      useArgs = true,
+      useProtectedData = false,
+      useInputFile = false,
+      useRequesterSecret = false,
+      useAppSecret = false,
+    } = initType === INIT_ADVANCED
+      ? await spinner.prompt([
+          {
+            type: 'confirm',
+            name: 'useArgs',
+            message: 'Would you like to use positional args inside your iApp?',
+            initial: true,
+          },
+          {
+            type: 'confirm',
+            name: 'useProtectedData',
+            message:
+              'Would you like to access a protected data inside your iApp?',
+            initial: false,
+          },
+          {
+            type: 'confirm',
+            name: 'useInputFile',
+            message:
+              'Would you like to use input files inside your iApp? (input files are files downloaded from the internet)',
+            initial: false,
+          },
+          {
+            type: 'confirm',
+            name: 'useRequesterSecret',
+            message:
+              'Would you like to use requester secrets inside your iApp? (requester secrets are secrets provisioned by the user)',
+            initial: false,
+          },
+          {
+            type: 'confirm',
+            name: 'useAppSecret',
+            message:
+              'Would you like to use an app secret inside your iApp? (app secret is a secret provisioned by the app owner)',
+            initial: false,
+          },
+        ])
+      : {}; // default
 
     await mkdir(projectName);
     process.chdir(projectName);

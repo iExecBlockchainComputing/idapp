@@ -9,7 +9,7 @@ export async function askForAppSecret({ spinner }) {
   const { appSecret: savedAppSecret } = config;
 
   if (savedAppSecret === null) {
-    spinner.log(`App secret is disabled (from "${CONFIG_FILE}")`);
+    spinner.log(`"No app secret" is configured (from "${CONFIG_FILE}")`);
     return savedAppSecret;
   }
   if (savedAppSecret !== undefined) {
@@ -20,7 +20,7 @@ export async function askForAppSecret({ spinner }) {
   const { useAppSecret } = await spinner.prompt({
     type: 'confirm',
     name: 'useAppSecret',
-    message: `Do you want to attach an app secret to your iApp`,
+    message: 'Do you want to attach an app secret to your iApp?',
     default: false,
   });
 
@@ -37,7 +37,7 @@ export async function askForAppSecret({ spinner }) {
     if (saveNull) {
       config.appSecret = null;
       await writeIAppConfig(config);
-      spinner.log(`appSecret disabled saved to "${CONFIG_FILE}"`);
+      spinner.log(`"No appSecret" choice saved to "${CONFIG_FILE}"`);
     }
     return null;
   }

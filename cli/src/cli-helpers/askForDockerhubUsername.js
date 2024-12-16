@@ -14,7 +14,7 @@ export async function askForDockerhubUsername({ spinner }) {
   }
 
   const { dockerHubUserNameAnswer } = await spinner.prompt({
-    type: 'input',
+    type: 'text',
     name: 'dockerHubUserNameAnswer',
     message:
       'What is your username on DockerHub? (It will be used to properly tag the Docker image)',

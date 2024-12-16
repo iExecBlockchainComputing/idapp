@@ -1,14 +1,14 @@
 import chalk from 'chalk';
 import boxen from 'boxen';
 import figlet from 'figlet';
-import {
-  checkIfFolderIsClean,
-  createProjectFolder,
-} from '../utils/checkIfFolderIsClean.js';
+import { mkdir } from 'node:fs/promises';
+import { folderExists } from '../utils/fs.utils.js';
 import { initHelloWorldApp } from '../utils/initHelloWorldApp.js';
-import { isValidPackageName } from '../utils/isValidPackageName.js';
 import { getSpinner } from '../cli-helpers/spinner.js';
 import { handleCliError } from '../cli-helpers/handleCliError.js';
+import { generateWallet } from '../utils/generateWallet.js';
+
+const targetDir = 'hello-world';
 
 export async function init() {
   const spinner = getSpinner();
@@ -23,41 +23,19 @@ export async function init() {
         })
       )
     );
-    const continueAnswer = await spinner.prompt({
-      type: 'confirm',
-      name: 'continue',
-      message:
-        'A new project will be created in the current directory. Do you want to continue?',
-    });
-    if (!continueAnswer.continue) {
-      process.exit(1);
-    }
 
-    let folderCreated;
-    if (!(await checkIfFolderIsClean())) {
-      const folderName = 'hello-world';
-      const { createHelloWorldFolder } = await spinner.prompt({
-        type: 'confirm',
-        name: 'createHelloWorldFolder',
-        message: `Want to run "mkdir ${folderName} && cd ${folderName}"?`,
-      });
-      if (!createHelloWorldFolder) {
-        process.exit(1);
-      }
-      folderCreated = await createProjectFolder(folderName);
-    }
-
-    const currentFolderName = process.cwd().split('/').pop();
     const { projectName } = await spinner.prompt({
-      type: 'input',
+      type: 'text',
       name: 'projectName',
-      message: 'What is the name of your project?',
-      default: currentFolderName,
+      message:
+        "What's your project name? (A folder with this name will be created)",
+      initial: targetDir,
     });
 
-    if (!isValidPackageName(projectName)) {
-      spinner.fail('Invalid package.json name');
-      process.exit(1);
+    if (await folderExists(projectName)) {
+      throw Error(
+        `Target directory "${targetDir}" already exists. Remove it or choose a different name.`
+      );
     }
 
     const {
@@ -77,30 +55,33 @@ export async function init() {
         type: 'confirm',
         name: 'useProtectedData',
         message: 'Would you like to access a protected data inside your iApp?',
-        default: false,
+        initial: false,
       },
       {
         type: 'confirm',
         name: 'useInputFile',
         message:
           'Would you like to use input files inside your iApp? (input files are files downloaded from the internet)',
-        default: false,
+        initial: false,
       },
       {
         type: 'confirm',
         name: 'useRequesterSecret',
         message:
           'Would you like to use requester secrets inside your iApp? (requester secrets are secrets provisioned by the user)',
-        default: false,
+        initial: false,
       },
       {
         type: 'confirm',
         name: 'useAppSecret',
         message:
           'Would you like to use an app secret inside your iApp? (app secret is a secret provisioned by the app owner)',
-        default: false,
+        initial: false,
       },
     ]);
+
+    await mkdir(projectName);
+    process.chdir(projectName);
 
     spinner.log('-----');
     spinner.log(
@@ -121,11 +102,15 @@ export async function init() {
     });
     spinner.succeed('JavaScript app setup complete.');
 
+    spinner.start('Generating wallet...');
+    const walletAddress = await generateWallet();
+    spinner.succeed(`Generated ethereum wallet (${walletAddress})`);
+
     const output = `
   ${chalk.bold.underline('Steps to Get Started:')}
   
     Navigate to your project folder:
-    ${chalk.yellow(`$ cd ${folderCreated || '.'}`)}
+    ${chalk.yellow(`$ cd ${projectName.split(' ').length > 1 ? `"${projectName}"` : `${projectName}`}`)}
   
     ${chalk.green('Make your changes in the')} ${chalk.cyan('src/app.js')} ${chalk.green('file')}.
   

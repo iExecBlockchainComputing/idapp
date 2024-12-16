@@ -23,12 +23,16 @@ export async function deploy() {
 
     const { iAppVersion } = await spinner.prompt([
       {
-        type: 'input',
+        type: 'text',
         name: 'iAppVersion',
         message: 'What is the version of your iApp?',
-        default: '0.1.0',
+        initial: '0.0.1',
       },
     ]);
+    // validate image tag https://docs.docker.com/reference/cli/docker/image/tag/
+    if (!iAppVersion.match(/[\w][\w.-]{0,127}/)) {
+      throw Error('Invalid version');
+    }
 
     const appSecret = await askForAppSecret({ spinner });
 

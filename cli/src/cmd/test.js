@@ -26,6 +26,8 @@ export async function test({
 }) {
   const spinner = getSpinner();
   try {
+    // Simply check that an iapp.config.json file exists
+    await readIAppConfig();
     await cleanTestOutput({ spinner });
     await testApp({ args, inputFiles, requesterSecrets, spinner });
     await checkTestOutput({ spinner });
@@ -161,6 +163,7 @@ export async function testApp({
       type: 'confirm',
       name: 'continue',
       message: `Would you like to see the app logs? (${appLogs.length} lines)`,
+      initial: true,
     });
     if (showLogs.continue) {
       spinner.info(`App logs:

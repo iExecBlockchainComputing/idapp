@@ -1,5 +1,5 @@
 import ora from 'ora';
-import inquirer from 'inquirer';
+import prompts from 'prompts';
 
 export const getSpinner = () => {
   const spinner = ora();
@@ -15,13 +15,20 @@ export const getSpinner = () => {
       spinner.start();
     }
   };
+
   const newLine = () => log('');
-  const prompt = async (...args) => {
+
+  const prompt = async (oneQuestion) => {
     const { isSpinning } = spinner;
     if (isSpinning) {
       spinner.stop();
     }
-    const res = await inquirer.prompt(...args);
+    const res = await prompts(oneQuestion, {
+      onCancel: () => {
+        spinner?.fail('Operation cancelled');
+        process.exit(0);
+      },
+    });
     if (isSpinning) {
       spinner.start();
     }
@@ -38,7 +45,7 @@ export const getSpinner = () => {
      */
     newLine,
     /**
-     * prompt using inquirer without disrupting the spinner
+     * prompt using `prompts` without disrupting the spinner
      */
     prompt,
   });

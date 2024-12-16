@@ -6,6 +6,7 @@ import { folderExists } from '../utils/fs.utils.js';
 import { initHelloWorldApp } from '../utils/initHelloWorldApp.js';
 import { getSpinner } from '../cli-helpers/spinner.js';
 import { handleCliError } from '../cli-helpers/handleCliError.js';
+import { generateWallet } from '../utils/generateWallet.js';
 
 const targetDir = 'hello-world';
 
@@ -63,6 +64,10 @@ export async function init() {
       template: 'javascript',
     });
     spinner.succeed('JavaScript app setup complete.');
+
+    spinner.start('Generating wallet...');
+    const walletAddress = await generateWallet();
+    spinner.succeed(`Generated ethereum wallet (${walletAddress})`);
 
     const output = `
   ${chalk.bold.underline('Steps to Get Started:')}

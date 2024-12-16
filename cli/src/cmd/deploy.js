@@ -10,30 +10,51 @@ import { readPackageJonConfig } from '../utils/iAppConfigFile.js';
 import { askForDockerhubAccessToken } from '../cli-helpers/askForDockerhubAccessToken.js';
 import { handleCliError } from '../cli-helpers/handleCliError.js';
 import { getSpinner } from '../cli-helpers/spinner.js';
+import { askForAppSecret } from '../cli-helpers/askForAppSecret.js';
+import { askForWalletPrivateKey } from '../cli-helpers/askForWalletPrivateKey.js';
+import { Wallet } from 'ethers';
+import { getIExecDebug } from '../utils/iexec.js';
 
 export async function deploy() {
   const spinner = getSpinner();
-
-  const dockerhubUsername = await askForDockerhubUsername({ spinner });
-  const dockerhubAccessToken = await askForDockerhubAccessToken({ spinner });
-
-  const { iAppVersion } = await spinner.prompt([
-    {
-      type: 'text',
-      name: 'iAppVersion',
-      message: 'What is the version of your iApp?',
-      initial: '0.0.1',
-    },
-  ]);
-
-  const walletAddress = await askForWalletAddress({ spinner });
-
-  const config = await readPackageJonConfig();
-  const iAppName = config.name.toLowerCase();
-
-  const imageTag = `${dockerhubUsername}/${iAppName}:${iAppVersion}`;
-
   try {
+    const dockerhubUsername = await askForDockerhubUsername({ spinner });
+    const dockerhubAccessToken = await askForDockerhubAccessToken({ spinner });
+
+    const { iAppVersion } = await spinner.prompt([
+      {
+        type: 'text',
+        name: 'iAppVersion',
+        message: 'What is the version of your iApp?',
+        initial: '0.0.1',
+      },
+    ]);
+    // validate image tag https://docs.docker.com/reference/cli/docker/image/tag/
+    if (!iAppVersion.match(/[\w][\w.-]{0,127}/)) {
+      throw Error('Invalid version');
+    }
+
+    const appSecret = await askForAppSecret({ spinner });
+
+    const walletAddress = await askForWalletAddress({ spinner });
+
+    // if an app secret must be set we will need the app owner wallet to push it
+    let iexec;
+    if (appSecret !== null) {
+      const privateKey = await askForWalletPrivateKey({ spinner });
+      const wallet = new Wallet(privateKey);
+      const address = await wallet.getAddress();
+      if (address.toLowerCase() !== walletAddress.toLowerCase()) {
+        throw Error('Provided address and private key mismatch');
+      }
+      iexec = getIExecDebug(privateKey);
+    }
+
+    const config = await readPackageJonConfig();
+    const iAppName = config.name.toLowerCase();
+
+    const imageTag = `${dockerhubUsername}/${iAppName}:${iAppVersion}`;
+
     // just start the spinner, no need to persist success in terminal
     spinner.start('Checking docker daemon is running...');
     await checkDockerDaemon();
@@ -68,6 +89,12 @@ export async function deploy() {
       iAppNameToSconify: imageTag,
       walletAddress,
     });
+    spinner.succeed('TEE app deployed');
+    if (appSecret !== null) {
+      spinner.start('Attaching app secret to the deployed app');
+      await iexec.app.pushAppSecret(appContractAddress, appSecret);
+      spinner.succeed('App secret attached to the app');
+    }
     spinner.succeed(
       `Deployment of your iApp completed successfully:
   - Docker image: ${sconifiedImage} (${dockerHubUrl})

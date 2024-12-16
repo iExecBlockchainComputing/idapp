@@ -29,6 +29,10 @@ export async function deploy() {
         initial: '0.0.1',
       },
     ]);
+    // validate image tag https://docs.docker.com/reference/cli/docker/image/tag/
+    if (!iAppVersion.match(/[\w][\w.-]{0,127}/)) {
+      throw Error('Invalid version');
+    }
 
     const appSecret = await askForAppSecret({ spinner });
 

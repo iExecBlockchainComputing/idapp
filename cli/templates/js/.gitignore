@@ -1,3 +1,6 @@
+# iapp config file may contain secrets
+iapp.config.json
+
 # dependencies
 node_modules
 

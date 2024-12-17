@@ -11,6 +11,7 @@ export const TEST_INPUT_DIR = 'input';
 export const TEST_OUTPUT_DIR = 'output';
 export const RUN_OUTPUT_DIR = 'output'; // Same as TEST_OUTPUT_DIR
 export const CACHE_DIR = 'cache';
+export const PROTECTED_DATA_MOCK_DIR = 'mock/protectedData';
 
 export const IEXEC_OUT = '/iexec_out/';
 export const IEXEC_COMPUTED_JSON = 'computed.json';

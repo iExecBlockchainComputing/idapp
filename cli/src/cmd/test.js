@@ -1,5 +1,6 @@
 import { Parser } from 'yargs/helpers';
 import { rm, mkdir } from 'node:fs/promises';
+import { join } from 'node:path';
 import { hexlify, randomBytes } from 'ethers';
 import {
   checkDockerDaemon,
@@ -10,6 +11,7 @@ import { checkDeterministicOutputExists } from '../utils/deterministicOutput.js'
 import { readIAppConfig } from '../utils/iAppConfigFile.js';
 import {
   IEXEC_WORKER_HEAP_SIZE,
+  PROTECTED_DATA_MOCK_DIR,
   TEST_INPUT_DIR,
   TEST_OUTPUT_DIR,
 } from '../config/config.js';
@@ -18,6 +20,7 @@ import { handleCliError } from '../cli-helpers/handleCliError.js';
 import { prepareInputFile } from '../utils/prepareInputFile.js';
 import { askForAppSecret } from '../cli-helpers/askForAppSecret.js';
 import { askShowResult } from '../cli-helpers/askShowResult.js';
+import { copy } from '../utils/fs.utils.js';
 
 export async function test({
   args,
@@ -27,14 +30,28 @@ export async function test({
   const spinner = getSpinner();
   try {
     // Simply check that an iapp.config.json file exists
-    await readIAppConfig();
+    const { useProtectedData } = await readIAppConfig();
+    await cleanTestInput({ spinner });
     await cleanTestOutput({ spinner });
-    await testApp({ args, inputFiles, requesterSecrets, spinner });
+    await testApp({
+      args,
+      inputFiles,
+      requesterSecrets,
+      spinner,
+      protectedDataMock: useProtectedData ? 'default' : undefined,
+    });
     await checkTestOutput({ spinner });
     await askShowResult({ spinner, outputPath: TEST_OUTPUT_DIR });
   } catch (error) {
     handleCliError({ spinner, error });
   }
+}
+
+async function cleanTestInput({ spinner }) {
+  // just start the spinner, no need to persist success in terminal
+  spinner.start('Cleaning input directory...');
+  await rm(TEST_INPUT_DIR, { recursive: true, force: true });
+  await mkdir(TEST_INPUT_DIR);
 }
 
 async function cleanTestOutput({ spinner }) {
@@ -71,10 +88,8 @@ export async function testApp({
   inputFiles = [],
   requesterSecrets = [],
   spinner,
+  protectedDataMock,
 }) {
-  const iAppConfig = await readIAppConfig();
-  const { withProtectedData } = iAppConfig;
-
   const appSecret = await askForAppSecret({ spinner });
 
   // just start the spinner, no need to persist success in terminal
@@ -99,6 +114,16 @@ export async function testApp({
     spinner.succeed('Input files prepared for test');
   }
 
+  const PROTECTED_DATA_MOCK_NAME = 'protectedDataMock';
+  if (protectedDataMock) {
+    spinner.start(`loading ${protectedDataMock} protectedData mock...\n`);
+    await copy(
+      join(PROTECTED_DATA_MOCK_DIR, protectedDataMock),
+      join(TEST_INPUT_DIR, PROTECTED_DATA_MOCK_NAME)
+    );
+    spinner.succeed(`${protectedDataMock} protectedData mock loaded for test`);
+  }
+
   // run the temp image
   spinner.start('Running app docker image...\n');
   const appLogs = [];
@@ -115,8 +140,8 @@ export async function testApp({
       // simulate a task id
       `IEXEC_TASK_ID=${hexlify(randomBytes(32))}`,
       // dataset env https://protocol.docs.iex.ec/for-developers/technical-references/application-io#dataset
-      ...(withProtectedData
-        ? [`IEXEC_DATASET_FILENAME=protectedData.zip`]
+      ...(protectedDataMock
+        ? [`IEXEC_DATASET_FILENAME=${PROTECTED_DATA_MOCK_NAME}`]
         : []),
       // input files env https://protocol.docs.iex.ec/for-developers/technical-references/application-io#input-files
       `IEXEC_INPUT_FILES_NUMBER=${inputFilesPath?.length || 0}`,

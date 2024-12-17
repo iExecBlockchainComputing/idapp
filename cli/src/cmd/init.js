@@ -46,7 +46,7 @@ export async function init() {
       message: 'What kind of project do you want to init?',
       choices: [
         {
-          title: 'hello-world',
+          title: 'Hello World',
           value: INIT_BASIC,
           selected: true,
           description: 'iapp quick start',

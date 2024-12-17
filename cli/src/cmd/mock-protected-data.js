@@ -1,11 +1,14 @@
 import { mkdir, readFile, stat, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
-import { IExecDataProtectorCore } from '@iexec/dataprotector';
-import { AbstractSigner, JsonRpcProvider } from 'ethers';
 import { getSpinner } from '../cli-helpers/spinner.js';
 import { fileExists } from '../utils/fs.utils.js';
 import { PROTECTED_DATA_MOCK_DIR } from '../config/config.js';
 import { handleCliError } from '../cli-helpers/handleCliError.js';
+import {
+  createZipFromObject,
+  extractDataSchema,
+  ALLOWED_KEY_NAMES_REGEXP,
+} from '../libs/dataprotector.js';
 
 export async function mockProtectedData() {
   const spinner = getSpinner();
@@ -22,7 +25,6 @@ export async function mockProtectedData() {
 
       // check key is valid
       const keyPath = key.split('.');
-      const ALLOWED_KEY_NAMES_REGEXP = /^[a-zA-Z0-9\-_]*$/;
       const keyFragmentErrors = keyPath
         .map((fragment) => {
           if (fragment === '') {
@@ -149,7 +151,8 @@ export async function mockProtectedData() {
             }
           };
           setNestedKeyValue(dataState, keyPath, value);
-          setNestedKeyValue(dataSchema, keyPath, type);
+          const { dataType } = await extractDataSchema({ dataType: value });
+          setNestedKeyValue(dataSchema, keyPath, dataType);
         }
       } else {
         spinner.warn(`Invalid key: ${keyFragmentErrors.join(', ')}`);
@@ -178,7 +181,7 @@ export async function mockProtectedData() {
     spinner.start('Building protectedData mock...');
     const { mockName } = await spinner.prompt({
       type: 'text',
-      mockName: 'addMore',
+      name: 'mockName',
       message:
         'Choose a name for your protectedData mock (you will be able to use your mock in tests like this `iapp test --protectedData <name>`)',
       initial: 'default',
@@ -191,34 +194,13 @@ export async function mockProtectedData() {
     spinner.start(
       `Creating protectedData mock file in \`${PROTECTED_DATA_MOCK_DIR}\` directory...`
     );
-    const dp = new IExecDataProtectorCore(
-      new AbstractSigner(new JsonRpcProvider('https://bellecour.iex.ec')), // signer not implemented
-      { ipfsNode: 'http://fake.iex.ec' } // service does not exists, uploading will fail
-    );
-    let schema;
-    let unencryptedData;
-    await dp
-      .protectData({
-        data,
-        onStatusUpdate: ({ title, isDone, payload }) => {
-          if (title === 'CREATE_ZIP_FILE' && isDone) {
-            unencryptedData = payload.zipFile; // TODO require @iexec/dataprotector changes to expose zipFile
-          }
-          if (title === 'EXTRACT_DATA_SCHEMA' && isDone) {
-            schema = payload.schema; // TODO require @iexec/dataprotector changes to expose schema
-          }
-        },
-      })
-      .catch((e) => {
-        // error is expected after schema extraction and unencrypted data serialization
-        if (!unencryptedData || !schema) {
-          throw Error(`Failed to serialize yous data: ${e.message}`);
-        }
-      });
+
+    const unencryptedData = await createZipFromObject(data);
+    const schema = await extractDataSchema(data);
     await mkdir(PROTECTED_DATA_MOCK_DIR, { recursive: true });
     await writeFile(join(PROTECTED_DATA_MOCK_DIR, mockName), unencryptedData);
     spinner.succeed(
-      `Mocked protectedData created in \`${PROTECTED_DATA_MOCK_DIR}\` directory\nMocked protectedData schema is:\n${JSON.stringify(schema, null, 2)}`
+      `Mocked protectedData "${mockName}" created in \`${PROTECTED_DATA_MOCK_DIR}\` directory\nMocked protectedData schema is:\n${JSON.stringify(schema, null, 2)}`
     );
   } catch (error) {
     handleCliError({ spinner, error });

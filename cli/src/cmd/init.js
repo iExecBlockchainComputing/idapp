@@ -98,7 +98,7 @@ export async function init() {
             type: 'confirm',
             name: 'useAppSecret',
             message:
-              'Would you like to use an app secret inside your iApp? (app secret is a secret provisioned by the app owner)',
+              'Would you like to use an app secret inside your iApp? (app secret is an immutable secret provisioned once by the iapp owner)',
             initial: false,
           },
         ])

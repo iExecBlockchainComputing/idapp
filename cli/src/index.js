@@ -26,6 +26,14 @@ const options = {
       default: null, // Set default to null or undefined to make it optional
     },
   ],
+  protectedDataMock: [
+    'protectedData',
+    {
+      describe:
+        'Specify the protected data mock name (use "default" protected data mock or create custom mocks with `iapp mock protectedData`) ',
+      type: 'string',
+    },
+  ],
   inputFile: [
     'inputFile',
     {
@@ -84,6 +92,7 @@ yargsInstance
       return yargs
         .option(...options.args)
         .option(...options.inputFile)
+        .option(...options.protectedDataMock)
         .array(options.inputFile[0])
         .option(...options.requesterSecret)
         .array(options.requesterSecret[0]);

@@ -31,7 +31,7 @@ export async function initHelloWorldApp({
       useAppSecret,
     });
     // Create other files
-    await createConfigurationFiles({ projectName, useProtectedData });
+    await createConfigurationFiles({ projectName });
     await createProjectDirectories();
   } catch (err) {
     debug('Error during project initialization:', err);
@@ -47,11 +47,10 @@ async function createProjectDirectories() {
   ]);
 }
 
-async function createConfigurationFiles({ projectName, useProtectedData }) {
+async function createConfigurationFiles({ projectName }) {
   // Create a simple iApp configuration file
   const configContent = {
     projectName: projectName,
-    useProtectedData: useProtectedData,
   };
   await fs.writeFile(
     CONFIG_FILE,

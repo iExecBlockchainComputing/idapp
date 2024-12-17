@@ -4,7 +4,7 @@ import { IExecDataProtectorCore } from '@iexec/dataprotector';
 import { AbstractSigner, JsonRpcProvider } from 'ethers';
 import { getSpinner } from '../cli-helpers/spinner.js';
 import { fileExists } from '../utils/fs.utils.js';
-import { TEST_INPUT_DIR } from '../config/config.js';
+import { PROTECTED_DATA_MOCK_DIR } from '../config/config.js';
 import { handleCliError } from '../cli-helpers/handleCliError.js';
 
 export async function mockProtectedData() {
@@ -176,13 +176,20 @@ export async function mockProtectedData() {
       'Answer a few questions to create your custom protectedData mock'
     );
     spinner.start('Building protectedData mock...');
+    const { mockName } = await spinner.prompt({
+      type: 'text',
+      mockName: 'addMore',
+      message:
+        'Choose a name for your protectedData mock (you will be able to use your mock in tests like this `iapp test --protectedData <name>`)',
+      initial: 'default',
+    });
     const data = await buildData();
     if (Object.keys(data).length === 0) {
       throw Error('Data is empty, creation aborted');
     }
 
     spinner.start(
-      `Creating protectedData mock file in \`${TEST_INPUT_DIR}\` directory...`
+      `Creating protectedData mock file in \`${PROTECTED_DATA_MOCK_DIR}\` directory...`
     );
     const dp = new IExecDataProtectorCore(
       new AbstractSigner(new JsonRpcProvider('https://bellecour.iex.ec')), // signer not implemented
@@ -208,10 +215,10 @@ export async function mockProtectedData() {
           throw Error(`Failed to serialize yous data: ${e.message}`);
         }
       });
-    await mkdir(TEST_INPUT_DIR, { recursive: true });
-    await writeFile(join(TEST_INPUT_DIR, 'protectedData.zip'), unencryptedData);
+    await mkdir(PROTECTED_DATA_MOCK_DIR, { recursive: true });
+    await writeFile(join(PROTECTED_DATA_MOCK_DIR, mockName), unencryptedData);
     spinner.succeed(
-      `Mocked protectedData created in \`${TEST_INPUT_DIR}\` directory\nMocked protectedData schema is:\n${JSON.stringify(schema, null, 2)}`
+      `Mocked protectedData created in \`${PROTECTED_DATA_MOCK_DIR}\` directory\nMocked protectedData schema is:\n${JSON.stringify(schema, null, 2)}`
     );
   } catch (error) {
     handleCliError({ spinner, error });

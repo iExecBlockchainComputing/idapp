@@ -91,7 +91,7 @@ export async function init() {
             type: 'confirm',
             name: 'useRequesterSecret',
             message:
-              'Would you like to use requester secrets inside your iApp? (requester secrets are secrets provisioned by the user)',
+              'Would you like to use requester secrets inside your iApp? (requester secrets are secrets that will be provided by any users that will run your iapp)',
             initial: false,
           },
           {

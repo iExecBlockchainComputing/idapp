@@ -1,5 +1,7 @@
 import { mkdir, readFile, stat, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
+import chalk from 'chalk';
+import boxen from 'boxen';
 import { getSpinner } from '../cli-helpers/spinner.js';
 import { fileExists } from '../utils/fs.utils.js';
 import { PROTECTED_DATA_MOCK_DIR } from '../config/config.js';
@@ -159,7 +161,8 @@ export async function mockProtectedData() {
       }
 
       spinner.info(
-        `This is how your protectedData looks so far:\n${JSON.stringify(dataSchema, null, 2)}`
+        `This is how your protectedData looks so far:
+${boxen(JSON.stringify(dataSchema, null, 2), { margin: 1 })}`
       );
 
       const { addMore } = await spinner.prompt([
@@ -200,7 +203,22 @@ export async function mockProtectedData() {
     await mkdir(PROTECTED_DATA_MOCK_DIR, { recursive: true });
     await writeFile(join(PROTECTED_DATA_MOCK_DIR, mockName), unencryptedData);
     spinner.succeed(
-      `Mocked protectedData "${mockName}" created in \`${PROTECTED_DATA_MOCK_DIR}\` directory\nMocked protectedData schema is:\n${JSON.stringify(schema, null, 2)}`
+      `Mocked protectedData "${mockName}" created in \`${PROTECTED_DATA_MOCK_DIR}\` directory`
+    );
+    spinner.log(
+      boxen(
+        `protectedData mock "${mockName}" schema:
+${chalk.yellow(boxen(JSON.stringify(schema, null, 2)))}
+
+Use your mock in tests:
+${chalk.yellow(`iapp test --protectedData "${mockName}"`)}`,
+        {
+          padding: 1,
+          margin: 1,
+          borderStyle: 'round',
+          borderColor: 'cyan',
+        }
+      )
     );
   } catch (error) {
     handleCliError({ spinner, error });

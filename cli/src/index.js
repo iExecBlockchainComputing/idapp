@@ -6,6 +6,7 @@ import { init } from './cmd/init.js';
 import { deploy } from './cmd/deploy.js';
 import { run } from './cmd/run.js';
 import { test } from './cmd/test.js';
+import { mockProtectedData } from './cmd/mock-protected-data.js';
 
 // define common options
 const options = {
@@ -23,6 +24,14 @@ const options = {
       describe: 'Specify the protected data address',
       type: 'string',
       default: null, // Set default to null or undefined to make it optional
+    },
+  ],
+  protectedDataMock: [
+    'protectedData',
+    {
+      describe:
+        'Specify the protected data mock name (use "default" protected data mock or create custom mocks with `iapp mock protectedData`) ',
+      type: 'string',
     },
   ],
   inputFile: [
@@ -83,6 +92,7 @@ yargsInstance
       return yargs
         .option(...options.args)
         .option(...options.inputFile)
+        .option(...options.protectedDataMock)
         .array(options.inputFile[0])
         .option(...options.requesterSecret)
         .array(options.requesterSecret[0]);
@@ -115,6 +125,21 @@ yargsInstance
         .array(options.requesterSecret[0]);
     },
     run
+  )
+
+  .command(
+    'mock <inputType>',
+    'Create a mocked input for test',
+    (yargs) =>
+      yargs.positional('inputType', {
+        describe: 'Type of input to mock',
+        choices: ['protectedData'],
+      }),
+    ({ inputType, ...argv }) => {
+      if (inputType === 'protectedData') {
+        return mockProtectedData(argv);
+      }
+    }
   )
 
   .help()

@@ -20,17 +20,18 @@ import { handleCliError } from '../cli-helpers/handleCliError.js';
 import { prepareInputFile } from '../utils/prepareInputFile.js';
 import { askForAppSecret } from '../cli-helpers/askForAppSecret.js';
 import { askShowResult } from '../cli-helpers/askShowResult.js';
-import { copy } from '../utils/fs.utils.js';
+import { copy, fileExists } from '../utils/fs.utils.js';
 
 export async function test({
   args,
+  protectedData: protectedDataMock,
   inputFile: inputFiles = [], // rename variable (it's an array)
   requesterSecret: requesterSecrets = [], // rename variable (it's an array)
 }) {
   const spinner = getSpinner();
   try {
     // Simply check that an iapp.config.json file exists
-    const { useProtectedData } = await readIAppConfig();
+    await readIAppConfig();
     await cleanTestInput({ spinner });
     await cleanTestOutput({ spinner });
     await testApp({
@@ -38,7 +39,10 @@ export async function test({
       inputFiles,
       requesterSecrets,
       spinner,
-      protectedDataMock: useProtectedData ? 'default' : undefined,
+      protectedDataMock:
+        protectedDataMock !== undefined
+          ? protectedDataMock || 'default'
+          : protectedDataMock,
     });
     await checkTestOutput({ spinner });
     await askShowResult({ spinner, outputPath: TEST_OUTPUT_DIR });
@@ -116,12 +120,24 @@ export async function testApp({
 
   const PROTECTED_DATA_MOCK_NAME = 'protectedDataMock';
   if (protectedDataMock) {
-    spinner.start(`loading ${protectedDataMock} protectedData mock...\n`);
+    spinner.start(`Loading "${protectedDataMock}" protectedData mock...\n`);
+    const protectedDataMockPath = join(
+      PROTECTED_DATA_MOCK_DIR,
+      protectedDataMock
+    );
+    const mockExists = await fileExists(protectedDataMockPath);
+    if (!mockExists) {
+      throw Error(
+        `No protectedData mock "${protectedDataMock}" found in ${PROTECTED_DATA_MOCK_DIR}, run \`iapp mock protectedData\` to create a new protectedData mock`
+      );
+    }
     await copy(
-      join(PROTECTED_DATA_MOCK_DIR, protectedDataMock),
+      join(protectedDataMockPath),
       join(TEST_INPUT_DIR, PROTECTED_DATA_MOCK_NAME)
     );
-    spinner.succeed(`${protectedDataMock} protectedData mock loaded for test`);
+    spinner.succeed(
+      `"${protectedDataMock}" protectedData mock loaded for test`
+    );
   }
 
   // run the temp image
